@@ -9,6 +9,7 @@ from twisted.internet import reactor
 from twisted.application import app
 
 from scrapy.utils.project import project_data_dir
+from scrapy.exceptions import NotConfigured
 
 from scrapyd import get_application
 from scrapyd.config import Config
@@ -35,7 +36,10 @@ dbs_dir  = %(dbs_dir)s
     return Config(extra_sources=[StringIO(scrapyd_conf)])
 
 def execute():
-    config = _get_config()
+    try:
+        config = _get_config()
+    except NotConfigured:
+        config = None
     log.startLogging(sys.stderr)
     application = get_application(config)
     app.startApplication(application, False)
