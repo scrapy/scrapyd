@@ -7,4 +7,3 @@ recursive-include scrapyd/tests *.egg
 recursive-include docs *
 prune docs/build
 recursive-include extras *
-recursive-include bin *
