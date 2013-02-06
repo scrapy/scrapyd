@@ -1,0 +1,3 @@
+[run]
+include = scrapyd/*
+omit = scrapyd/tests*
