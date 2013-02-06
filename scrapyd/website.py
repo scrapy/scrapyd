@@ -1,3 +1,6 @@
+import posixpath
+import pkg_resources
+
 from datetime import datetime
 
 from twisted.web import resource, static
@@ -13,10 +16,15 @@ class Root(resource.Resource):
         resource.Resource.__init__(self)
         self.debug = config.getboolean('debug', False)
         self.runner = config.get('runner')
+
+        self.htdocsdir = (config.get('htdocs_dir') or 
+            pkg_resources.resource_filename(__name__, 'htdocs'))
+
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
         self.app = app
-        self.putChild('', Home(self))
+        self.putChild('', static.File(
+            posixpath.join(self.htdocsdir, "index.html"), 'text/html'))
         self.putChild('logs', static.File(logsdir, 'text/plain'))
         self.putChild('items', static.File(itemsdir, 'text/plain'))
         self.putChild('jobs', Jobs(self))
@@ -25,6 +33,10 @@ class Root(resource.Resource):
           servCls = load_object(servClsName)
           self.putChild(servName, servCls(self))
         self.update_projects()
+
+    def getChild(self, name, request):
+        path = posixpath.join(self.htdocsdir, name)
+        return static.File(path)
 
     def update_projects(self):
         self.poller.update_projects()
@@ -46,43 +58,6 @@ class Root(resource.Resource):
     @property
     def poller(self):
         return self.app.getComponent(IPoller)
-
-
-class Home(resource.Resource):
-
-    def __init__(self, root):
-        resource.Resource.__init__(self)
-        self.root = root
-
-    def render_GET(self, txrequest):
-        vars = {
-            'projects': ', '.join(self.root.scheduler.list_projects()),
-        }
-        return """
-<html>
-<head><title>Scrapyd</title></head>
-<body>
-<h1>Scrapyd</h1>
-<p>Available projects: <b>%(projects)s</b></p>
-<ul>
-<li><a href="/jobs">Jobs</a></li>
-<li><a href="/items/">Items</li>
-<li><a href="/logs/">Logs</li>
-<li><a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Documentation</a></li>
-</ul>
-
-<h2>How to schedule a spider?</h2>
-
-<p>To schedule a spider you need to use the API (this web UI is only for
-monitoring)</p>
-
-<p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
-<p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
-
-<p>For more information about the API, see the <a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Scrapyd documentation</a></p>
-</body>
-</html>
-""" % vars
 
 
 class Jobs(resource.Resource):
