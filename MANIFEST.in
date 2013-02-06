@@ -1,6 +1,7 @@
 include README.rst
 include LICENSE
 include MANIFEST.in
+include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
 recursive-include scrapyd/tests *.egg
 recursive-include docs *

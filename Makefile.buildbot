@@ -15,5 +15,5 @@ build:
 	python extras/makedeb.py build
 
 clean:
-	git checkout debian scrapyd/__init__.py
+	git checkout debian scrapyd/VERSION
 	git clean -dfq

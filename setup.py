@@ -83,9 +83,11 @@ if len(sys.argv) > 1 and sys.argv[1] == 'bdist_wininst':
 
 if os.environ.get('SCRAPY_VERSION_FROM_GIT'):
     v = Popen("git describe", shell=True, stdout=PIPE).communicate()[0]
-    with open('scrapyd/__init__.py', 'a') as f:
-        f.write("\n__version__ = '%s'" % v.strip())
-version = __import__('scrapyd').__version__
+    with open('scrapyd/VERSION', 'w+') as f:
+        f.write(v.strip())
+
+with open(os.path.join(os.path.dirname(__file__), 'scrapyd/VERSION')) as f:
+    version = f.read().strip()
 
 setup_args = {
     'name': 'Scrapyd',

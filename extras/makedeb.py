@@ -1,5 +1,6 @@
 import sys, os, glob, shutil
 from subprocess import check_call
+from scrapyd import version_info
 
 def build(suffix):
     for ifn in  glob.glob("debian/scrapyd.*"):
@@ -29,7 +30,7 @@ def clean(suffix):
 
 def main():
     cmd = sys.argv[1]
-    suffix = '%s.%s' % __import__('scrapyd').version_info[:2]
+    suffix = '%s.%s' % version_info[:2]
     if cmd == 'build':
         build(suffix)
     elif cmd == 'clean':
