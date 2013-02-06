@@ -36,7 +36,7 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="/">Scrapyd</a>
+          <a class="brand" href="/">[[appname]]</a>
           <ul class="nav">
             <li class="dropdown">
               <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -44,7 +44,7 @@
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li ng-repeat="project in projects"><a href="#" id="id_[[project]]">[[project]]</a></li>
+                <li ng-repeat="project in projects"><a href="#" id="id_{{project}}">{{project}}</a></li>
               </ul>
             </li>
 
@@ -54,7 +54,7 @@
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-                <li ng-repeat="spider in spiders"><a href="#" id="id_[[spider]]">[[spider]]</a></li>
+                <li ng-repeat="spider in spiders"><a href="#" id="id_{{spider}}">{{spider}}</a></li>
               </ul>
             </li>
 
@@ -69,7 +69,7 @@
       <div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="myModalLabel">Start crawler [[spider]]</h3>
+          <h3 id="myModalLabel">Start crawler {{spider}}</h3>
         </div>
         <div class="modal-body">
           <h4>Settings</h4>
@@ -88,19 +88,21 @@
       
       <button ng-click="refresh()">refresh</button>
 
+
+
       <table class="table table-bordered">
         <th>Project</th><th>Spider</th><th>Job</th><th>Status</th><th>Time</th>
           <tr ng-repeat="task in tasks">
-            <td>[[task.project]]</td>
-            <td>[[task.spider]]</td>
+            <td>{{task.project}}</td>
+            <td>{{task.spider}}</td>
             <td>
               <span ng:hide="task.status == 'pending'" >
-                <a class="icon-book" title="Log" href="/logs/[[task.project]]/[[task.spider]]/[[task.job]].log"></a>
-                <a class="icon-file" title="Items" href="/items/[[task.project]]/[[task.spider]]/[[task.job]].jl"></a>
+                <a class="icon-book" title="Log" href="/logs/{{task.project}}/{{task.spider}}/{{task.job}}.log"></a>
+                <a class="icon-file" title="Items" href="/items/{{task.project}}/{{task.spider}}/{{task.job}}.jl"></a>
               </span>
-                [[task.job]]</td>
-            <td>[[task.status]]</td>
-            <td>[[task.elapsed]]</td>
+                {{task.job}}</td>
+            <td>{{task.status}}</td>
+            <td>{{task.elapsed}}</td>
           </tr>
       </table>
     </div> <!-- /container -->

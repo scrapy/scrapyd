@@ -6,6 +6,8 @@ from datetime import datetime
 from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
 
+from jinja2 import Template, Environment, FileSystemLoader
+
 from scrapy.utils.misc import load_object
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
@@ -20,11 +22,14 @@ class Root(resource.Resource):
         self.htdocsdir = (config.get('htdocs_dir') or 
             pkg_resources.resource_filename(__name__, 'htdocs'))
 
+        self.environ = Environment(loader=FileSystemLoader(self.htdocsdir))
+        self.environ.variable_start_string = '[['
+        self.environ.variable_end_string = ']]'
+
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
         self.app = app
-        self.putChild('', static.File(
-            posixpath.join(self.htdocsdir, "index.html"), 'text/html'))
+
         self.putChild('logs', static.File(logsdir, 'text/plain'))
         self.putChild('items', static.File(itemsdir, 'text/plain'))
         self.putChild('jobs', Jobs(self))
@@ -35,8 +40,8 @@ class Root(resource.Resource):
         self.update_projects()
 
     def getChild(self, name, request):
-        path = posixpath.join(self.htdocsdir, name)
-        return static.File(path)
+        return (Renderer(self, name) if name=="" or name.endswith(".html") else 
+                static.File(posixpath.join(self.htdocsdir, name)))
 
     def update_projects(self):
         self.poller.update_projects()
@@ -59,6 +64,24 @@ class Root(resource.Resource):
     def poller(self):
         return self.app.getComponent(IPoller)
 
+class Renderer(resource.Resource):
+
+    def __init__(self, root, name, document_root='index.html'):
+        resource.Resource.__init__(self)
+        self.root = root
+        self.name = name or document_root
+
+    def render_GET(self, txrequest):
+        ctx = {
+            'appname': "Scrapy",
+            'projects': self.root.scheduler.list_projects(),
+            'queues': self.root.poller.queues,
+            'launcher': self.root.launcher,
+        }
+
+        template = self.root.environ.get_template(self.name)
+        response = template.render(**ctx)
+        return response.encode("utf-8")
 
 class Jobs(resource.Resource):
 
