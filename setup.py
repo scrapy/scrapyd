@@ -114,7 +114,12 @@ setup_args = {
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Internet :: WWW/HTTP',
-    ]
+    ],
+    "entry_points":{
+        'console_scripts':[
+            'scrapyd = scrapyd.script:execute',
+        ]
+    },
 }
 
 try:
