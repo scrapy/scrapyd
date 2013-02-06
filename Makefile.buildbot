@@ -6,13 +6,9 @@ endif
 export PYTHONPATH=$(PWD)
 
 test:
-ifeq ($(BRANCH),master)
 	coverage run --branch $(TRIAL) --reporter=text scrapyd.tests
 	rm -rf htmlcov && coverage html
 	-s3cmd sync -P htmlcov/ s3://static.scrapy.org/coverage-scrapyd-$(BRANCH)/
-else
-	$(TRIAL) --reporter=text scrapyd.tests
-endif
 	extras/test-scrapyd.sh
 
 build:
