@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+  <head>
+    <meta charset="utf-8">
+    <title>Scrapyd</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Scrapy server">
+    <meta name="author" content="Jordi Llonch <llonchj@gmail.com>">
+
+    <!-- Le styles -->
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular-resource.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js"></script>
+
+    <script src="/js/scrapyd.js"></script>
+
+    <!-- Fav and touch icons -->
+    <link rel="shortcut icon" href="/ico/favicon.png">
+  </head>
+
+  <body ng-controller="AppCtrl" data-spy="scroll" data-target=".navbar">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">Scrapyd</a>
+          <ul class="nav">
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Project
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li ng-repeat="project in projects"><a href="#" id="id_{{project}}">{{project}}</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                Spider
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li ng-repeat="spider in spiders"><a href="#" id="id_{{spider}}">{{spider}}</a></li>
+              </ul>
+            </li>
+
+            <li><a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html" target="_new">Documentation</a></li>
+          </ul>
+
+          <button id="id_live" type="button" class="btn btn-small pull-right" data-toggle="button">Live</button>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="row">
+        <div class="span12">
+          <h1>Scrapyd</h1>
+
+
+          <div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h3 id="myModalLabel">Start crawler {{spider}}</h3>
+            </div>
+            <div class="modal-body">
+              <h4>Settings</h4>
+              <textarea ></textarea>
+              <h4>Arguments</h4>
+              <textarea></textarea>
+            </div>
+            <div class="modal-footer">
+              <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+              <button class="btn btn-primary">Schedule</button>
+            </div>
+          </div>
+      
+
+          <a href="#myModal" role="button" class="btn" data-toggle="modal">Schedule</a>
+      
+          <button ng-click="refresh()">refresh</button>
+
+        
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="span3">
+        
+          <ul class="nav nav-tabs nav-stacked" ng-repeat="(project_name, project) in projects">
+            <li class="nav-header">{{project_name}}</li>
+            <ul ng-repeat="project in projects">
+              <li ng-repeat="spider in project.spiders"><a href="#id_{{spider}}">{{spider}}</a> 
+                <a href="#myModal" role="button" class="btn btn-mini pull-right icon-play" data-toggle="modal"></a>
+              </li>
+            </ul>
+          </ul>
+          <ul class="nav nav-tabs nav-stacked">
+            <li class="divider"></li>
+            <li><a href="#" id="#id_{{project_name}}">new project "egg file upload" or "template form" </a></li>
+          </ul>
+
+        </div>
+        <div class="span9">
+          <table class="table table-bordered">
+            <th>Project</th><th>Spider</th><th>Job</th><th>Status</th><th>Time</th>
+              <tr ng-repeat="task in tasks">
+                <td>{{task.project}}</td>
+                <td>{{task.spider}}</td>
+                <td>
+                  <span ng:hide="task.status == 'pending'" >
+                    <a class="icon-book" title="Log" href="/logs/{{task.project}}/{{task.spider}}/{{task.job}}.log"></a>
+                    <a class="icon-file" title="Items" href="/items/{{task.project}}/{{task.spider}}/{{task.job}}.jl"></a>
+                  </span>
+                    {{task.job}}</td>
+                <td>{{task.status}}</td>
+                <td>{{task.elapsed}}</td>
+              </tr>
+          </table>
+
+        </div>
+      </div>
+      
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
