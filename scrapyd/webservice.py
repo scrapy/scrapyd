@@ -124,10 +124,16 @@ class DeleteVersion(DeleteProject):
 class Status(WsResource):
 
     def render_GET(self, txrequest):
+        
         projects = {}
         for project in self.root.scheduler.list_projects():
             spiders = get_spider_list(project, runner=self.root.runner)
             versions = self.root.eggstorage.list(project)
             projects[project] = {"spiders": spiders, "versions": versions}
         return {"status": "ok", "projects":projects}
+
+class Ping(WsResource):
+
+    def render_GET(self, txrequest):
+        return {"status": "pong"}
 

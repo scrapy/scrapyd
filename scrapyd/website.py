@@ -10,24 +10,60 @@ from scrapy.utils.misc import load_object
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
 
+""" FRONTEND specifies the front end directory 
+
+    frontend is None: no frontend
+    frontend is "": frontend
+    frontend is "htdocs": folder containing the htdocs module
+
+"""
+FRONTEND = None
+
+class Frontend(resource.Resource):
+
+    def __init__(self, root=None, path=None):
+        self.path = path
+        self.root = root
+    
+    @classmethod
+    def from_path(cls, root, path):
+        return cls(root, path)
+
+    def render(self, txrequest):
+        name = txrequest.sitepath or "index.html"
+
+        path = posixpath.join(self.root.frontend.path, name)
+        if path:
+            return static.File(path).render(txrequest)
+        return WithoutFrontend(self).render(txrequest)
+    
 class Root(resource.Resource):
 
-    def __init__(self, config, app):
+    def __init__(self, config, app, frontend=FRONTEND):
         resource.Resource.__init__(self)
         self.debug = config.getboolean('debug', False)
         self.runner = config.get('runner')
 
-        self.htdocsdir = (config.get('htdocs_dir') or 
-            pkg_resources.resource_filename(__name__, 'htdocs'))
+        if frontend is None:
+            frontend_path = config.get('frontend_path', 'frontend')
+            if isinstance(frontend_path, basestring):
+                frontend_path = pkg_resources.resource_filename("scrapyd", frontend_path)
+                frontend = Frontend.from_path(self, frontend_path)
+            
+            self.frontend = frontend
 
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
         self.app = app
-        self.putChild('', static.File(
-            posixpath.join(self.htdocsdir, "index.html"), 'text/html'))
+
         self.putChild('logs', static.File(logsdir, 'text/plain'))
         self.putChild('items', static.File(itemsdir, 'text/plain'))
         self.putChild('jobs', Jobs(self))
+
+        self.putChild('', Frontend(self))
+
+        # self.putChild('frontend', Frontend(self))
+
         services = config.items('services', ())
         for servName, servClsName in services:
           servCls = load_object(servClsName)
@@ -35,8 +71,14 @@ class Root(resource.Resource):
         self.update_projects()
 
     def getChild(self, name, request):
-        path = posixpath.join(self.htdocsdir, name)
-        return static.File(path)
+        if name == "":
+            name == "index.html"
+
+        path = posixpath.join(self.frontend.path, name)
+        if posixpath.exists(path):
+            return static.File(path)
+
+        return WithoutFrontend(self)
 
     def update_projects(self):
         self.poller.update_projects()
@@ -59,6 +101,26 @@ class Root(resource.Resource):
     def poller(self):
         return self.app.getComponent(IPoller)
 
+
+class WithoutFrontend(resource.Resource):
+    def __init__(self, root):
+        resource.Resource.__init__(self)
+        self.root = root
+
+    def render(self, txrequest):
+        txrequest.setResponseCode(404)
+        
+        return """<html><head><title>No frontend</title><h1>No frontend</h1>
+        <p>Add a frontend or create 'without_frontend.html' in your frontend</p>
+        </body>
+        </html>
+        """
+        #else:
+        #    return """<html><head><title>No frontend</title><h1>No frontend</h1>
+        #    <p>This server has no frontend</p>
+        #    </body>
+        #    </html>
+        #    """
 
 class Jobs(resource.Resource):
 
