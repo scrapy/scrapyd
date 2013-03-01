@@ -17,7 +17,7 @@ def application(config):
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)
     bind_address = config.get('bind_address', '0.0.0.0')
-    timer_step = config.getint('timer_step', 5)
+    timer_step = config.getfloat('timer_step', 5)
 
     poller = QueuePoller(config)
     eggstorage = FilesystemEggStorage(config)
