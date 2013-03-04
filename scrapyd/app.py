@@ -17,7 +17,7 @@ def application(config):
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)
     bind_address = config.get('bind_address', '0.0.0.0')
-    timer_step = config.getfloat('timer_step', 5)
+    poll_interval = config.getfloat('poll_interval', 5)
 
     poller = QueuePoller(config)
     eggstorage = FilesystemEggStorage(config)
@@ -33,7 +33,7 @@ def application(config):
     laucls = load_object(laupath)
     launcher = laucls(config, app)
 
-    timer = TimerService(timer_step, poller.poll)
+    timer = TimerService(poll_interval, poller.poll)
     webservice = TCPServer(http_port, server.Site(Root(config, app)), interface=bind_address)
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
