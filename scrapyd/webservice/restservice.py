@@ -133,29 +133,29 @@ class ProjectsRESTService(BaseRESTService):
                  headers={"Content-Type":"text/plain"})
         return get_spider_list(pk, runner=self.root.runner)
     
-    @route("/projects/<project>/versions", Http.GET)
-    def version_read(self, request, project, **kwargs):
-        if project not in self.root.scheduler.list_projects():
+    @route("/<pk>/versions", Http.GET)
+    def version_read(self, request, pk, **kwargs):
+        if pk not in self.root.scheduler.list_projects():
             return corepost.Response(404, entity="Not found",
                  headers={"Content-Type":"text/plain"})
-        return self.root.eggstorage.list(project)
+        return self.root.eggstorage.list(pk)
     
-    @route("/projects/<project>/versions/<version>", Http.DELETE)
+    @route("/<pk>/versions/<version>", Http.DELETE)
     def delete_version(self, request, project, version, **kwargs):
-        return self.delete(request, project, version, **kwargs)
+        return self.delete(request, pk, version, **kwargs)
 
-    @route("/projects/<project>", Http.DELETE)
-    def delete(self, request, project, version=None, **kwargs):
-        print "DELETE", project, version
-        if project not in self.root.scheduler.list_projects():
+    @route("/<pk>", Http.DELETE)
+    def delete(self, request, pk, version=None, **kwargs):
+        if pk not in self.root.scheduler.list_projects():
             return corepost.Response(404, entity="Not found",
                  headers={"Content-Type":"text/plain"})
-        if version and (version not in self.root.eggstorage.list(project)):
+        if version and (version not in self.root.eggstorage.list(pk)):
             return corepost.Response(404, entity="Not found",
                  headers={"Content-Type":"text/plain"})
 
-        self.root.eggstorage.delete(project, version)
+        self.root.eggstorage.delete(pk, version)
         self.root.update_projects()
+        
         return {"status": "ok"}
 
 class JobsRESTService(BaseRESTService):
@@ -167,8 +167,8 @@ class JobsRESTService(BaseRESTService):
         defer.returnValue(
             {"status": "ok", "projects": projects})
 
-    @route("/<jobid>", Http.POST)
-    def update(self, request, jobid, **kwargs):
+    @route("/<pk>", Http.POST)
+    def update(self, request, pk, **kwargs):
         return corepost.Response(501, entity="Not implemented",
              headers={"Content-Type":"text/plain"})
 
@@ -223,26 +223,26 @@ class JobsRESTService(BaseRESTService):
         #defer.returnValue(
         #    {"status":"ok", "jobs": jobs})
 
-    @route("/<jobid>", Http.GET)
-    def items_read(self, request, jobid, **kwargs):
+    @route("/<pk>", Http.GET)
+    def items_read(self, request, pk, **kwargs):
         return corepost.Response(501, entity="Not implemented",
              headers={"Content-Type":"text/plain"})
 
-    @route("/<jobid>/items", Http.GET)
-    def items_read(self, request, jobid, **kwargs):
+    @route("/<pk>/items", Http.GET)
+    def items_read(self, request, pk, **kwargs):
         basedir = self.root.config.get('items_dir')
         return corepost.Response(501, entity="Not implemented",
              headers={"Content-Type":"text/plain"})
 
-    @route("/<jobid>/logs", Http.GET)
-    def logs_read(self, request, jobid, **kwargs):
+    @route("/<pk>/logs", Http.GET)
+    def logs_read(self, request, pk, **kwargs):
         basedir = self.root.config.get('logs_dir')
         return corepost.Response(501, entity="Not implemented",
              headers={"Content-Type":"text/plain"})
     
 
-    @route("/<jobid>", Http.DELETE)
-    def delete(self, request, jobid, **kwargs):
+    @route("/<pk>", Http.DELETE)
+    def delete(self, request, pk, **kwargs):
         """
         This commands acts as a delete and cancels the task if 
         in pending or running state
@@ -253,13 +253,13 @@ class JobsRESTService(BaseRESTService):
         """
         signal = kwargs.get('signal', 'TERM')
 
-        x = self.job_from_id(jobid)
+        x = self.job_from_id(pk)
         if x is None:
             return corepost.Response(410, entity="Job not available",
                  headers={"Content-Type":"text/plain"})
 
         project, queue, job = x
-        c = queue.remove(lambda x: x["_job"] == jobid)
+        c = queue.remove(lambda x: x["_job"] == pk)
 
         prevstate = "unknown"
         if c:
@@ -267,7 +267,7 @@ class JobsRESTService(BaseRESTService):
         # also kill the job if running
         spiders = self.root.launcher.processes.values()
         for s in spiders:
-            if s.job == jobid:
+            if s.job == pk:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
 
