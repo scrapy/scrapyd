@@ -1,0 +1,52 @@
+<div class="row">
+
+    <div class="hero-unit" ng:hide="projects.length > 0">
+      <h1>Submit your project</h1>
+      <p>There are no projects, submit one.</p>
+      <p>
+        <a class="btn btn-primary btn-large pull-right" 
+            target="_new" href="http://doc.scrapy.org/en/latest/topics/scrapyd.html#scheduling-a-spider-run">
+          Learn more
+        </a>
+      </p>
+    </div>
+
+    <h1 ng:hide="projects.length == 0">
+      Projects
+        <!-- <small><strong>project_count</strong> Workers: <strong>34</strong></small> -->
+    </h1>
+    <ul ng:hide="projects.length == 0" style="" id="projects" class="zebra span12">
+      <li ng-repeat="project in projects" class="project">
+        
+          <a ng:hide="project.status == 'finished'" href="" ng-click="cancel(project)" class="close pull-right" title="Cancel project">&times;</a>
+
+          <h2 class="project_name">
+            <a href="#/api/{{project.project}}/{{project.spider}}" target="Go to project">
+              <span class="project_project">{{project.project}}.</span><span class="project_spider">{{project.spider}}</span>
+            </a>
+            <!-- <small>Description</small> -->
+          </h2>
+
+          <span class="project_id">
+            <span class="clipboard">{{project.id}}</span>
+            <ul class="project_options horizontal">
+              <li ng:hide="project.status == 'pending'"><a class="icon-book" title="Logs" href="/logs/{{project.project}}/{{project.spider}}/{{project.id}}.log"></a></li>
+              <li ng:hide="project.status == 'pending'"><a class="icon-file" title="Items" href="/items/{{project.project}}/{{project.spider}}/{{project.id}}.jl"></a></li>
+            </ul>
+          </span>
+        
+          <span class="project_status">
+            <span class="project_when">
+              <span ng:hide="project.status != 'pending'" class="label">Scheduled</span>
+              <span ng:hide="project.status != 'running'" class="label label-info">Started</span>
+              <span ng:hide="project.status != 'finished'" class="label label-success">Finished</span>
+            
+              <span class="project_time date" ng:hide="settings.technical">{{project.start_time|momentjs.fromNow}}</span>
+              <span class="project_time date" ng:hide="!settings.technical">{{project.start_time|momentjs.format}}</span>
+
+            </span>
+          </span>
+
+      </li>
+    </ul>
+</div>
