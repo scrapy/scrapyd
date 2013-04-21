@@ -289,12 +289,6 @@ class ScrapydRESTService(BaseRESTService):
 
     @route("/status", Http.GET)
     def status(self, request, **kwargs):
-        for project in self.root.scheduler.list_projects():
-            print "PROJECT '%s'" % project
-            print self.root.eggstorage.list(project)
-            print "----------"
-            print get_spider_list(project, runner=self.root.runner)
-        
         d = lambda project:(project, {
                         "spiders": get_spider_list(project, 
                                                     runner=self.root.runner), 
