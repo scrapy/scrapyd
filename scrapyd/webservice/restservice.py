@@ -81,27 +81,18 @@ class ProjectsRESTService(BaseRESTService):
     #    return corepost.Response(501, entity="Not implemented",
     #         headers={"Content-Type":"text/plain"})
 
+    get_proj_info = lambda self, project:(project, {
+                    "spiders": get_spider_list(project, 
+                                                runner=self.root.runner), 
+                    "versions": self.root.eggstorage.list(project)
+                },)
+
+
     @route("/", Http.GET)
     #@defer.inlineCallbacks
-    def read(self, request, exclude=[], **kwargs):
-        if isinstance(exclude, basestring):
-            exclude = [r.strip() for r in exclude.split(",")]
-
-        projects = []
-        
-        for project in self.root.scheduler.list_projects():
-            proj = dict(name=project)
-
-            if "spiders" not in exclude:
-                proj["spiders"] = get_spider_list(project, runner=self.root.runner)
-            if "versions" not in exclude:
-                proj["versions"] = self.root.eggstorage.list(project)
-            #projects = yield proj
-            #projects.append(proj)
-
-            projects.append(proj)
-            
-        return projects
+    def read(self, request, **kwargs):
+        return dict(map(self.get_proj_info, 
+            self.root.scheduler.list_projects()))
 
     ##   # TODO in CorePost
     ##   # MAKE THE ATTRIBUTE VISIBLE IN DIFFERENT FORMATS
@@ -125,6 +116,13 @@ class ProjectsRESTService(BaseRESTService):
     ##           print "UYAAML", self.read.__class__, self.read()(request, **kwargs)
     ##           return unicode(yaml.dump(self.read(request, **kwargs)))
     ##           
+    @route("/<pk>", Http.GET)
+    #@defer.inlineCallbacks
+    def read_one(self, request, pk, **kwargs):
+        if pk not in self.root.scheduler.list_projects():
+            return corepost.Response(404, entity="Not found",
+                 headers={"Content-Type":"text/plain"})
+        return self.get_proj_info(pk)
 
     @route("/<pk>/spiders", Http.GET)
     def spider_read(self, request, pk, **kwargs):
@@ -167,10 +165,10 @@ class JobsRESTService(BaseRESTService):
         defer.returnValue(
             {"status": "ok", "projects": projects})
 
-    @route("/<pk>", Http.POST)
-    def update(self, request, pk, **kwargs):
-        return corepost.Response(501, entity="Not implemented",
-             headers={"Content-Type":"text/plain"})
+    #@route("/<pk>", Http.POST)
+    #def update(self, request, pk, **kwargs):
+    #    return corepost.Response(501, entity="Not implemented",
+    #         headers={"Content-Type":"text/plain"})
 
     @route("/", Http.GET)
     #@defer.inlineCallbacks
