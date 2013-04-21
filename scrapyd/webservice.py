@@ -120,3 +120,14 @@ class DeleteVersion(DeleteProject):
         version = txrequest.args['version'][0]
         self._delete_version(project, version)
         return {"status": "ok"}
+
+class Status(WsResource):
+
+    def render_GET(self, txrequest):
+        projects = {}
+        for project in self.root.scheduler.list_projects():
+            spiders = get_spider_list(project, runner=self.root.runner)
+            versions = self.root.eggstorage.list(project)
+            projects[project] = {"spiders": spiders, "versions": versions}
+        return {"status": "ok", "projects":projects}
+
