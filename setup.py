@@ -120,6 +120,7 @@ setup_args = {
             'scrapyd = scrapyd.script:execute',
         ]
     },
+    'test_suite': 'scrapyd.tests',
 }
 
 try:
@@ -127,6 +128,7 @@ try:
 except ImportError:
     from distutils.core import setup
 else:
-    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17']
+    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17', 
+                                        'CorePost>=0.0.16', 'txZMQ']
 
 setup(**setup_args)
