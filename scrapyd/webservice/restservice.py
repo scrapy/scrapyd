@@ -292,6 +292,10 @@ class ScrapydRESTService(BaseRESTService):
         return {"status": "ok", 
             "server": {"version":__version__}}
 
+    @route("/config", Http.GET)
+    def get_config(self, request, pk="scrapyd", **kwargs):
+        return dict(self.root.config.items(pk))
+
 class ProjectsResource(BaseRESTResource):
     def __init__(self, root, services=(), **kwargs):
         services = (ProjectsRESTService(root),)
