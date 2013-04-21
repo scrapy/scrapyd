@@ -159,11 +159,19 @@ class ProjectsRESTService(BaseRESTService):
 class JobsRESTService(BaseRESTService):
 
     @route("/", Http.POST)
-    @defer.inlineCallbacks
-    def create(self, request, **kwargs):
-        projects = self.root.scheduler.list_projects()
-        defer.returnValue(
-            {"status": "ok", "projects": projects})
+    #@defer.inlineCallbacks
+    def create(self, request, project, spider, setting=[], **kwargs):
+        if project not in self.root.scheduler.list_projects():
+            return corepost.Response(404, entity="Not found",
+                 headers={"Content-Type":"text/plain"})
+        settings = request.args.get("setting", [])
+        if len(settings):
+            kwargs['settings'] = dict(x.split('=', 1) for x in settings)
+        jobid = uuid.uuid1().hex
+        kwargs['_job'] = jobid
+        self.root.scheduler.schedule(project, spider, **kwargs)
+        self.root.poller.poll()
+        return {"status": "ok", "jobid": jobid}
 
     #@route("/<pk>", Http.POST)
     #def update(self, request, pk, **kwargs):
