@@ -1,0 +1,103 @@
+ul#jobs li.job {
+	list-style-type: none;
+	padding: 5px 5px 10px 10px;
+}
+
+.job:nth-child(even) {
+	background-color: #f3f6fa;
+}
+
+.job:hover {
+	background-color: #f7f7f7;
+}
+
+/*
+If is selectable
+
+ul#jobs li.job:hover {
+	background-color: #f6fb5c;
+}
+ul#jobs li.job:selected {
+	background-color: #ababab;
+}
+
+
+*/
+
+ul.horizontal{
+	display: inline;
+	margin: 0 0 0 0px;
+	padding: 0;
+}
+
+ul.horizontal li
+{
+display: inline;
+list-style-type: none;
+padding-right: 2px;
+}
+
+.job_when {
+}
+
+.job_id {
+	font-size: small;
+	color: #686868;
+	margin-left: 10px;
+	display: inline-block;
+	text-align: left;
+}
+
+.job_id .clipboard {
+	cursor: pointer;
+}
+
+.job_project {
+	color: #888;
+	font-weight: normal;
+	font-style: normal;
+}
+
+.job_spider {
+	color: #4d4d4d;
+}
+
+.job_name {
+	padding: 0;
+	margin: 0;
+	font-weight: bold;
+	color: #404040;
+	text-align: left;
+}
+
+.job_status {
+	display: inline-block;
+	padding: 0;
+	margin: 0 0 0 10px;
+	text-align: left;
+}
+
+#job_options #id_poll_enabled {
+	display: inline;
+}
+
+.status .error {
+	color: #d8292c;
+}
+
+.status .connected {
+	color: #a1d387;
+}
+
+.status .initializing {
+	color: #d5ca71;
+}
+
+#initializing p {
+	display: inline-block;
+	width: 100px;
+	color: #3d3d3d;
+	font-size: medium;
+	margin-top: 20px;
+	margin-left: 20px;
+}
