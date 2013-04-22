@@ -7,6 +7,8 @@ import traceback
 import uuid
 from cStringIO import StringIO
 
+from scrapy.utils.misc import load_object
+
 HAS_JSON = False
 try:
     import json
@@ -318,10 +320,13 @@ class ScrapydResource(BaseRESTResource):
         BaseRESTResource.__init__(self, root, services=services, **kwargs)
 
 class ApiResource(resource.Resource):
+    name = "api_v1"
+    
     def __init__(self, root, **kwargs):
         resource.Resource.__init__(self, **kwargs)
-
         self.root = root
-        self.putChild('jobs', JobsResource(root))
-        self.putChild('server', ScrapydResource(root))
-        self.putChild('projects', ProjectsResource(root))
+        
+        for path, resource_class_name in \
+            root.config.items(kwargs.get("name", self.name), ()):
+          servCls = load_object(resource_class_name)
+          self.putChild(path, servCls(root))
