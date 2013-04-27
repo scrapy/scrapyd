@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en" ng-app="app">
+  <head>
+    <meta charset="utf-8">
+    <title>Scrapyd</title>
+    <meta name="description" content="Scrapy server">
+    <meta name="author" content="Jordi Llonch &lt;llonchj@gmail.com&gt;"><!-- Le styles -->
+
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet" type="text/css">
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+    <link href="styles.css" rel="stylesheet" type="text/css">
+
+    
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.1.4/angular.min.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.1.4/angular-resource.min.js" type="text/javascript"></script>
+    <!-- <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.1.4/angular-cookies.min.js" type="text/javascript"></script> -->
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js" type="text/javascript"></script>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/lang/ca.min.js" type="text/javascript"></script> -->
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/zeroclipboard/1.1.7/ZeroClipboard.min.js" type="text/javascript"></script> -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.3.1/jquery.cookie.min.js"></script>
+
+    <!-- Fav and touch icons -->
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-144-precomposed.png" sizes="144x144">
+    <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-114-precomposed.png" sizes="114x114">
+    <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-72-precomposed.png" sizes="72x72">
+    <link rel="apple-touch-icon-precomposed" href="/img/apple-touch-icon-57-precomposed.png">
+
+
+    <script type="text/javascript">
+
+    var app = angular.module('app', ['ngResource', /*'ngCookies'*/]);
+
+    app.filter('momentjs.fromNow', function() {
+      return function(dateString) {
+        return moment(new Date(dateString)).fromNow()
+      };
+    });
+    
+    app.filter('momentjs.format', function() {
+      return function(dateString) {
+        return moment(new Date(dateString)).format('LLLL')
+      };
+    });
+
+
+    function AppCtrl($scope, $timeout, $http/*, $cookieStore*/) {
+      /* settings */
+      $scope.settings = {
+        server: $.cookie('server') || document.location,
+        developer: $.cookie('developer') || false,
+        poll_enabled: $.cookie('poll_enabled') || true,
+        poll_every: $.cookie('poll_every') || 1.5,
+        page_size: $.cookie('page_size') || 30
+      };
+
+      $scope.$watch("settings", function(newval, oldval) { 
+        for(var attr in newval) {
+          var v = newval[attr];
+          if (v != oldval[attr]) {
+			  if($scope.settings.developer)
+				  console.log("Setting "+ attr + " to " + v);
+              $.cookie(attr, v, { expires: 365 * 10, path: '/' });
+          }
+        }
+      }, true);
+
+      $scope.jobs = [];
+      $scope.projects = [];
+      $scope.server = {};
+      $scope.error_every = null;
+      $scope.status = "initializing";
+      
+      $scope.cancel = function(job) {
+        // TODO change to RESTful
+        var url = '/api_v1/jobs/'+job.id;
+        $http.delete(url)
+          .success(
+            function(data) {
+  			  if($scope.settings.developer)
+  				  console.log("ok " + JSON.stringify(data));
+              if (data.status == "ok") {
+                $scope.poll()
+              }
+            }
+          ).error(
+              function(data, status) {
+  			  if($scope.settings.developer)
+  				  console.log("error " + status + " " + JSON.stringify(data));
+            }
+          );
+      }
+      
+      $scope.poll = function(manual) {
+        if ($scope.settings.poll_enabled) {
+          $http.get($scope.settings.server + '/api_v1/jobs/')
+            .success(
+              function(data) {
+	  			  if($scope.settings.developer)
+	  				  console.log("ok " + JSON.stringify(data));
+                  $scope.jobs = data.jobs;
+                  
+                  if($scope.status != "connected") {
+                    $scope.status = "connected";
+                    $scope.error_every = null;
+                  }
+                  $timeout($scope.poll, $scope.settings.poll_every * 1000);
+                }
+            ).error(
+                function(data, status) {
+    			  if($scope.settings.developer)
+    				  console.log("error " + status + " " + JSON.stringify(data));
+                  if($scope.status != "error") {
+                    $scope.error_every = .5;
+                    $scope.status = "error";
+                  } else if(!manual && $scope.error_every) {
+                    $scope.error_every *= 2;
+                  }
+                  $timeout($scope.poll, 
+                      ($scope.error_every || $scope.settings.poll_every) * 1000);
+                }
+            );
+        }
+      }
+      $scope.poll();
+
+      $http.get($scope.settings.server + '/api_v1/server/').
+	  	success(function(data) {
+		  if($scope.settings.developer)
+			  console.log("ok " + JSON.stringify(data));
+        	$scope.server = data.server;
+        });
+
+    }
+
+    // app.controller('AppCtrl', AppCtrl);
+    
+    </script>
+    
+  </head>
+  <body ng-controller="AppCtrl">
+    <noscript>
+      <div class="container" style="padding-top:100px;">
+          <div class="row">
+            <div class="hero-unit" ng:hide="jobs.length > 0">
+              <h1>Enable Javascript</h1>
+              <p>Enable Javascript and reload the page to continue.</p>
+              <p>
+                <a class="btn btn-primary btn-large" 
+                    target="_new" href="http://www.enable-javascript.com/">
+                  Learn more
+                </a>
+              </p>
+            </div>
+          </div>
+      </div>
+    </noscript>
+    
+    <div id="initializing" ng:hide="status !='initializing'" style="display:none;">
+      <p>{{status}} ...</p>
+    </div>
+
+    <div ng:hide="status =='initializing'" style="display:none;">
+      
+      <div  class="navbar navbar-inverse navbar-static-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="brand" href="#">Scrapyd</a>
+            <ul class="nav">
+              <li><a href="{{settings.server}}/logs"><i class="icon-book icon-white"></i> Logs</a></li>
+              <li><a href="{{settings.server}}/items"><i class="icon-file icon-white"></i> Items</a></li>
+            </ul>
+            <ul class="nav pull-right">
+              <li><a href="#settings" data-toggle="modal">Settings</a></li>
+              <li><a href="https://scrapyd.readthedocs.org/en/latest/" target="_new"><i class="icon-question-sign icon-white"></i></a></li>
+              <li class="status"><a href=""><span class="{{status}}">{{status}}</span></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="container" style="padding-top:10px;">
+          <div class="row">
+
+            <div ng:hide="status != 'error'" id="connection_error" class="alert alert-error">
+              <strong>Connection lost</strong>. Next automatic retry in <strong>{{error_every}}</strong> seconds. <a href="" ng-click="poll(true)" class="pull-right">Retry now</a>
+            </div>
+
+            <!-- Modal -->
+            <div id="settings" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Settings</h3>
+              </div>
+              <div class="modal-body">
+              
+                  <label class="checkbox pull-right"><small>
+                    <input type="checkbox" ng-model="settings.developer" 
+						ng-checked="settings.developer" name="settings.developer" id="id_settings__developer">
+                    Developer mode</small>
+                  </label>
+
+	              <label for="id_settings__server">Server</label>
+	              <input id="id_settings__server" type="text" class="input" ng-model="settings.server">
+
+                  <label class="checkbox">
+                    <input type="checkbox" ng-model="settings.poll_enabled" 
+						ng-checked="settings.poll_enabled" name="settings.poll_enabled" id="id_settings__poll_enabled">
+                    Update...
+                  </label> 
+
+                  <label for="id_settings.poll_every">Every</label>
+                  <input id="id_settings.poll_every" type="text" class="input-mini" ng-model="settings.poll_every"> sec.
+                  
+                  <label for="id_settings.page_size">Page Size</label>
+                  <input id="id_settings.page_size" type="text" class="input-mini" ng-model="settings.page_size">
+
+              </div>
+              <!-- 
+              <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+                <button class="btn btn-primary" ng-click="storeSettings()">Save changes</button>
+              </div>-->
+            </div>
+          </div>
+
+          <div class="row">
+
+              <div class="hero-unit" ng:hide="jobs.length > 0" style="display:none">
+                <h1>Submit your crawl</h1>
+                <p>There are no crawl jobs, submit one.</p>
+                <p>
+                  <a class="btn btn-primary btn-large pull-right" 
+                      target="_new" href="http://doc.scrapy.org/en/latest/topics/scrapyd.html#scheduling-a-spider-run">
+                    Learn more
+                  </a>
+                </p>
+              </div>
+
+              <h1 ng:hide="jobs.length == 0">
+                  Jobs
+                  <!-- <small><strong>job_count</strong> Workers: <strong>34</strong></small> -->
+              </h1>
+              <ul ng:hide="jobs.length == 0" style="" id="jobs" class="zebra span12">
+                <li ng-repeat="job in jobs" class="job">
+        
+                    <a ng:hide="job.status == 'finished'" href="" ng-click="cancel(job)" class="close pull-right" title="Cancel job">&times;</a>
+
+                    <h2 class="job_name">
+                      <a href="#/api/{{job.project}}/{{job.spider}}" target="Go to project">
+                        <span class="job_project">{{job.project}}.</span><span class="job_spider">{{job.spider}}</span>
+                      </a>
+                      <!-- <small>Description</small> -->
+                    </h2>
+
+                    <span class="job_id">
+                      <span class="clipboard">{{job.id}}</span>
+                      <ul class="job_options horizontal">
+                        <li ng:hide="job.status == 'pending'"><a class="icon-book" title="Logs" href="/logs/{{job.project}}/{{job.spider}}/{{job.id}}.log"></a></li>
+                        <li ng:hide="job.status == 'pending'"><a class="icon-file" title="Items" href="/items/{{job.project}}/{{job.spider}}/{{job.id}}.jl"></a></li>
+                      </ul>
+                    </span>
+        
+                    <span class="job_status">
+                      <span class="job_when">
+                        <span ng:hide="job.status != 'pending'" class="label">Scheduled</span>
+                        <span ng:hide="job.status != 'running'" class="label label-info">Started</span>
+                        <span ng:hide="job.status != 'finished'" class="label label-success">Finished</span>
+            
+                        <span class="job_time date" ng:hide="settings.developer">{{job.start_time|momentjs.fromNow}}</span>
+                        <span class="job_time date" ng:hide="!settings.developer">{{job.start_time|momentjs.format}}</span>
+
+                      </span>
+                    </span>
+
+                </li>
+              </ul>
+          </div>
+
+        </div><!-- /container -->
+
+        <div class="navbar navbar-fixed-bottom">
+          <ul class="nav pull-right">
+            <li><a href="http://www.scrapy.org/" target="_new"><small>Scrapyd/{{server.version}}</small></a></li>
+          </ul>
+        </div>
+
+    </div>
+  </body>
+</html>
