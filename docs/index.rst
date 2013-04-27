@@ -630,6 +630,16 @@ Example response::
 
     {"status": "ok"}
 
+Release notes
+=============
+
+.. toctree::
+   :hidden:
+
+   news
+
+See :ref:`news`.
+
 .. _Python egg: http://peak.telecommunity.com/DevCenter/PythonEggs
 .. _setup.py: http://docs.python.org/distutils/setupscript.html
 .. _curl: http://en.wikipedia.org/wiki/CURL
