@@ -2,10 +2,8 @@ import traceback
 import uuid
 from cStringIO import StringIO
 
-from twisted.python import log
-
 from scrapy.utils.txweb import JsonResource
-from .utils import get_spider_list
+from scrapyd.utils import get_spider_list
 
 class WsResource(JsonResource):
 
@@ -35,6 +33,7 @@ class Schedule(WsResource):
         jobid = uuid.uuid1().hex
         args['_job'] = jobid
         self.root.scheduler.schedule(project, spider, **args)
+        self.root.poller.poll()
         return {"status": "ok", "jobid": jobid}
 
 class Cancel(WsResource):
@@ -93,7 +92,7 @@ class ListJobs(WsResource):
     def render_GET(self, txrequest):
         project = txrequest.args['project'][0]
         spiders = self.root.launcher.processes.values()
-        running = [{"id": s.job, "spider": s.spider} for s in spiders if s.project == project]
+        running = [{"id": s.job, "spider": s.spider, "start_time": s.start_time.isoformat(' ')} for s in spiders if s.project == project]
         queue = self.root.poller.queues[project]
         pending = [{"id": x["_job"], "spider": x["name"]} for x in queue.list()]
         finished = [{"id": s.job, "spider": s.spider,
@@ -120,3 +119,12 @@ class DeleteVersion(DeleteProject):
         version = txrequest.args['version'][0]
         self._delete_version(project, version)
         return {"status": "ok"}
+
+class Status(WsResource):
+    def render_GET(self, txrequest):
+        projects = {}
+        for project in self.root.scheduler.list_projects():
+            spiders = get_spider_list(project, runner=self.root.runner)
+            versions = self.root.eggstorage.list(project)
+            projects[project] = {"spiders": spiders, "versions": versions}
+        return {"status": "ok", "projects":projects}
