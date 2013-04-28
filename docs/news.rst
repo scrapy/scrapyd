@@ -7,6 +7,8 @@ Release notes
 -------------------
 
 - forked out of Scrapy
+- redesigned web interface
+- RESTful api.
 
 0.16.0 (released 2012-10-18)
 ----------------------------

@@ -1,0 +1,52 @@
+<div class="row">
+
+    <div class="hero-unit" ng:hide="jobs.length > 0" style="display:none">
+      <h1>Submit your crawl</h1>
+      <p>There are no crawl jobs, submit one.</p>
+      <p>
+        <a class="btn btn-primary btn-large pull-right" 
+            target="_new" href="http://doc.scrapy.org/en/latest/topics/scrapyd.html#scheduling-a-spider-run">
+          Learn more
+        </a>
+      </p>
+    </div>
+
+    <h1 ng:hide="jobs.length == 0">
+        Jobs
+        <!-- <small><strong>job_count</strong> Workers: <strong>34</strong></small> -->
+    </h1>
+    <ul ng:hide="jobs.length == 0" style="" id="jobs" class="zebra span12">
+      <li ng-repeat="job in jobs" class="job">
+        
+          <a ng:hide="job.status == 'finished'" href="" ng-click="cancel(job)" class="close pull-right" title="Cancel job">&times;</a>
+
+          <h2 class="job_name">
+            <a href="#/api/{{job.project}}/{{job.spider}}" target="Go to project">
+              <span class="job_project">{{job.project}}.</span><span class="job_spider">{{job.spider}}</span>
+            </a>
+            <!-- <small>Description</small> -->
+          </h2>
+
+          <span class="job_id">
+            <span class="clipboard">{{job.id}}</span>
+            <ul class="job_options horizontal">
+              <li ng:hide="job.status == 'pending'"><a class="icon-book" title="Logs" href="/logs/{{job.project}}/{{job.spider}}/{{job.id}}.log"></a></li>
+              <li ng:hide="job.status == 'pending'"><a class="icon-file" title="Items" href="/items/{{job.project}}/{{job.spider}}/{{job.id}}.jl"></a></li>
+            </ul>
+          </span>
+        
+          <span class="job_status">
+            <span class="job_when">
+              <span ng:hide="job.status != 'pending'" class="label">Scheduled</span>
+              <span ng:hide="job.status != 'running'" class="label label-info">Started</span>
+              <span ng:hide="job.status != 'finished'" class="label label-success">Finished</span>
+            
+              <span class="job_time date" ng:hide="settings.technical">{{job.start_time|momentjs.fromNow}}</span>
+              <span class="job_time date" ng:hide="!settings.technical">{{job.start_time|momentjs.format}}</span>
+
+            </span>
+          </span>
+
+      </li>
+    </ul>
+</div>
