@@ -6,10 +6,11 @@
 Scrapyd
 =======
 
-Scrapyd is a service for Scrapy to deploy (aka. upload) your 
+Scrapyd is a service for `Scrapy <http://www.scrapy.org>`_ to deploy (aka. upload) your 
 projects and schedule and manage crawls. Typically run as a daemon.
 
-Contents:
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2

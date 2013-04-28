@@ -1,7 +1,8 @@
 .. _topics-scrapyd-restapi:
 
+##################
 REST API reference
-==================
+##################
 
 .. versionadded:: 0.18
 
@@ -12,77 +13,142 @@ This API follows CRUD standard and provides endpoints for `server`_, `projects`_
 Responses can be returned in JSON, XML and YAML. JSON is returned
 unless stated in the `Accept` request header.
 	
-All results are JSON (`Accept: application/json`)::
+All returned results are JSON::
 
-	$ curl -v -X GET http://localhost:6800/api_v1/server/ -H 'Accept: text/json'
+	$ curl http://localhost:6800/api_v1/server/
 
-For XML result send `Accept: text/xml`, this is the standard in most browsers::
+Example response::
+	
+	{"status": "ok", "server": {"version": "0.17.1"}}	
 
-	$ curl -v -X GET http://localhost:6800/api_v1/server/ -H 'Accept: text/xml'
+To implicitly specify JSON as result format, send ``Accept: application/json`` in your request headers, like in ``curl http://localhost:6800/api_v1/server/ -H 'Accept: text/json'``.
 
-For YAML result, send `Accept: text/yaml` request header::
+For XML result send ``Accept: text/xml``, this is the standard in most browsers::
 
-	$ curl -v -X GET http://localhost:6800/api_v1/server/ -H 'Accept: text/yaml'
+	$ curl http://localhost:6800/api_v1/server/ -H 'Accept: text/xml'
 
-Server
-------
+Example response::
 
-Provides information about Scrapyd::
+	<item><status>ok</status><server><version>0.17.1</version></server></item>
 
-	$ curl -v -X GET http://localhost:6800/api_v1/server/
+For YAML result, send ``Accept: text/yaml`` request header::
 
-returns::
+	$ curl http://localhost:6800/api_v1/server/ -H 'Accept: text/yaml'
+
+Example response::
+
+	server: {version: 0.17.1}
+	status: ok
+
+.. warning:: A web browser will possibly return XML format because the presence of xml in ``Accept`` header.
+
+.. _server:
+
+Status of the server
+--------------------
+
+To obtain information about the server, send a ``GET`` request to ``/api_v1/server/``::
+
+	$ curl http://localhost:6800/api_v1/server/
+
+and the returning information will be similar to::
 
 	{"status": "ok", "server": {"version": "0.18"}}
 
-Projects
---------
+.. _projects:
 
-To add a new project, equivalent to `scrapy deploy`::
+Add a new project
+-----------------
 
-	$ curl -v -X PUT http://localhost:6800/api_v1/projects/ -F project=myproject -F version=r23 -F egg=@myproject.egg
+To add a new project, equivalent to ``scrapy deploy``, send a ``PUT`` request to 
+``/api_v1/projects/`` with the parameters:
 
-To get a list of all projects, versions and spiders::
+* ``project`` - the project name
+* ``version`` - the project version
+* ``egg`` - a file containing a Python egg with the project's code.
 
-	$ curl -v -X GET http://localhost:6800/api_v1/projects/
+Example::
 
-To get information of a specific project versions and spiders::
+	$ curl -X PUT http://localhost:6800/api_v1/projects/ -F project=myproject -F version=r23 -F egg=@myproject.egg
 
-	$ curl -v -X GET http://localhost:6800/api_v1/projects/<PROJECT>
+List existing projects
+----------------------
 
-*Where `<PROJECT>` is the name of the project to get the information.*
+To retrieve a list of all projects, versions and spiders, send a ``GET`` request to ``/api_v1/projects/``::
 
-To get information of a project versions::
+	$ curl http://localhost:6800/api_v1/projects/
 
-	$ curl -v -X GET http://localhost:6800/api_v1/projects/<PROJECT>/versions
+Get project versions and spiders
+--------------------------------
 
-To get information of a project spiders::
+To obtain information of a specific project versions and spiders, 
+send a ``GET`` request to ``/api_v1/projects/<PROJECT>``, where ``<PROJECT>`` 
+is the name of the project to get the information.
 
-	$ curl -v -X GET http://localhost:6800/api_v1/projects/<PROJECT>/spiders
+The following example will retrieve information on ``my_project``::
 
-To delete an existing project and all versions::
+	$ curl http://localhost:6800/api_v1/projects/my_project
 
-	$ curl -v -X DELETE http://localhost:6800/api_v1/projects/<PROJECT>
 
-To delete a specific version of an existing project::
+Delete a project
+----------------
 
-	$ curl -v -X DELETE http://localhost:6800/api_v1/projects/<PROJECT>/<VERSION>
+To delete an existing project and all versions, send a ``DELETE`` request
+to ``/api_v1/projects/<PROJECT>``, where ``<PROJECT>`` 
+is the name of the project to delete::
 
-*Where `<PROJECT>` is the name of the project and `<VERSION>` the version to delete.*
+	$ curl -X DELETE http://localhost:6800/api_v1/projects/my_project
 
-Jobs
-----
 
-To schedule a new job::
+Delete a version of a project
+-----------------------------
 
-	$ curl -v -X PUT http://localhost:6800/api_v1/jobs/ -F project=myproject -F spider=myspider
+To delete a specific version of an existing project, send a ``DELETE`` request
+to ``/api_v1/projects/<PROJECT>/<VERSION>``, where ``<PROJECT>`` is the name 
+of the project and ``<VERSION>`` the version to delete::
 
-To get a list of all jobs::
+	$ curl -X DELETE http://localhost:6800/api_v1/projects/my_project/my_version
 
-	$ curl -v -X GET http://localhost:6800/api_v1/jobs/
+.. _jobs:
 
-To cancel a scheduled or running job::
+Schedule a job
+--------------
 
-	$ curl -v -X DELETE http://localhost:6800/api_v1/jobs/<JOB>
+To schedule a new job, send a ``PUT`` request to ``/api_v1/jobs/`` with 
+the following parameters:
 
-*Where `<JOB>` is the id of the job to cancel.*
+  * ``project`` (string, required) - the project name
+  * ``spider`` (string, required) - the spider name
+  * ``setting`` (string, optional) - a scrapy setting to use when running the spider
+  * any other parameter is passed as spider argument
+
+Schedule xample::
+
+	$ curl -X PUT http://localhost:6800/api_v1/jobs/ -F project=myproject -F spider=myspider
+
+List jobs
+---------
+
+To get a list of all jobs, send a ``GET`` request to ``/api_v1/jobs/``::
+
+	$ curl http://localhost:6800/api_v1/jobs/
+
+Cancel a job
+------------
+
+To cancel a scheduled or running job, send a ``DELETE`` request 
+to ``/api_v1/jobs/<JOB>`` where ``<JOB>`` is the Job ID.
+
+Cancel example::
+
+	$ curl -X DELETE http://localhost:6800/api_v1/jobs/<JOB>
+
+
+Extending REST Api
+------------------
+
+It is possible to create new REST functionalities to Scrapyd by adding 
+a valid resource to ``api_v1`` section in ``scrapyd.conf``, for more 
+information read the :ref:`topics-scrapyd-config-example`.
+
+
