@@ -31,6 +31,9 @@ class Schedule(WsResource):
         args = dict((k, v[0]) for k, v in txrequest.args.items())
         project = args.pop('project')
         spider = args.pop('spider')
+        spiders = get_spider_list(project)
+        if not spider in spiders:
+            return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         jobid = uuid.uuid1().hex
         args['_job'] = jobid
