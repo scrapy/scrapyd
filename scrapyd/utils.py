@@ -13,7 +13,7 @@ class UtilsCache:
     invalid_cached_projects = []
 
     def __init__(self):
-        self.cache_manager = JsonSqliteDict(table="utils_cache_manager")    
+        self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
 
     # Invalid the spider's list's cache of a given project (by name)
     @staticmethod
@@ -22,7 +22,8 @@ class UtilsCache:
 
     def __getitem__(self, key):
         for p in UtilsCache.invalid_cached_projects:
-            del self.cache_manager[p]
+            if p in self.cache_manager:
+                del self.cache_manager[p]
             UtilsCache.invalid_cached_projects.remove(p)
         return self.cache_manager[key]
 
@@ -93,5 +94,5 @@ def get_spider_list(project, runner=None, pythonpath=None):
         raise RuntimeError(msg.splitlines()[-1])
     tmp = out.splitlines();
     get_spider_list.cache[project] = tmp
-    return tmp 
+    return tmp
 
