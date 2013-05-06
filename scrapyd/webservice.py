@@ -5,7 +5,7 @@ from cStringIO import StringIO
 from twisted.python import log
 
 from scrapy.utils.txweb import JsonResource
-from .utils import get_spider_list
+from .utils import get_spider_list, UtilsCache
 
 class WsResource(JsonResource):
 
@@ -68,6 +68,7 @@ class AddVersion(WsResource):
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project)
         self.root.update_projects()
+        UtilsCache.invalid_cache(project)
         return {"status": "ok", "project": project, "version": version, \
             "spiders": len(spiders)}
 
