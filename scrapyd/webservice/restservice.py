@@ -139,15 +139,19 @@ class JobsRESTService(BaseRESTService):
 
     @route("/", Http.PUT)
     #@defer.inlineCallbacks
-    def put(self, request, project, spider, setting=[], **kwargs):
+    def put(self, request, project, spider, version=None, setting=[], **kwargs):
         if project not in self.root.scheduler.list_projects():
             return corepost.Response(404, entity="Not found",
                  headers={"Content-Type":"text/plain"})
+
         settings = request.args.get("setting", [])
         if len(settings):
             kwargs['settings'] = dict(x.split('=', 1) for x in settings)
+
         jobid = uuid.uuid1().hex
         kwargs['_job'] = jobid
+        if version:
+            kwargs['version'] = version
         self.root.scheduler.schedule(project, spider, **kwargs)
         self.root.poller.poll()
         return {"status": "ok", "jobid": jobid}
