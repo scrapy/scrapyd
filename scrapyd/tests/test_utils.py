@@ -1,4 +1,4 @@
-import os
+import sys, os
 from pkgutil import get_data
 from cStringIO import StringIO
 
@@ -8,6 +8,12 @@ from scrapy.utils.test import get_pythonpath
 from scrapyd.interfaces import IEggStorage
 from scrapyd.utils import get_crawl_args, get_spider_list
 from scrapyd import get_application
+
+def get_pythonpath_scrapyd():
+    sep = ';' if sys.platform == 'win32' else ':'
+    scrapyd_path = __import__('scrapyd').__path__[0]
+    return os.path.dirname(scrapyd_path) + sep + get_pythonpath() + sep + os.environ.get('PYTHONPATH', '')
+
 
 class UtilsTest(unittest.TestCase):
 
@@ -44,8 +50,8 @@ class GetSpiderListTest(unittest.TestCase):
             f.write("logs_dir = %s\n" % logs_dir)
         app = get_application()
         eggstorage = app.getComponent(IEggStorage)
-        eggfile = StringIO(get_data(__package__, 'mybot.egg'))
+        eggfile = StringIO(get_data("scrapyd.tests", 'mybot.egg'))
         eggstorage.put(eggfile, 'mybot', 'r1')
-        spiders = get_spider_list('mybot', pythonpath=get_pythonpath())
+        spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
 
