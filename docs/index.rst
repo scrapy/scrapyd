@@ -220,6 +220,11 @@ includes logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
 
+poll_interval
+-------------
+
+The interval used to poll queues, in seconds. Defaults to ``5``.
+
 runner
 ------
 
