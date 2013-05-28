@@ -10,9 +10,8 @@ from scrapyd.utils import get_crawl_args, get_spider_list
 from scrapyd import get_application
 
 def get_pythonpath_scrapyd():
-    sep = ';' if sys.platform == 'win32' else ':'
     scrapyd_path = __import__('scrapyd').__path__[0]
-    return os.path.dirname(scrapyd_path) + sep + get_pythonpath() + sep + os.environ.get('PYTHONPATH', '')
+    return os.path.dirname(scrapyd_path) + os.pathsep + get_pythonpath() + os.pathsep + os.environ.get('PYTHONPATH', '')
 
 
 class UtilsTest(unittest.TestCase):
