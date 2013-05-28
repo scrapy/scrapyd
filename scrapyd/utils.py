@@ -24,8 +24,7 @@ def get_project_list(config):
     """
     eggs_dir = config.get('eggs_dir', 'eggs')
     if os.path.exists(eggs_dir):
-        projects = [path for path in os.listdir(eggs_dir)
-             if os.path.isdir(path) and not path.startswith(".")]
+        projects = os.listdir(eggs_dir)
     else:
         projects = []
     try:
