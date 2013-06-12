@@ -24,7 +24,7 @@ class UtilsCache:
         for p in UtilsCache.invalid_cached_projects:
             if p in self.cache_manager:
                 del self.cache_manager[p]
-            UtilsCache.invalid_cached_projects.remove(p)
+        UtilsCache.invalid_cached_projects[:] = []
         return self.cache_manager[key]
 
     def __setitem__(self, key, value):
