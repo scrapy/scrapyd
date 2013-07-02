@@ -17,8 +17,10 @@ class Root(resource.Resource):
         itemsdir = config.get('items_dir')
         self.app = app
         self.putChild('', Home(self))
-        self.putChild('logs', static.File(logsdir, 'text/plain'))
-        self.putChild('items', static.File(itemsdir, 'text/plain'))
+        if logsdir:
+            self.putChild('logs', static.File(logsdir, 'text/plain'))
+        if itemsdir:
+            self.putChild('items', static.File(itemsdir, 'text/plain'))
         self.putChild('jobs', Jobs(self))
         services = config.items('services', ())
         for servName, servClsName in services:
