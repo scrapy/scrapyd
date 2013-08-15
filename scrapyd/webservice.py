@@ -30,7 +30,7 @@ class Schedule(WsResource):
     def __init__(self, root):
         WsResource.__init__(self, root)
         self.config = Config()
-        self.client = redis.StrictRedis(host=self.config.get('redis_url'), port=self.config.get('redis_port'), db=0)
+        self.client = redis.StrictRedis(host=self.config.get('redis_url'), port=int(self.config.get('redis_port')), db=0)
 
     def render_POST(self, txrequest):
         settings = txrequest.args.pop('setting', [])
