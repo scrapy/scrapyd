@@ -1,7 +1,5 @@
 import traceback
 import uuid
-import redis
-from scrapyd.config import Config
 from cStringIO import StringIO
 
 from twisted.python import log
@@ -27,11 +25,6 @@ class WsResource(JsonResource):
 
 class Schedule(WsResource):
 
-    def __init__(self, root):
-        WsResource.__init__(self, root)
-        self.config = Config()
-        self.client = redis.StrictRedis(host=self.config.get('redis_url'), port=int(self.config.get('redis_port')), db=0)
-
     def render_POST(self, txrequest):
         settings = txrequest.args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
@@ -42,7 +35,6 @@ class Schedule(WsResource):
         jobid = uuid.uuid1().hex
         args['_job'] = jobid
         self.root.scheduler.schedule(project, spider, **args)
-        self.client.publish('probate.scrapy.jobs', args);
         return {"status": "ok", "jobid": jobid}
 
 class Cancel(WsResource):

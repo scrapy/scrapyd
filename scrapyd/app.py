@@ -1,17 +1,18 @@
 from twisted.application.service import Application
-from twisted.application.internet import TimerService, TCPServer
+from twisted.application.internet import TimerService, TCPServer, TCPClient
+from twisted.internet.protocol import ClientCreator
 from twisted.web import server
 from twisted.python import log
 
 from scrapy.utils.misc import load_object
 
-from .interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment
+from .interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment, IPubSub
 from .eggstorage import FilesystemEggStorage
 from .scheduler import SpiderScheduler
 from .poller import QueuePoller
 from .environ import Environment
+from scrapyd.txredis import ScrapyRedisSubscriberFactory
 from .website import Root
-from .config import Config
 
 def application(config):
     app = Application("Scrapyd")
@@ -24,10 +25,16 @@ def application(config):
     scheduler = SpiderScheduler(config)
     environment = Environment(config)
 
+
+    #pubSubPath = config.get('pubSub', 'scrapyd.pubsub.PubSub')
+    #pubSubCls = load_object(pubSubPath)
+    #pubSub = pubSubCls(config, app)
+
     app.setComponent(IPoller, poller)
     app.setComponent(IEggStorage, eggstorage)
     app.setComponent(ISpiderScheduler, scheduler)
     app.setComponent(IEnvironment, environment)
+    #app.setComponent(IPubSub, pubSub)
 
     laupath = config.get('launcher', 'scrapyd.launcher.Launcher')
     laucls = load_object(laupath)
@@ -41,5 +48,8 @@ def application(config):
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)
+
+    redisservice = TCPClient('localhost', 6379, ScrapyRedisSubscriberFactory)
+    redisservice.setServiceParent(app)
 
     return app

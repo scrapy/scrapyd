@@ -107,3 +107,12 @@ class IEnvironment(Interface):
         `message` is the message received from the IPoller.next() method
         `slot` is the Launcher slot where the process will be running.
         """
+
+class IPubSub(Interface):
+    def subscribe(self, topic, callback):
+        """setup a subscription to a topic
+           `callback` is called when a message is published to the topic """
+
+    def publish(self, topic, event):
+        """ send an event to a topic
+        """
