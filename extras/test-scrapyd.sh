@@ -20,7 +20,7 @@ scrapy_dir=$(mktemp /tmp/test-scrapy.XXXXXXX -d)
 echo "scrapyd dir: $scrapyd_dir"
 echo "scrapy dir : $scrapy_dir"
 
-twistd -ny extras/scrapyd.tac -d $scrapyd_dir -l $scrapyd_log &
+bin/scrapyd -d $scrapyd_dir -l $scrapyd_log &
 
 cd $scrapy_dir
 scrapy startproject testproj

@@ -48,11 +48,10 @@ Starting from 0.11, Scrapyd also provides a minimal :ref:`web interface
 Starting Scrapyd
 ================
 
-Scrapyd is implemented using the standard `Twisted Application Framework`_. To
-start the service, use the ``extras/scrapyd.tac`` file provided in the Scrapy
-distribution, like this::
+To start the service, use the ``scrapyd`` command provided in the Scrapy
+distribution::
 
-    twistd -ny extras/scrapyd.tac
+    scrapyd
 
 That should get your Scrapyd started.
 
