@@ -109,10 +109,12 @@ class IEnvironment(Interface):
         """
 
 class IPubSub(Interface):
-    def subscribe(self, topic, callback):
-        """setup a subscription to a topic
-           `callback` is called when a message is published to the topic """
+    def subscribe(channel, callback):
+        """ setup a subscription to a channel
+           `callback` is called when a message is published to the channel """
 
-    def publish(self, topic, event):
-        """ send an event to a topic
-        """
+    def publish(channel, message):
+        """ send an message to a channel  """
+
+    def unsubscribe(channel, callback):
+        """ remove the callback from the channel """
