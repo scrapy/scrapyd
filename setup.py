@@ -102,6 +102,7 @@ setup_args = {
     'packages': packages,
     'cmdclass': cmdclasses,
     'data_files': data_files,
+    'scripts': ['bin/scrapyd'],
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
@@ -115,11 +116,6 @@ setup_args = {
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Internet :: WWW/HTTP',
     ],
-    'entry_points':{
-        'console_scripts':[
-            'scrapyd = scrapyd.script:execute',
-        ]
-    },
 }
 
 try:
