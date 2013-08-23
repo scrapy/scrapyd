@@ -1,5 +1,5 @@
-scrapyd-SUFFIX (SUFFIX) unstable; urgency=low
+scrapyd (1.0) unstable; urgency=low
 
   * Initial release.
 
- -- Scrapinghub Team <info@scrapinghub.com>  Thu, 10 Jun 2010 17:24:02 -0300
+ -- Scrapinghub Team <info@scrapinghub.com>  Fri, 23 Aug 2013 17:24:02 -0300

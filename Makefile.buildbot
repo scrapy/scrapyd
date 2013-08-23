@@ -13,6 +13,8 @@ test:
 
 build:
 	python extras/makedeb.py build
+	debchange -m -D unstable --force-distribution -v $(python setup.py --version)+$(date +%s) "Automatic build"
+	debuild -us -uc -b
 
 clean:
 	git checkout debian scrapyd/VERSION

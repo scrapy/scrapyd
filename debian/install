@@ -1,1 +1,1 @@
-debian/scrapyd-files/000-default etc/scrapyd/conf.d
+debian/000-default etc/scrapyd/conf.d
