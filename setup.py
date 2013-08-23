@@ -15,6 +15,7 @@ setup_args = {
     'license': 'BSD',
     'packages': ['scrapyd'],
     'scripts': ['bin/scrapyd'],
+    'include_package_data': True,
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
