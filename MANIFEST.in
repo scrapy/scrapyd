@@ -5,5 +5,5 @@ include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
 recursive-include scrapyd/tests *.egg
 recursive-include docs *
-prune docs/build
+prune docs/_build
 recursive-include extras *
