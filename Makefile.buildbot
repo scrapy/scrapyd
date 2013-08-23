@@ -1,8 +1,8 @@
 TRIAL := $(shell which trial)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-ifeq ($(BRANCH),master)
-export SCRAPY_VERSION_FROM_GIT=1
-endif
+VERSION := $(shell python setup.py --version)
+REVC := $(shell git rev-list --count HEAD)
+TS := $(shell date +%s)
 export PYTHONPATH=$(PWD)
 
 test:
@@ -12,8 +12,8 @@ test:
 	extras/test-scrapyd.sh
 
 build:
-	python extras/makedeb.py build
-	debchange -m -D unstable --force-distribution -v $(python setup.py --version)+$(date +%s) "Automatic build"
+	echo "$(VERSION)" > scrapyd/VERSION
+	debchange -m -D unstable --force-distribution -v $(VERSION)~r$(REVC)+$(TS) "Automatic build"
 	debuild -us -uc -b
 
 clean:

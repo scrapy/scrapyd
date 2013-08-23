@@ -1,12 +1,6 @@
-import os
-from subprocess import Popen, PIPE
+from os.path import join, dirname
 
-if os.environ.get('SCRAPY_VERSION_FROM_GIT'):
-    v = Popen("git describe", shell=True, stdout=PIPE).communicate()[0]
-    with open('scrapyd/VERSION', 'w+') as f:
-        f.write(v.strip())
-
-with open(os.path.join(os.path.dirname(__file__), 'scrapyd/VERSION')) as f:
+with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
     version = f.read().strip()
 
 setup_args = {
