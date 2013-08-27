@@ -21,6 +21,10 @@ class Launcher(Service):
     json_encoder = json.JSONEncoder()
 
     def __init__(self, config, app):
+        channel_config = config.items('channels')
+        for name, channel in channel_config:
+            if name == 'pub.launcher.channel':
+                self.channel = channel
         self.processes = {}
         self.finished = []
         self.finished_to_keep = config.getint('finished_to_keep', 100)
@@ -83,8 +87,8 @@ class Launcher(Service):
             'job': process.job,
             'log': process.logfile,
             'items': process.itemsfile,
-            'end_time': process.end_time.strftime('%b %d, %Y %H:%M:%S:%f') if process.end_time is not None else '',
-            'start_time': process.start_time.strftime('%b %d, %Y %H:%M:%S:%f')
+            'end_time': process.end_time.isoformat(' ') if process.end_time is not None else '',
+            'start_time': process.start_time.isoformat(' ')
         }
         self.pubsub.publish(self.channel, self.json_encoder.encode(message))
 

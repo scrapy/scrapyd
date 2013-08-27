@@ -1,6 +1,5 @@
 __author__ = 'drankinn'
 
-from twisted.internet import protocol, reactor
 from txredis import RedisSubscriber, RedisSubscriberFactory, RedisClient, RedisClientFactory
 from twisted.application.internet import TCPClient
 from scrapyd.pubsub.pubsub import BasePubSub
@@ -105,6 +104,7 @@ class RedisPubSub(BasePubSub):
         self.client = protocol
         self.client_active = True
         self.emptyPublishQueue()
+        self.registerNode()
 
     def clientConnectionLost(self):
         self.client_active = False
@@ -141,3 +141,4 @@ class RedisPubSub(BasePubSub):
             for node in self.pubQueue:
                 self.publish(node['channel'], node['event'])
             self.pubQueue = []
+
