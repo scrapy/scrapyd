@@ -1,11 +1,9 @@
 *.pyc
 _trial_temp
-dropin.cache
 docs/_build
 *egg-info
 .tox
 .coverage
 venv
-
 dist
 build
