@@ -68,7 +68,7 @@ url = http://localhost:6800/
 project = testproj
 !
 
-scrapy deploy
+scrapyd-deploy
 
 curl -s http://localhost:6800/schedule.json -d project=testproj -d spider=insophia -d arg=SOME_ARGUMENT
 

@@ -26,7 +26,7 @@ Show and define targets
 
 To see all available targets type::
 
-    scrapy deploy -l
+    scrapyd-deploy -l
 
 This will return a list of available targets and their URLs. For example::
 
@@ -46,7 +46,7 @@ through HTTP basic authentication::
 
 .. note:: The `deploy command`_ also supports netrc for getting the credentials.
 
-Now, if you type ``scrapy deploy -l`` you'll see::
+Now, if you type ``scrapyd-deploy -l`` you'll see::
 
     scrapyd              http://localhost:6800/
     scrapyd2             http://scrapyd.mydomain.com/api/scrapyd/
@@ -56,7 +56,7 @@ See available projects
 
 To see all available projects in a specific target use::
 
-    scrapy deploy -L scrapyd
+    scrapyd-deploy -L scrapyd
 
 It would return something like this::
 
@@ -68,7 +68,7 @@ Deploying a project
 
 Finally, to deploy your project use::
 
-    scrapy deploy scrapyd -p project1
+    scrapyd-deploy scrapyd -p project1
 
 This will eggify your project and upload it to the target, printing the JSON
 response returned from the Scrapyd server. If you have a ``setup.py`` file in
@@ -82,28 +82,28 @@ project was uploaded successfully::
     Server response (200):
     {"status": "ok", "spiders": ["spider1", "spider2"]}
 
-By default ``scrapy deploy`` uses the current timestamp for generating the
+By default ``scrapyd-deploy`` uses the current timestamp for generating the
 project version, as you can see in the output above. However, you can pass a
 custom version with the ``--version`` option::
 
-    scrapy deploy scrapyd -p project1 --version 54
+    scrapyd-deploy scrapyd -p project1 --version 54
 
 Also, if you use Mercurial for tracking your project source code, you can use
 ``HG`` for the version which will be replaced by the current Mercurial
 revision, for example ``r382``::
 
-    scrapy deploy scrapyd -p project1 --version HG
+    scrapyd-deploy scrapyd -p project1 --version HG
 
 And, if you use Git for tracking your project source code, you can use
 ``GIT`` for the version which will be replaced by the SHA1 of current Git
 revision, for example ``b0582849179d1de7bd86eaa7201ea3cda4b5651f``::
 
-    scrapy deploy scrapyd -p project1 --version GIT
+    scrapyd-deploy scrapyd -p project1 --version GIT
 
 Support for other version discovery sources may be added in the future.
 
 Finally, if you don't want to specify the target, project and version every
-time you run ``scrapy deploy`` you can define the defaults in the
+time you run ``scrapyd-deploy`` you can define the defaults in the
 ``scrapy.cfg`` file. For example::
 
     [deploy]
@@ -115,7 +115,7 @@ time you run ``scrapy deploy`` you can define the defaults in the
 
 This way, you can deploy your project just by using::
 
-    scrapy deploy
+    scrapyd-deploy
 
 Local settings
 --------------
@@ -133,7 +133,7 @@ end of your project settings::
     except ImportError:
         pass
 
-``scrapy deploy`` won't deploy anything outside the project module so the
+``scrapyd-deploy`` won't deploy anything outside the project module so the
 ``local_settings.py`` file won't be deployed.
 
 Here's the directory structure, to illustrate::
