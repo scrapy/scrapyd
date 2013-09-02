@@ -20,7 +20,7 @@ install:
     - pip install --use-mirrors -r .travis/requirements-$BUILDENV.txt
     - pip install --use-mirrors .
 script:
-    - trial scrapy
+    - trial scrapyd
 notifications:
     irc:
         channels:
