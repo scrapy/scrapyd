@@ -12,3 +12,5 @@ HTTP JSON API.
 
 The documentation (including installation and usage) can be found at:
 http://scrapyd.readthedocs.org/
+
+.. _Scrapy: https://github.com/scrapy/scrapy
