@@ -32,10 +32,10 @@ class Schedule(WsResource):
         project = args.pop('project')
         spider = args.pop('spider')
         args['settings'] = settings
-        jobid = uuid.uuid1().hex
-        args['_job'] = jobid
+        if args['_job'] is None:
+            args['_job'] = uuid.uuid1().hex
         self.root.scheduler.schedule(project, spider, **args)
-        return {"status": "ok", "jobid": jobid}
+        return {"status": "ok", "jobid": args['_job']}
 
 class Cancel(WsResource):
 
