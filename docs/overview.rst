@@ -48,11 +48,6 @@ distribution::
 
 That should get your Scrapyd started.
 
-Or, if you want to start Scrapyd from inside a Scrapy project you can use the
-`server command`_, like this::
-
-    scrapy server
-
 Scheduling a spider run
 =======================
 
