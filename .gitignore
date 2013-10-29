@@ -1,4 +1,5 @@
 .idea
+.virtualenvs
 build
 dist
 dbs
