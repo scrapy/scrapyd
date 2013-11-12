@@ -6,8 +6,7 @@ stop on runlevel [06]
 script
     [ -r /etc/default/scrapyd ] && . /etc/default/scrapyd
     logdir=/var/log/scrapyd
-    exec twistd -ny /usr/share/scrapyd/scrapyd.tac \
-                -u scrapy -g nogroup \
+    exec scrapyd -u scrapy -g nogroup \
                 --pidfile /var/run/scrapyd.pid \
                 -l $logdir/scrapyd.log >$logdir/scrapyd.out 2>$logdir/scrapyd.err
 end script

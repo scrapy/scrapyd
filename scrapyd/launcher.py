@@ -8,6 +8,7 @@ from twisted.python import log
 
 from scrapy.utils.python import stringify_dict
 from scrapyd.utils import get_crawl_args
+from scrapyd import __version__
 from .interfaces import IPoller, IEnvironment
 
 class Launcher(Service):
@@ -25,8 +26,8 @@ class Launcher(Service):
     def startService(self):
         for slot in range(self.max_proc):
             self._wait_for_project(slot)
-        log.msg(format='%(parent)s started: max_proc=%(max_proc)r, runner=%(runner)r',
-                parent=self.parent.name, max_proc=self.max_proc,
+        log.msg(format='Scrapyd %(version)s started: max_proc=%(max_proc)r, runner=%(runner)r',
+                version=__version__, max_proc=self.max_proc,
                 runner=self.runner, system='Launcher')
 
     def _wait_for_project(self, slot):

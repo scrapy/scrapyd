@@ -31,7 +31,7 @@ class Environment(object):
         if self.logs_dir:
             env['SCRAPY_LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
-            env['SCRAPY_FEED_URI'] = self._get_file(message, self.items_dir, 'jl')
+            env['SCRAPY_FEED_URI'] = "file://" + self._get_file(message, self.items_dir, 'jl')
         return env
 
     def _get_file(self, message, dir, ext):
