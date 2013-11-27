@@ -1,0 +1,9 @@
+[scrapyd]
+http_port  = 6800
+debug      = off
+jobs_to_keep = 10
+max_proc   = 4
+eggs_dir   = /var/lib/scrapyd/eggs
+dbs_dir    = /var/lib/scrapyd/dbs
+items_dir  = /var/lib/scrapyd/items
+logs_dir   = /var/log/scrapyd
