@@ -1,7 +1,7 @@
 RPM build documentation
 -----------------------
 
-+ Prerequisites to build rpm in general
++ Prerequisites to build rpms in general
 
 Install build packages
 ```bash
@@ -28,19 +28,4 @@ As the build user in its home, clone scrapyd in the SOURCES dir:
   rpmbuild -ba ~/rpmbuild/SPECS/scrapyd.spec
 ```
 
-$   
- 
-
-
-Pré-requis du RPM:
-  pip install twisted
-  pip install scrapy==0.18
-  
-  
-A améliorer:
- - preinstall et preuninstall
- - man
- - dépendances
-
-
-
+Collect the package rpm in rpmbuild/RPMS/ and the source rpm in rpmbuild/SRPMS/ and publish in online repository.

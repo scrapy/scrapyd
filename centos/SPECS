@@ -45,6 +45,12 @@ if [ $? -eq 0 ]; then
         echo -e '\033[01;32m Scrapy module found! \033[m' 
 else
         echo -e '\033[01;31m error: scrapy is needed by scrapyd-1.0.1-2.el6.x86_64 \033[m' 
+	pyversion=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+	if [ "$pyversion" == "2.6" ]; then
+		echo -e '\033[01;31m Please install Scrapy <= 0.18 for python 2.6 (for instance pip install Scrapy==0.18) \033[m'
+	else
+		echo -e '\033[01;31m Please install Scrapy (for instance pip install Scrapy) \033[m'
+	fi
 	error=1
 fi
 echo " + Check Twisted Python module..."
@@ -59,12 +65,13 @@ fi
 if [ $error == 1 ]; then
 	exit 1
 fi
+
 %preun
 echo "********** Pre Uninstall **********"
 echo " + Shutting down Scrapyd "
 stop scrapyd
 %prep
-%setup -n %{name}-%{unmangled_version} -n %{name}-%{unmangled_version}
+%setup -n %{name}
 
 %build
 python setup.py build
@@ -113,6 +120,7 @@ fi
 
 echo " + Cleaning install files"
 rm -fr /tmp/postinstall-scrapyd
+
 %postun
 echo "********** Post Uninstall **********"
 echo " + Removing folders (keeping /etc/scrapyd) "
