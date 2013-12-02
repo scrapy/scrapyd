@@ -113,7 +113,7 @@ adduser --system --home /var/lib/scrapyd --comment "scrapy" --no-create-home scr
 chown -R scrapy:scrapy /var/log/scrapyd /var/lib/scrapyd
 echo " + Starting scrapyd "
 start scrapyd
-curl http://localhost:6800/list.json >/dev/null 2>&1
+curl -s http://localhost:6800/listprojects.json >/dev/null 2>&1
 if [ $? -ne 0 ]; then
         echo -e '\033[01;31m error: Scrapyd is not running. See /var/log/scrapyd/scrapyd.err error log \033[m' 
 fi
