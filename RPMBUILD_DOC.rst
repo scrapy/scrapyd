@@ -38,7 +38,6 @@ As build user in its home, clone scrapyd in the SOURCES dir:
   tar czvf scrapyd.tar.gz scrapyd
   cp scrapyd/centos/SPECS ../SPECS/scrapyd.spec
   rpmbuild -ba ~/rpmbuild/SPECS/scrapyd.spec
-```
 
 Collect the package rpm in rpmbuild/RPMS/ and the source rpm in rpmbuild/SRPMS/ and publish in online repository.
 

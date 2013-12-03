@@ -15,7 +15,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Scrapy developers <info@scrapy.org>
-Packager: Jérémy Richard <jeremy.richard@sciencespo.fr
+Packager: Jérémy Richard <jeremy.richard@sciencespo.fr>
 Url: https://github.com/scrapy/scrapyd
 
 %description
@@ -81,7 +81,6 @@ python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUIL
 
 
 mkdir -p $RPM_BUILD_ROOT/tmp/postinstall-scrapyd
-## JRI: ici on dit d'ajouter le dossier centos a la build
 install -m 600 centos/* $RPM_BUILD_ROOT/tmp/postinstall-scrapyd/
 
 %clean
@@ -89,11 +88,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-## JRI ici on dit d'ajouter le dossier postinstall au rpm
-## et donc il va le mettre dans /tmp/postinstall-scrapyd à l'isntallation
 /tmp/postinstall-scrapyd
 
-## JRI ajout de l'enrobage du serveur (user, scripts, dossiers)
 %post
 echo "********** Post Install **********"
 echo " + Making directories"
