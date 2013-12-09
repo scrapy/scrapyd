@@ -45,18 +45,18 @@ class ScrapyScheduler(PubSubCallable):
         print self.message
         try:
             args = self.json_decoder.decode(self.message)
+            project = args.pop('project')
+            spider = args.pop('spider')
+            job_id = uuid.uuid1().hex
+            args['_job'] = job_id
+            self.scheduler.schedule(project, spider, **args)
+            message = {
+                'event': 'scheduled',
+                'status': 'ok',
+                'project': project,
+                'spider': spider,
+                'job': job_id
+            }
+            self.pubsub.publish('scrapyd.launcher', self.json_encoder.encode(message))
         except ValueError:
             pass
-        project = args.pop('project')
-        spider = args.pop('spider')
-        job_id = uuid.uuid1().hex
-        args['_job'] = job_id
-        self.scheduler.schedule(project, spider, **args)
-        message = {
-            'event': 'scheduled',
-            'status': 'ok',
-            'project': project,
-            'spider': spider,
-            'job': job_id
-        }
-        self.pubsub.publish('scrapyd.launcher', self.json_encoder.encode(message))
