@@ -20,7 +20,7 @@ scrapy_dir=$(mktemp /tmp/test-scrapy.XXXXXXX -d)
 echo "scrapyd dir: $scrapyd_dir"
 echo "scrapy dir : $scrapy_dir"
 
-twistd -ny extras/scrapyd.tac -d $scrapyd_dir -l $scrapyd_log &
+bin/scrapyd -d $scrapyd_dir -l $scrapyd_log &
 
 cd $scrapy_dir
 scrapy startproject testproj
@@ -68,7 +68,7 @@ url = http://localhost:6800/
 project = testproj
 !
 
-scrapy deploy
+scrapyd-deploy
 
 curl -s http://localhost:6800/schedule.json -d project=testproj -d spider=insophia -d arg=SOME_ARGUMENT
 
