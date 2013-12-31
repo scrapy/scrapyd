@@ -45,6 +45,7 @@ def application(config):
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
 
+    pubsub.setServiceParent(app)
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)

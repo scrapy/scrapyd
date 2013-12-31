@@ -1,3 +1,6 @@
+from twisted.application import service
+from twisted.application.service import Service
+
 __author__ = 'drankinn'
 
 import json
@@ -8,7 +11,7 @@ from scrapyd.interfaces import IPubSub
 from zope.interface import implements
 
 
-class BasePubSub:
+class BasePubSub(Service):
     """ Simple Pub Sub pattern where callables are sent messages.
         Tested with LogSubscribers in `scrapyd.pubsub.callbacks`
 
@@ -31,7 +34,7 @@ class BasePubSub:
         for id, channel in self.channel_config:
             if id == 'pub.node.channel':
                 self.node_channel = channel
-        self.loadDefaultChannels()
+
 
     def loadDefaultChannels(self):
         for channel, callbackCls in self.channel_config:
@@ -76,3 +79,14 @@ class BasePubSub:
             'uri': self.uri
         }
         self.publish(self.node_channel, self.json_encoder.encode(message))
+
+    def startService(self):
+        self.loadDefaultChannels()
+
+    def stopService(self):
+        message = {
+            'event': 'unregister',
+            'node_id': self.node_id
+        }
+        self.publish(self.node_channel, self.json_encoder.encode(message))
+        service.Service.stopService(self)

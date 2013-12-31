@@ -2,6 +2,7 @@ __author__ = 'drankinn'
 
 from txredis import RedisSubscriber, RedisSubscriberFactory, RedisClient, RedisClientFactory
 from twisted.application.internet import TCPClient
+from twisted.python import log
 from scrapyd.pubsub.pubsub import BasePubSub
 
 
@@ -60,10 +61,8 @@ class ScrapyRedisClient(RedisClient):
         return d
 
     def connectionLost(self, reason):
-        d = RedisClient.connectionLost(self, reason)
+        RedisClient.connectionLost(self, reason)
         self.factory.pubSub.clientConnectionLost()
-        return d
-
 
 class ScrapyRedisClientFactory(RedisClientFactory):
 
