@@ -2,6 +2,7 @@ __author__ = 'drankinn'
 
 import json
 import sys
+import platform
 from datetime import datetime
 from multiprocessing import cpu_count
 
@@ -18,9 +19,11 @@ class Launcher(Service):
 
     name = 'launcher'
     channel = 'scrapyd.launcher'
+    node = ''
     json_encoder = json.JSONEncoder()
 
     def __init__(self, config, app):
+        self.node = config.get('id', platform.node())
         channel_config = config.items('channels')
         for name, channel in channel_config:
             if name == 'pub.launcher.channel':
@@ -52,6 +55,7 @@ class Launcher(Service):
         project = msg['_project']
         args = [sys.executable, '-m', self.runner, 'crawl']
         args += get_crawl_args(msg)
+        args['node'] = self.node
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = stringify_dict(env, keys_only=False)
@@ -80,6 +84,7 @@ class Launcher(Service):
         return max_proc
     def publish(self, process, event):
         message = {
+            'node': self.node,
             'event': event,
             'status': process.status,
             'project': process.project,

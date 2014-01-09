@@ -80,8 +80,8 @@ class BasePubSub(Service):
         }
         self.publish(self.node_channel, self.json_encoder.encode(message))
 
-    def startService(self):
-        self.loadDefaultChannels()
+    #def startService(self):
+        #self.loadDefaultChannels()
 
     def stopService(self):
         message = {

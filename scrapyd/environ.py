@@ -31,15 +31,14 @@ class Environment(object):
         if self.logs_dir:
             env['SCRAPY_LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
-            env['SCRAPY_FEED_URI'] = "file://" + self._get_file(message, self.items_dir, 'jl')
+            env['SCRAPY_FEED_URI'] = self._get_file(message, self.items_dir, 'jl')
         return env
 
     def _get_file(self, message, dir, ext):
-        logsdir = os.path.join(dir, message['_project'], \
-            message['_spider'])
+        logsdir = os.path.join(dir, message['_project'], message['_spider'])
         if not os.path.exists(logsdir):
             os.makedirs(logsdir)
-        to_delete = sorted((os.path.join(logsdir, x) for x in \
+        to_delete = sorted((os.path.join(logsdir, x) for x in
             os.listdir(logsdir)), key=os.path.getmtime)[:-self.jobs_to_keep]
         for x in to_delete:
             os.remove(x)

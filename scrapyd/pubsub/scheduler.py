@@ -1,4 +1,5 @@
 import json
+import platform
 from twisted.application.service import IServiceCollection
 from zope.interface import implements
 
@@ -11,12 +12,14 @@ class Scheduler(object):
 
     implements(ISpiderScheduler)
 
+    node = ''
     channel = 'scrapyd.schedule'
     json_encoder = json.JSONEncoder()
 
     def __init__(self, config, app):
         self.app = app
         self.config = config
+        self.node = config.get('id', platform.node())
         self.update_projects()
 
     def schedule(self, project, spider_name, **spider_args):
@@ -41,6 +44,7 @@ class Scheduler(object):
 
     def publish(self, project, spider, **args):
         message = {
+            'node': self.node,
             'event': 'scheduled',
             'status': 'ok',
             'project': project,
