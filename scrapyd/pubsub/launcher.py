@@ -55,7 +55,6 @@ class Launcher(Service):
         project = msg['_project']
         args = [sys.executable, '-m', self.runner, 'crawl']
         args += get_crawl_args(msg)
-        args['node'] = self.node
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = stringify_dict(env, keys_only=False)

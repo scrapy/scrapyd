@@ -24,6 +24,7 @@ class Scheduler(object):
 
     def schedule(self, project, spider_name, **spider_args):
         q = self.queues[project]
+        spider_args['node'] = self.node
         q.add(spider_name, **spider_args)
         self.publish(project, spider_name, **spider_args)
 
