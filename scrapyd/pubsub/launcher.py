@@ -18,7 +18,7 @@ from scrapyd.interfaces import IPoller, IEnvironment, IPubSub
 class Launcher(Service):
 
     name = 'launcher'
-    channel = 'scrapyd.launcher'
+    channel = 'scrapyd.job'
     node = ''
     json_encoder = json.JSONEncoder()
 
