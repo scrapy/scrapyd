@@ -68,8 +68,8 @@ class Home(resource.Resource):
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="/jobs">Jobs</a></li>
-<li><a href="/items/">Items</li>
-<li><a href="/logs/">Logs</li>
+<li><a href="/items/">Items</a></li>
+<li><a href="/logs/">Logs</a></li>
 <li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
 </ul>
 
