@@ -24,6 +24,7 @@ class Root(resource.Resource):
         if itemsdir:
             self.putChild('items', static.File(itemsdir, 'text/plain'))
         self.putChild('jobs', Jobs(self))
+        self.putChild('static', static.File('static'))              # adding UI support
         services = config.items('services', ())
         for servName, servClsName in services:
             servCls = load_object(servClsName)
