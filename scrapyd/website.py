@@ -4,8 +4,10 @@ from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
 
 from scrapy.utils.misc import load_object
+from jinja2 import FileSystemLoader, Environment
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
+
 
 class Root(resource.Resource):
 
@@ -24,8 +26,8 @@ class Root(resource.Resource):
         self.putChild('jobs', Jobs(self))
         services = config.items('services', ())
         for servName, servClsName in services:
-          servCls = load_object(servClsName)
-          self.putChild(servName, servCls(self))
+            servCls = load_object(servClsName)
+            self.putChild(servName, servCls(self))
         self.update_projects()
 
     def update_projects(self):
@@ -57,34 +59,17 @@ class Home(resource.Resource):
         self.root = root
 
     def render_GET(self, txrequest):
-        vars = {
+
+        template_loader = FileSystemLoader(searchpath=".")
+        template_env = Environment(loader=template_loader)
+
+        template_file = "templates/home.jinja"
+        template = template_env.get_template(template_file)
+        template_vars = {
             'projects': ', '.join(self.root.scheduler.list_projects()),
         }
-        return """
-<html>
-<head><title>Scrapyd</title></head>
-<body>
-<h1>Scrapyd</h1>
-<p>Available projects: <b>%(projects)s</b></p>
-<ul>
-<li><a href="/jobs">Jobs</a></li>
-<li><a href="/items/">Items</a></li>
-<li><a href="/logs/">Logs</a></li>
-<li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
-</ul>
 
-<h2>How to schedule a spider?</h2>
-
-<p>To schedule a spider you need to use the API (this web UI is only for
-monitoring)</p>
-
-<p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
-<p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
-
-<p>For more information about the API, see the <a href="http://scrapyd.readthedocs.org/en/latest/">Scrapyd documentation</a></p>
-</body>
-</html>
-""" % vars
+        return template.render(template_vars).encode('ascii', 'ignore')
 
 
 class Jobs(resource.Resource):

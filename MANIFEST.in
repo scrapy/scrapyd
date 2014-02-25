@@ -3,7 +3,9 @@ include LICENSE
 include MANIFEST.in
 include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
+include static/*
 recursive-include scrapyd/tests *.egg
 recursive-include docs *
+recursive-include static *
 prune docs/_build
 recursive-include extras *
