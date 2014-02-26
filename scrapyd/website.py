@@ -60,7 +60,6 @@ class Home(resource.Resource):
         self.root = root
 
     def render_GET(self, txrequest):
-
         template_loader = FileSystemLoader(searchpath=".")
         template_env = Environment(loader=template_loader)
 
@@ -80,40 +79,15 @@ class Jobs(resource.Resource):
         self.root = root
 
     def render(self, txrequest):
-        s = "<html><head><title>Scrapyd</title></title>"
-        s += "<body>"
-        s += "<h1>Jobs</h1>"
-        s += "<p><a href='..'>Go back</a></p>"
-        s += "<table border='1'>"
-        s += "<th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Pending</th></tr>"
-        for project, queue in self.root.poller.queues.items():
-            for m in queue.list():
-                s += "<tr>"
-                s += "<td>%s</td>" % project
-                s += "<td>%s</td>" % str(m['name'])
-                s += "<td>%s</td>" % str(m['_job'])
-                s += "</tr>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Running</th></tr>"
-        for p in self.root.launcher.processes.values():
-            s += "<tr>"
-            for a in ['project', 'spider', 'job', 'pid']:
-                s += "<td>%s</td>" % getattr(p, a)
-            s += "<td>%s</td>" % (datetime.now() - p.start_time)
-            s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
-            s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
-            s += "</tr>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Finished</th></tr>"
-        for p in self.root.launcher.finished:
-            s += "<tr>"
-            for a in ['project', 'spider', 'job']:
-                s += "<td>%s</td>" % getattr(p, a)
-            s += "<td></td>"
-            s += "<td>%s</td>" % (p.end_time - p.start_time)
-            s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
-            s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
-            s += "</tr>"
-        s += "</table>"
-        s += "</body>"
-        s += "</html>"
-        return s
+        template_loader = FileSystemLoader(searchpath=".")
+        template_env = Environment(loader=template_loader)
+
+        template_file = "templates/jobs.jinja"
+        template = template_env.get_template(template_file)
+        template_vars = {
+            'queues_items': self.root.poller.queues.items(),
+            'processes_values': self.root.launcher.processes.values(),
+            'launcher_finished': self.root.launcher.finished,
+        }
+
+        return template.render(template_vars).encode('ascii', 'ignore')
