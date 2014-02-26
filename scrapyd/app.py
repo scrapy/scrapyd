@@ -13,6 +13,7 @@ from .environ import Environment
 from .website import Root
 from .config import Config
 
+
 def application(config):
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)

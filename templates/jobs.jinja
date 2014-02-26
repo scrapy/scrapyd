@@ -1,0 +1,53 @@
+{% extends "templates/base.jinja" %}
+{% block title %}Jobs{% endblock %}
+
+{% block activation %}
+    <li><a href="/">Home</a></li>
+    <li class="active"><a href="/jobs">Jobs</a></li>
+    <li><a href="/items">Items</a></li>
+    <li><a href="/logs">Logs</a></li>
+{% endblock %}
+
+{% block content %}
+    <p><a href='..'>Go back</a></p>
+    <table border='1'>
+        <th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>
+        <tr><th colspan='7' style='background-color: #ddd'>Pending</th></tr>
+        {% for project, queue in queues_items %}
+            {% for m in queue.list() %}
+                <tr>
+                <td>{{ project }}</td>
+                <td>{{ m['name'] }}</td>
+                <td>{{ m['_job'] }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        <tr><th colspan='7' style='background-color: #ddd'>Running</th></tr>
+
+        {% for p in processes_values %}
+            <tr>
+                <td>{{ p.project }}</td>
+                <td>{{ p.spider }}</td>
+                <td>{{ p.job }}</td>
+                <td>{{ p.pid }}</td>
+
+                <td>p.start_time</td>
+                <td><a href='/logs/{{ p.project }}/{{ p.spider }}/{{ p.job }}.log'>Log</a></td>
+                <td><a href='/items/{{ p.project }}/{{ p.spider }}/{{ p.job }}.jl'>Items</a></td>" % (p.project, p.spider, p.job)
+            </tr>
+        {% endfor %}
+
+        <tr><th colspan='7' style='background-color: #ddd'>Finished</th></tr>
+        {% for p in launcher_finished %}
+            <tr>
+                <td>{{ p.project }}</td>
+                <td>{{ p.spider }}</td>
+                <td>{{ p.job }}</td>
+                <td></td>
+                <td>{{ p.end_time - p.start_time }}</td>" % (p.end_time - p.start_time)
+                <td><a href='/logs/{{ p.project }}/{{ p.spider }}/{{ p.job }}.log'>Log</a></td>
+                <td><a href='/items/{{ p.project }}/{{ p.spider }}/{{ p.job }}.jl'>Items</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
