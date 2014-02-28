@@ -4,8 +4,7 @@ from cStringIO import StringIO
 
 from twisted.python import log
 
-from scrapy.utils.txweb import JsonResource
-from .utils import get_spider_list, UtilsCache
+from .utils import get_spider_list, JsonResource, UtilsCache
 
 class WsResource(JsonResource):
 

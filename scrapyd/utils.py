@@ -3,10 +3,30 @@ import os
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
 from ConfigParser import NoSectionError
+import json
+from twisted.web import resource
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapy.utils.python import stringify_dict, unicode_to_str
 from scrapyd.config import Config
+
+
+class JsonResource(resource.Resource):
+
+    json_encoder = json.JSONEncoder()
+
+    def render(self, txrequest):
+        r = resource.Resource.render(self, txrequest)
+        return self.render_object(r, txrequest)
+
+    def render_object(self, obj, txrequest):
+        r = self.json_encoder.encode(obj) + "\n"
+        txrequest.setHeader('Content-Type', 'application/json')
+        txrequest.setHeader('Access-Control-Allow-Origin', '*')
+        txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
+        txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
+        txrequest.setHeader('Content-Length', len(r))
+        return r
 
 class UtilsCache:
     # array of project name that need to be invalided
@@ -95,4 +115,3 @@ def get_spider_list(project, runner=None, pythonpath=None):
     tmp = out.splitlines();
     get_spider_list.cache[project] = tmp
     return tmp
-
