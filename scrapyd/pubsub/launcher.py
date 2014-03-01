@@ -20,6 +20,7 @@ class Launcher(Service):
     name = 'launcher'
     channel = 'scrapyd.job'
     node = ''
+    timeout = 1800  # 30 minutes
     json_encoder = json.JSONEncoder()
 
     def __init__(self, config, app):
@@ -33,6 +34,7 @@ class Launcher(Service):
         self.finished_to_keep = config.getint('finished_to_keep', 100)
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
+        self.timeout = config.get('process_timeout', 1800)
         self.app = app
 
     @property
@@ -58,7 +60,7 @@ class Launcher(Service):
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], msg['_job'], env)
+        pp = ScrapyProcessProtocol(self.timeout, slot, project, msg['_spider'], msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -96,9 +98,10 @@ class Launcher(Service):
         }
         self.pubsub.publish(self.channel, self.json_encoder.encode(message))
 
+
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
+    def __init__(self, timeout, slot, project, spider, job, env):
         self.slot = slot
         self.pid = None
         self.project = project
@@ -110,6 +113,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.status = 'ok'
         self.logfile = env.get('SCRAPY_LOG_FILE')
         self.itemsfile = env.get('SCRAPY_FEED_URI')
+        self.timeout = timeout
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
@@ -121,6 +125,15 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
     def connectionMade(self):
         self.pid = self.transport.pid
         self.log("Process started: ")
+
+        @defer.inlineCallbacks
+        def killIfAlive():
+            try:
+                yield self.transport.signalProcess('KILL')
+            except error.ProcessExitedAlready:
+                pass
+
+        reactor.callLater(self.timeout, killIfAlive)
 
     def processEnded(self, status):
 
