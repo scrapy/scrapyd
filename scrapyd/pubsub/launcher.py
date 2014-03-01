@@ -133,7 +133,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
             except error.ProcessExitedAlready:
                 pass
 
-        reactor.callLater(self.timeout, killIfAlive)
+        reactor.callLater(float(self.timeout), killIfAlive)
 
     def processEnded(self, status):
 
