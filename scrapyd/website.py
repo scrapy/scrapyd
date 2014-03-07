@@ -94,12 +94,12 @@ class Jobs(resource.Resource):
         self.root = root
 
     def render(self, txrequest):
-        s = "<html><head><title>Scrapyd</title></title>"
+        s = "<html><head><title>Scrapyd</title></head>"
         s += "<body>"
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
         s += "<tr><th colspan='7' style='background-color: #ddd'>Pending</th></tr>"
         for project, queue in self.root.poller.queues.items():
             for m in queue.list():
