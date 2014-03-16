@@ -1,11 +1,12 @@
 #!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          scrapyd
-# Required-Start:    $local_fs $network
-# Required-Stop:     $local_fs
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Scrapyd
+# Description:       Run the scrapyd service as a system service.
 ### END INIT INFO
 
 # PATH should only include /usr/* if it runs after the mountnfs.sh script

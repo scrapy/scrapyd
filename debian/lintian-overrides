@@ -1,3 +1,1 @@
-new-package-should-close-itp-bug
 package-installs-python-egg
-binary-without-manpage usr/bin/scrapyd
