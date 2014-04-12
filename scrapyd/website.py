@@ -12,6 +12,7 @@ class Root(resource.Resource):
     def __init__(self, config, app):
         resource.Resource.__init__(self)
         self.debug = config.getboolean('debug', False)
+        self.nodename = config.get('node_name')
         self.runner = config.get('runner')
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')

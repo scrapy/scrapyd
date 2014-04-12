@@ -14,6 +14,11 @@ them in order with the latest one taking more priority:
 The configuration file supports the following options (see default values in
 the :ref:`example <config-example>`).
 
+node_name
+---------
+
+The node name for each node to something like the display hostname.. Defaults to ``scrapyd``.
+
 http_port
 ---------
 
