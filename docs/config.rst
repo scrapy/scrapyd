@@ -112,6 +112,13 @@ and services.
 
 For more info see `Twisted Application Framework`_
 
+node_name
+---------
+
+.. versionadded:: ????
+
+The node name for each node to something like the display hostname. Defaults to ``${socket.gethostname()}``.
+
 .. _config-example:
 
 Example configuration file
