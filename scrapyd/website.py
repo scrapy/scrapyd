@@ -68,9 +68,9 @@ class Home(resource.Resource):
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="/jobs">Jobs</a></li>
-<li><a href="/items/">Items</li>
-<li><a href="/logs/">Logs</li>
-<li><a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Documentation</a></li>
+<li><a href="/items/">Items</a></li>
+<li><a href="/logs/">Logs</a></li>
+<li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
 </ul>
 
 <h2>How to schedule a spider?</h2>
@@ -81,7 +81,7 @@ monitoring)</p>
 <p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
 <p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
 
-<p>For more information about the API, see the <a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Scrapyd documentation</a></p>
+<p>For more information about the API, see the <a href="http://scrapyd.readthedocs.org/en/latest/">Scrapyd documentation</a></p>
 </body>
 </html>
 """ % vars
@@ -94,12 +94,12 @@ class Jobs(resource.Resource):
         self.root = root
 
     def render(self, txrequest):
-        s = "<html><head><title>Scrapyd</title></title>"
+        s = "<html><head><title>Scrapyd</title></head>"
         s += "<body>"
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
         s += "<tr><th colspan='7' style='background-color: #ddd'>Pending</th></tr>"
         for project, queue in self.root.poller.queues.items():
             for m in queue.list():

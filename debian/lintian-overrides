@@ -1,5 +1,1 @@
-new-package-should-close-itp-bug
-script-in-etc-init.d-not-registered-via-update-rc.d etc/init.d/scrapyd
-postrm-does-not-call-updaterc.d-for-init.d-script etc/init.d/scrapyd
 package-installs-python-egg
-binary-without-manpage usr/bin/scrapyd
