@@ -72,7 +72,7 @@ class Home(resource.Resource):
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="/jobs">Jobs</a></li>
-"""
+""" % vars
         if self.local_items:
             s += '<li><a href="/items/">Items</a></li>'
         s += """
@@ -92,7 +92,7 @@ monitoring)</p>
 </body>
 </html>
 """ % vars
-
+        return s
 
 class Jobs(resource.Resource):
 
