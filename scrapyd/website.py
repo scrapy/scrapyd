@@ -73,7 +73,7 @@ class Home(resource.Resource):
 <ul>
 <li><a href="/jobs">Jobs</a></li>
 """
-        if local_items:
+        if self.local_items:
             s += '<li><a href="/items/">Items</a></li>'
         s += """
 <li><a href="/logs/">Logs</a></li>
