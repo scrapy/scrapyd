@@ -115,7 +115,7 @@ For more info see `Twisted Application Framework`_
 node_name
 ---------
 
-.. versionadded:: ????
+.. versionadded:: 1.1
 
 The node name for each node to something like the display hostname. Defaults to ``${socket.gethostname()}``.
 
