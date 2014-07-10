@@ -16,6 +16,7 @@ setup_args = {
     'packages': ['scrapyd'],
     'scripts': ['bin/scrapyd', 'bin/scrapyd-deploy'],
     'include_package_data': True,
+    'zip_safe': False,
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
