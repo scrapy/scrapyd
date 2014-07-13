@@ -30,7 +30,7 @@ max_proc
 --------
 
 The maximum number of concurrent Scrapy process that will be started. If unset
-or ``0`` it will use the number of cpus available in the system mulitplied by
+or ``0`` it will use the number of cpus available in the system multiplied by
 the value in ``max_proc_per_cpu`` option. Defaults to ``0``.
 
 .. _max_proc_per_cpu:
