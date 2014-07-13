@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import socket
+
 from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
 
@@ -19,6 +21,7 @@ class Root(resource.Resource):
         itemsdir = config.get('items_dir')
         local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
         self.app = app
+        self.nodename = config.get('node_name', socket.gethostname())
         self.putChild('', Home(self, local_items))
         if logsdir:
             self.putChild('logs', static.File(logsdir, 'text/plain'))
