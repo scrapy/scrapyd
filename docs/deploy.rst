@@ -26,7 +26,7 @@ Show and define targets
 
 To see all available targets type::
 
-    scrapyd-deploy -l
+    scrapyd -deploy -l
 
 This will return a list of available targets and their URLs. For example::
 
