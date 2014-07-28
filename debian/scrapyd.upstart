@@ -5,4 +5,7 @@ stop on runlevel [016] or unmounting-filesystem
 
 chdir /var/lib/scrapyd
 
-exec /usr/bin/scrapyd -u scrapy -g nogroup -l /var/log/scrapyd/scrapyd.log
+script
+  [ -r /etc/default/scrapyd ] && . /etc/default/scrapyd
+  exec /usr/bin/scrapyd -u scrapy -g nogroup -l /var/log/scrapyd/scrapyd.log
+end script
