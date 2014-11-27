@@ -12,7 +12,7 @@ class Environment(object):
     def __init__(self, config, initenv=os.environ):
         self.dbs_dir = config.get('dbs_dir', 'dbs')
         self.logs_dir = config.get('logs_dir', 'logs')
-        self.items_dir = config.get('items_dir', 'items')
+        self.items_dir = config.get('items_dir','')
         self.jobs_to_keep = config.getint('jobs_to_keep', 5)
         if config.cp.has_section('settings'):
             self.settings = dict(config.cp.items('settings'))
