@@ -5,12 +5,11 @@ from twisted.python import log
 
 from scrapy.utils.misc import load_object
 
-from .interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment, IPubSub
-from .eggstorage import FilesystemEggStorage
-from .scheduler import SpiderScheduler
-from .poller import QueuePoller
-from .environ import Environment
-from .website import Root
+from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment, IPubSub
+from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.poller import QueuePoller
+from scrapyd.environ import Environment
+from scrapyd.website import Root
 
 def application(config):
     app = Application("Scrapyd")
@@ -46,6 +45,7 @@ def application(config):
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
 
+    pubsub.setServiceParent(app)
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)

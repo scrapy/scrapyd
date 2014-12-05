@@ -4,14 +4,14 @@ import shutil
 import tempfile
 from contextlib import contextmanager
 
-from scrapyd import get_application
-from scrapyd.interfaces import IEggStorage
+from scrapyd import Config
+from scrapyd.eggstorage import FilesystemEggStorage
 from scrapyd.eggutils import activate_egg
 
 @contextmanager
 def project_environment(project):
-    app = get_application()
-    eggstorage = app.getComponent(IEggStorage)
+    config = Config()
+    eggstorage = FilesystemEggStorage(config)
     version, eggfile = eggstorage.get(project)
     if eggfile:
         prefix = '%s-%s-' % (project, version)
