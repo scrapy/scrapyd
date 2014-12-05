@@ -88,6 +88,11 @@ custom version with the ``--version`` option::
 
     scrapyd-deploy scrapyd -p project1 --version 54
 
+Scrapyd will use the greatest version when not specified, the version
+must be comparable according to `distutils.version.LooseVersion`__.
+
+__ http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html
+
 Also, if you use Mercurial for tracking your project source code, you can use
 ``HG`` for the version which will be replaced by the current Mercurial
 revision, for example ``r382``::

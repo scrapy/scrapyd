@@ -10,6 +10,7 @@ them in order with the latest one taking more priority:
 * ``c:\scrapyd\scrapyd.conf`` (Windows)
 * ``/etc/scrapyd/conf.d/*`` (in alphabetical order, Unix)
 * ``scrapyd.conf``
+* ``~/.scrapyd.conf`` (users home directory)
 
 The configuration file supports the following options (see default values in
 the :ref:`example <config-example>`).
@@ -30,7 +31,7 @@ max_proc
 --------
 
 The maximum number of concurrent Scrapy process that will be started. If unset
-or ``0`` it will use the number of cpus available in the system mulitplied by
+or ``0`` it will use the number of cpus available in the system multiplied by
 the value in ``max_proc_per_cpu`` option. Defaults to ``0``.
 
 .. _max_proc_per_cpu:
@@ -111,6 +112,13 @@ used if you want to extend Scrapyd by adding and removing your own components
 and services.
 
 For more info see `Twisted Application Framework`_
+
+node_name
+---------
+
+.. versionadded:: 1.1
+
+The node name for each node to something like the display hostname. Defaults to ``${socket.gethostname()}``.
 
 .. _config-example:
 

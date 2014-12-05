@@ -4,8 +4,7 @@ from cStringIO import StringIO
 
 from twisted.python import log
 
-from scrapy.utils.txweb import JsonResource
-from .utils import get_spider_list
+from .utils import get_spider_list, JsonResource, UtilsCache
 
 class WsResource(JsonResource):
 
@@ -20,7 +19,7 @@ class WsResource(JsonResource):
             if self.root.debug:
                 return traceback.format_exc()
             log.err()
-            r = {"status": "error", "message": str(e)}
+            r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest)
 
 class Schedule(WsResource):
@@ -31,11 +30,14 @@ class Schedule(WsResource):
         args = dict((k, v[0]) for k, v in txrequest.args.items())
         project = args.pop('project')
         spider = args.pop('spider')
+        spiders = get_spider_list(project)
+        if not spider in spiders:
+            return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         if args['_job'] is None:
             args['_job'] = uuid.uuid1().hex
         self.root.scheduler.schedule(project, spider, **args)
-        return {"status": "ok", "jobid": args['_job']}
+        return {"node_name": self.root.nodename, "status": "ok", "jobid": args['_jobid']}
 
 class Cancel(WsResource):
 
@@ -54,7 +56,7 @@ class Cancel(WsResource):
             if s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
-        return {"status": "ok", "prevstate": prevstate}
+        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
 class AddVersion(WsResource):
 
@@ -65,28 +67,29 @@ class AddVersion(WsResource):
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project)
         self.root.update_projects()
-        return {"status": "ok", "project": project, "version": version, \
+        UtilsCache.invalid_cache(project)
+        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
             "spiders": len(spiders)}
 
 class ListProjects(WsResource):
 
     def render_GET(self, txrequest):
         projects = self.root.scheduler.list_projects()
-        return {"status": "ok", "projects": projects}
+        return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
 
 class ListVersions(WsResource):
 
     def render_GET(self, txrequest):
         project = txrequest.args['project'][0]
         versions = self.root.eggstorage.list(project)
-        return {"status": "ok", "versions": versions}
+        return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
 class ListSpiders(WsResource):
 
     def render_GET(self, txrequest):
         project = txrequest.args['project'][0]
         spiders = get_spider_list(project, runner=self.root.runner)
-        return {"status": "ok", "spiders": spiders}
+        return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
 class ListJobs(WsResource):
 
@@ -101,14 +104,14 @@ class ListJobs(WsResource):
             "start_time": s.start_time.isoformat(' '),
             "end_time": s.end_time.isoformat(' ')} for s in self.root.launcher.finished
             if s.project == project]
-        return {"status":"ok", "pending": pending, "running": running, "finished": finished}
+        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
 
 class DeleteProject(WsResource):
 
     def render_POST(self, txrequest):
         project = txrequest.args['project'][0]
         self._delete_version(project)
-        return {"status": "ok"}
+        return {"node_name": self.root.nodename, "status": "ok"}
 
     def _delete_version(self, project, version=None):
         self.root.eggstorage.delete(project, version)
@@ -120,4 +123,4 @@ class DeleteVersion(DeleteProject):
         project = txrequest.args['project'][0]
         version = txrequest.args['version'][0]
         self._delete_version(project, version)
-        return {"status": "ok"}
+        return {"node_name": self.root.nodename, "status": "ok"}

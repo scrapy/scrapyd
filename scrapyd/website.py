@@ -1,11 +1,15 @@
 from datetime import datetime
 
+import socket
+
 from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
 
 from scrapy.utils.misc import load_object
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
+
+from urlparse import urlparse
 
 class Root(resource.Resource):
 
@@ -15,13 +19,15 @@ class Root(resource.Resource):
         self.runner = config.get('runner')
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
+        local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
         self.app = app
-        self.putChild('', Home(self))
+        self.nodename = config.get('node_name', socket.gethostname())
+        self.putChild('', Home(self, local_items))
         if logsdir:
             self.putChild('logs', static.File(logsdir, 'text/plain'))
-        if itemsdir:
+        if local_items:
             self.putChild('items', static.File(itemsdir, 'text/plain'))
-        self.putChild('jobs', Jobs(self))
+        self.putChild('jobs', Jobs(self, local_items))
         services = config.items('services', ())
         for servName, servClsName in services:
           servCls = load_object(servClsName)
@@ -52,15 +58,16 @@ class Root(resource.Resource):
 
 class Home(resource.Resource):
 
-    def __init__(self, root):
+    def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
+        self.local_items = local_items
 
     def render_GET(self, txrequest):
         vars = {
             'projects': ', '.join(self.root.scheduler.list_projects()),
         }
-        return """
+        s = """
 <html>
 <head><title>Scrapyd</title></head>
 <body>
@@ -68,7 +75,10 @@ class Home(resource.Resource):
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="/jobs">Jobs</a></li>
-<li><a href="/items/">Items</a></li>
+""" % vars
+        if self.local_items:
+            s += '<li><a href="/items/">Items</a></li>'
+        s += """
 <li><a href="/logs/">Logs</a></li>
 <li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
 </ul>
@@ -85,22 +95,28 @@ monitoring)</p>
 </body>
 </html>
 """ % vars
-
+        return s
 
 class Jobs(resource.Resource):
 
-    def __init__(self, root):
+    def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
+        self.local_items = local_items
 
     def render(self, txrequest):
+        cols = 6
         s = "<html><head><title>Scrapyd</title></head>"
         s += "<body>"
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th><th>Items</th>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Pending</th></tr>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th>"
+        if self.local_items:
+            s += "<th>Items</th>"
+            cols = 7
+        s += "</tr>"
+        s += "<tr><th colspan='%s' style='background-color: #ddd'>Pending</th></tr>" % cols
         for project, queue in self.root.poller.queues.items():
             for m in queue.list():
                 s += "<tr>"
@@ -108,16 +124,17 @@ class Jobs(resource.Resource):
                 s += "<td>%s</td>" % str(m['name'])
                 s += "<td>%s</td>" % str(m['_job'])
                 s += "</tr>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Running</th></tr>"
+        s += "<tr><th colspan='%s' style='background-color: #ddd'>Running</th></tr>" % cols
         for p in self.root.launcher.processes.values():
             s += "<tr>"
             for a in ['project', 'spider', 'job', 'pid']:
                 s += "<td>%s</td>" % getattr(p, a)
             s += "<td>%s</td>" % (datetime.now() - p.start_time)
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
-            s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
+            if self.local_items:
+                s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
             s += "</tr>"
-        s += "<tr><th colspan='7' style='background-color: #ddd'>Finished</th></tr>"
+        s += "<tr><th colspan='%s' style='background-color: #ddd'>Finished</th></tr>" % cols
         for p in self.root.launcher.finished:
             s += "<tr>"
             for a in ['project', 'spider', 'job']:
@@ -125,7 +142,8 @@ class Jobs(resource.Resource):
             s += "<td></td>"
             s += "<td>%s</td>" % (p.end_time - p.start_time)
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
-            s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
+            if self.local_items:
+                s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
             s += "</tr>"
         s += "</table>"
         s += "</body>"

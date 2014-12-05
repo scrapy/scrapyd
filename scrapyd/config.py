@@ -2,6 +2,7 @@ import glob
 from cStringIO import StringIO
 from pkgutil import get_data
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
+from os.path import expanduser
 
 from scrapy.utils.conf import closest_scrapy_cfg
 
@@ -28,6 +29,7 @@ class Config(object):
         sources = ['/etc/scrapyd/scrapyd.conf', r'c:\scrapyd\scrapyd.conf']
         sources += sorted(glob.glob('/etc/scrapyd/conf.d/*'))
         sources += ['scrapyd.conf']
+        sources += [expanduser('~/.scrapyd.conf')]
         scrapy_cfg = closest_scrapy_cfg()
         if scrapy_cfg:
             sources.append(scrapy_cfg)
