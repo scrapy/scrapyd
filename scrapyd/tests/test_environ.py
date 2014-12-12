@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from twisted.trial import unittest
@@ -43,3 +44,13 @@ class EnvironmentTest(unittest.TestCase):
         env = environ.get_environment(msg, slot)
         self.failUnless('SCRAPY_FEED_URI' not in env)
         self.failUnless('SCRAPY_LOG_FILE' not in env)
+
+    def test_get_environment_with_logfile(self):
+        config = Config(values={'items_dir': '', 'logs_dir': '.', 'logs_filename': '{project}-{spider}-{Y}{m}{d}T{H}{M}{S}'})
+        msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
+        slot = 3
+        environ = Environment(config, initenv={})
+        now = datetime.datetime.now()
+        env = environ.get_environment(msg, slot)
+        expected_logfilename = now.strftime("mybot-spider-%Y%m%dT%H%M%S")
+        self.assert_(env['SCRAPY_LOG_FILE'], expected_logfilename)
