@@ -33,7 +33,7 @@ This will return a list of available targets and their URLs. For example::
     scrapyd              http://localhost:6800/
 
 You can define targets by adding them to your project's ``scrapy.cfg`` file,
-or any other supported location like ``~/.scrapy.cfg``, ``/etc/scrapy.cfg``,
+or any other supported location like ``~/scrapy.cfg``, ``/etc/scrapy.cfg``,
 or ``c:\scrapy\scrapy.cfg`` (in Windows).
 
 Here's an example of defining a new target ``scrapyd2`` with restricted access
