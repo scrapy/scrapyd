@@ -73,7 +73,7 @@ def main():
         _add_auth_header(req, target)
         f = urllib2.urlopen(req)
         projects = json.loads(f.read())['projects']
-        print os.linesep.join(projects)
+        print os.linesep.join(map(str, projects))
         return
 
     tmpdir = None
