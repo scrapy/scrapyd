@@ -14,7 +14,7 @@ setup_args = {
     'maintainer_email': 'info@scrapy.org',
     'license': 'BSD',
     'packages': ['scrapyd'],
-    'scripts': ['bin/scrapyd', 'bin/scrapyd-deploy'],
+    # 'scripts': ['bin/scrapyd', 'bin/scrapyd-deploy'],
     'include_package_data': True,
     'zip_safe': False,
     'classifiers': [
@@ -28,6 +28,11 @@ setup_args = {
         'Environment :: No Input/Output (Daemon)',
         'Topic :: Internet :: WWW/HTTP',
     ],
+    'entry_points': '''\
+    [console_scripts]
+    scrapyd = scrapyd.scripts.scrapyd_run:main
+    scrapy-deploy = scrapyd.scripts.scrapy_deploy:main
+    '''
 }
 
 try:
