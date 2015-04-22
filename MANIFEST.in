@@ -4,6 +4,7 @@ include MANIFEST.in
 include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
 recursive-include scrapyd/tests *.egg
+recursive-include scrapyd/scripts *.py
 recursive-include docs *
 prune docs/_build
 recursive-include extras *
