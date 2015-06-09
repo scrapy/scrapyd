@@ -20,16 +20,14 @@ scrapy_dir=$(mktemp /tmp/test-scrapy.XXXXXXX -d)
 echo "scrapyd dir: $scrapyd_dir"
 echo "scrapy dir : $scrapy_dir"
 
-bin/scrapyd -d $scrapyd_dir -l $scrapyd_log &
+scrapyd -d $scrapyd_dir -l $scrapyd_log &
 
 cd $scrapy_dir
 scrapy startproject testproj
 cd testproj
 cat > testproj/spiders/insophia.py <<!
-from scrapy.spider import BaseSpider
-from scrapy.selector import HtmlXPathSelector
-from scrapy.http import Request
-from scrapy.item import Item, Field
+from scrapy import Spider, Request, Item, Field
+from urlparse import urljoin
 
 
 class Section(Item):
@@ -39,22 +37,22 @@ class Section(Item):
     arg = Field()
 
 
-class InsophiaSpider(BaseSpider):
-    name = 'insophia'
-    start_urls = ['http://insophia.com']
+class ScrapinghubSpider(Spider):
+    name = 'scrapinghub'
+    start_urls = ['http://scrapinghub.com']
 
     def __init__(self, *a, **kw):
         self.arg = kw.pop('arg')
-        super(InsophiaSpider, self).__init__(*a, **kw)
+        super(ScrapinghubSpider, self).__init__(*a, **kw)
 
     def parse(self, response):
-        hxs = HtmlXPathSelector(response)
-        for url in hxs.select('//ul[@id="navlist"]/li/a/@href').extract():
+        for href in response.css('ul.nav a::attr("href")').extract():
+            url = urljoin(response.url, href)
+            print('URL:', url)
             yield Request(url, callback=self.parse_section)
 
     def parse_section(self, response):
-        hxs = HtmlXPathSelector(response)
-        title = hxs.select("//h2/text()").extract()[0]
+        title = response.xpath("//h2[1]/text()").extract()[0]
         yield Section(url=response.url, title=title, size=len(response.body),
             arg=self.arg)
 !
@@ -70,7 +68,7 @@ project = testproj
 
 scrapyd-deploy
 
-curl -s http://localhost:6800/schedule.json -d project=testproj -d spider=insophia -d arg=SOME_ARGUMENT
+curl -s http://localhost:6800/schedule.json -d project=testproj -d spider=scrapinghub -d arg=SOME_ARGUMENT
 
 echo "waiting 20 seconds for spider to run and finish..."
 sleep 20
@@ -96,19 +94,19 @@ if [ ! -f "$log_path" ]; then
 fi
 
 numitems="$(cat $feed_path | wc -l)"
-if [ "$numitems" != "6" ]; then
+if [ "$numitems" != "5" ]; then
     echo "error: wrong number of items scraped: $numitems"
     exit 1
 fi
 
 numscraped="$(cat $log_path | grep Scraped | wc -l)"
-if [ "$numscraped" != "6" ]; then
+if [ "$numscraped" != "5" ]; then
     echo "error: wrong number of 'Scraped' lines in log: $numscraped"
     exit 1
 fi
 
-if ! grep -q "About Us" $feed_path; then
-    echo "error: About Us page not scraped"
+if ! grep -q "Our Platform" $feed_path; then
+    echo "error: 'Our Platform' page not scraped"
     exit 1
 fi
 
