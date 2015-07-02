@@ -15,4 +15,5 @@ Contents
    deploy
    api
    config
+   contributing
    news
