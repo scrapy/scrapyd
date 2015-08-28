@@ -22,6 +22,23 @@ class WsResource(JsonResource):
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest)
 
+class Status(WsResource):
+
+    def render_GET(self, txrequest):
+        running = 0
+        pending = 0
+        finished = 0
+        projects = self.root.scheduler.list_projects()
+        for project in projects:
+            spiders = self.root.launcher.processes.values()
+            running += len(spiders)
+            queue = self.root.poller.queues[project]
+            pending += queue.count()
+            finished += len(self.root.launcher.finished)
+
+        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
+
+
 class Schedule(WsResource):
 
     def render_POST(self, txrequest):
