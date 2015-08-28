@@ -5,6 +5,22 @@ API
 
 The following section describes the available resources in Scrapyd JSON API.
 
+status.json
+-----------
+
+To check the load status of a service.
+
+* Supported Request Methods: ``GET``
+
+Example request::
+
+    curl http://localhost:6800/status.json
+
+Example response::
+
+    { "status": "ok", "running": "0", "pending": "0", "finished": "0", "node_name": "node-name" }
+
+
 addversion.json
 ---------------
 
