@@ -5,8 +5,8 @@ API
 
 The following section describes the available resources in Scrapyd JSON API.
 
-status.json
------------
+daemonstatus.json
+-----------------
 
 To check the load status of a service.
 
@@ -14,7 +14,7 @@ To check the load status of a service.
 
 Example request::
 
-    curl http://localhost:6800/status.json
+    curl http://localhost:6800/daemonstatus.json
 
 Example response::
 

@@ -22,7 +22,7 @@ class WsResource(JsonResource):
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest)
 
-class Status(WsResource):
+class DaemonStatus(WsResource):
 
     def render_GET(self, txrequest):
         running = 0
