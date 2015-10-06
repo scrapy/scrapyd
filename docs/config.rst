@@ -94,6 +94,17 @@ This refers to logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
 
+.. _finished_to_keep:
+
+finished_to_keep
+----------------
+
+.. versionadded:: 0.14
+
+The number of finished processes to keep in the launcher.
+Defaults to ``100``.
+This only reflects on the website /jobs endpoint and relevant json webservices.
+
 poll_interval
 -------------
 
