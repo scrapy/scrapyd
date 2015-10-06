@@ -88,8 +88,9 @@ jobs_to_keep
 
 .. versionadded:: 0.15
 
-The number of finished jobs to keep per spider. Defaults to ``5``. This
-includes logs and items.
+The number of finished jobs to keep per spider.
+Defaults to ``5``.
+This refers to logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
 
