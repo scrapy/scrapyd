@@ -142,6 +142,16 @@ and services.
 
 For more info see `Twisted Application Framework`_
 
+.. _webroot:
+
+webroot
+-------
+
+A twisted web resource that represents the interface to scrapyd.
+Scrapyd includes an interface with a website to provide simple monitoring
+and access to the application's webresources.
+This setting must provide the root class of the twisted web resource.
+
 node_name
 ---------
 
