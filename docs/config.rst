@@ -92,11 +92,11 @@ items_dir
 
 .. versionadded:: 0.15
 
-The directory where the Scrapy items will be stored. If you want to disable
-storing feeds of scraped items (perhaps, because you use a database or other
-storage) set this option empty, like this::
-
-    items_dir =
+The directory where the Scrapy items will be stored.
+This option is disabled by default
+because you are expected to use a database or a feed exporter.
+Setting it to non-empty results in storing scraped item feeds
+to the specified directory by overriding the scrapy setting ``FEED_URI``.
 
 .. _jobs_to_keep:
 
