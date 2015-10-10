@@ -5,6 +5,22 @@ API
 
 The following section describes the available resources in Scrapyd JSON API.
 
+daemonstatus.json
+-----------------
+
+To check the load status of a service.
+
+* Supported Request Methods: ``GET``
+
+Example request::
+
+    curl http://localhost:6800/daemonstatus.json
+
+Example response::
+
+    { "status": "ok", "running": "0", "pending": "0", "finished": "0", "node_name": "node-name" }
+
+
 addversion.json
 ---------------
 
@@ -38,6 +54,7 @@ Schedule a spider run (also known as a job), returning the job id.
   * ``project`` (string, required) - the project name
   * ``spider`` (string, required) - the spider name
   * ``setting`` (string, optional) - a scrapy setting to use when running the spider
+  * ``jobid`` (string, optional) - a job id used to identify the job, overrides the default generated UUID
   * any other parameter is passed as spider argument
 
 Example request::
@@ -52,6 +69,9 @@ Example request passing a spider argument (``arg1``) and a setting
 (`DOWNLOAD_DELAY`_)::
 
     $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider -d setting=DOWNLOAD_DELAY=2 -d arg1=val1
+
+.. note:: Spiders scheduled with scrapyd should allow for an arbitrary number of keyword arguments
+          as scrapyd sends internally generated spider arguments to the spider being scheduled
 
 .. _cancel.json:
 

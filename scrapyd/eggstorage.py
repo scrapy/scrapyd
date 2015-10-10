@@ -1,3 +1,4 @@
+import re
 from glob import glob
 from os import path, makedirs, remove
 from shutil import copyfileobj, rmtree
@@ -45,5 +46,6 @@ class FilesystemEggStorage(object):
                 self.delete(project)
 
     def _eggpath(self, project, version):
-        x = path.join(self.basedir, project, "%s.egg" % version)
+        sanitized_version = re.sub(r'[^a-zA-Z0-9_-]', '_', version)
+        x = path.join(self.basedir, project, "%s.egg" % sanitized_version)
         return x

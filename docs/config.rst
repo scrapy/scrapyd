@@ -68,6 +68,23 @@ storing logs set this option empty, like this::
 
     logs_dir =
 
+logs_filename
+-------------
+
+The filename (appended to ``logs_dir``) to use for the crawl. ``{project}``
+and ``{spider}`` placeholders will be substituted, as will certain datetime
+elements (but only ``{Y}``, ``{m}``, ``{d}``, ``{H}``, ``{M}``, ``{S}``).
+
+For example,
+
+   logs_filename = {spider}-{Y}{m}{d}.log
+
+If no value is specified, the default value is ``{project}/{spider}/ID.log``
+(where ``ID`` is the job id).
+
+Note: if a custom value for ``logs_filename`` is used then ``jobs_to_keep`` is
+no longer applicable. Scrapyd will not delete old log files.
+
 .. _items_dir:
 
 items_dir
@@ -88,10 +105,22 @@ jobs_to_keep
 
 .. versionadded:: 0.15
 
-The number of finished jobs to keep per spider. Defaults to ``5``. This
-includes logs and items.
+The number of finished jobs to keep per spider.
+Defaults to ``5``.
+This refers to logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
+
+.. _finished_to_keep:
+
+finished_to_keep
+----------------
+
+.. versionadded:: 0.14
+
+The number of finished processes to keep in the launcher.
+Defaults to ``100``.
+This only reflects on the website /jobs endpoint and relevant json webservices.
 
 poll_interval
 -------------
@@ -112,6 +141,16 @@ used if you want to extend Scrapyd by adding and removing your own components
 and services.
 
 For more info see `Twisted Application Framework`_
+
+.. _webroot:
+
+webroot
+-------
+
+A twisted web resource that represents the interface to scrapyd.
+Scrapyd includes an interface with a website to provide simple monitoring
+and access to the application's webresources.
+This setting must provide the root class of the twisted web resource.
 
 node_name
 ---------
