@@ -40,9 +40,13 @@ Installing Scrapyd in Ubuntu
 
 Scrapyd comes with official Ubuntu packages ready to use in your Ubuntu
 servers. They are shipped in the same APT repos of Scrapy, which can be added
-as described in `Scrapy Ubuntu packages`_. Once you have added the Scrapy APT
-repos, you can install Scrapyd with ``apt-get``::
+as described in `Scrapy Ubuntu packages`_.
 
+Note that ScrapyD only works with versions of Scrapy up to 0.24, version 0.25 breaks ScrapyD, so you should install a specific version separately as the automatic dependencies will otherwise install the latest (incompatible) version.
+
+Once you have added the Scrapy APT repos, you can install Scrapyd with ``apt-get``::
+
+    apt-get install scrapy-0.24
     apt-get install scrapyd
 
 This will install Scrapyd in your Ubuntu server creating a ``scrapy`` user
