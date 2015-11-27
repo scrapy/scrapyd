@@ -1,3 +1,9 @@
+scrapyd (1.1~r0ubuntu1) unstable; urgency=low
+
+  * Scrapyd update
+
+ -- Cyril Aknine <caknine@clever-age.com>  Fri, 27 Nov 2015 11:22:55 +0100
+
 scrapyd (1.0~r0) unstable; urgency=low
 
   * Initial release.

@@ -15,12 +15,3 @@ Description: Service to host scrapy crawlers
  Scrapyd is an application for deploying and running Scrapy spiders.
  It enables you to deploy (upload) your projects and control their spiders
  using an API.
-
-Package: scrapyd-deploy
-Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, scrapy, python-w3lib, python-setuptools
-Description: Scrapyd deployment tool
- The package contains the Scrapyd deployment tool.
- .
- scrapyd-deploy is used to deploy Scrapy projects to Scrapyd servers.
- It contains the same functionality as provided by the `scrapy deploy` command.
