@@ -48,7 +48,7 @@ class EnvironmentTest(unittest.TestCase):
         self.failUnless('SCRAPY_LOG_FILE' not in env)
 
     def test_get_environment_with_logfile(self):
-        config = Config(values={'items_dir': '', 'logs_dir': '.', 'logs_filename': '{project}-{spider}-{Y}{m}{d}T{H}{M}{S}'})
+        config = Config(values={'items_dir': '', 'logs_dir': '.', 'logs_filename': '{project}-{spider}-{job}-{Y}{m}{d}T{H}{M}{S}'})
         msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
         slot = 3
         environ = Environment(config, initenv={})
