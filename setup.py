@@ -1,4 +1,5 @@
 from os.path import join, dirname
+import sys
 
 with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
     version = f.read().strip()
@@ -34,6 +35,10 @@ try:
 except ImportError:
     from distutils.core import setup
 else:
-    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17']
+    if sys.version_info < (2, 7):
+        setup_args['install_requires'] = ['Twisted>=8.0,<=15.1', 'Scrapy>=0.17,<0.19', 'w3lib<1.9']
+    else:
+        setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17,<0.25', 'w3lib<1.9']
+
 
 setup(**setup_args)
