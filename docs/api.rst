@@ -41,6 +41,14 @@ Example response::
 
     {"status": "ok", "spiders": 3}
 
+.. note:: Scrapyd uses the `distutils LooseVersion`_ to interpret the version numbers you provide.
+
+The latest version for a project will be used by default whenever necessary.
+
+schedule.json_ and listspiders.json_ allow you to explicitly set the desired project version.
+
+.. _distutils LooseVersion: http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html
+
 .. _scrapyd-schedule:
 
 schedule.json
@@ -53,8 +61,9 @@ Schedule a spider run (also known as a job), returning the job id.
 
   * ``project`` (string, required) - the project name
   * ``spider`` (string, required) - the spider name
-  * ``setting`` (string, optional) - a scrapy setting to use when running the spider
+  * ``setting`` (string, optional) - a Scrapy setting to use when running the spider
   * ``jobid`` (string, optional) - a job id used to identify the job, overrides the default generated UUID
+  * ``_version`` (string, optional) - the version of the project to use
   * any other parameter is passed as spider argument
 
 Example request::
@@ -135,12 +144,13 @@ Example response::
 listspiders.json
 ----------------
 
-Get the list of spiders available in the last version of some project.
+Get the list of spiders available in the last (unless overridden) version of some project.
 
 * Supported Request Methods: ``GET``
 * Parameters:
 
   * ``project`` (string, required) - the project name
+  * ``_version`` (string, optional) - the version of the project to examine
 
 Example request::
 

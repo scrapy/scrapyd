@@ -92,12 +92,12 @@ def get_crawl_args(message):
         args += ['%s=%s' % (k, v)]
     return args
 
-def get_spider_list(project, runner=None, pythonpath=None):
+def get_spider_list(project, runner=None, pythonpath=None, version=''):
     """Return the spider list from the given project, using the given runner"""
     if "cache" not in get_spider_list.__dict__:
         get_spider_list.cache = UtilsCache()
     try:
-        return get_spider_list.cache[project]
+        return get_spider_list.cache[project][version]
     except KeyError:
         pass
     if runner is None:
@@ -106,6 +106,8 @@ def get_spider_list(project, runner=None, pythonpath=None):
     env['SCRAPY_PROJECT'] = project
     if pythonpath:
         env['PYTHONPATH'] = pythonpath
+    if version:
+        env['SCRAPY_EGG_VERSION'] = version
     pargs = [sys.executable, '-m', runner, 'list']
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
@@ -113,5 +115,10 @@ def get_spider_list(project, runner=None, pythonpath=None):
         msg = err or out or 'unknown error'
         raise RuntimeError(msg.splitlines()[-1])
     tmp = out.splitlines();
-    get_spider_list.cache[project] = tmp
+    try:
+        project_cache = get_spider_list.cache[project]
+        project_cache[version] = tmp
+    except KeyError:
+        project_cache = {version: tmp}
+    get_spider_list.cache[project] = project_cache
     return tmp

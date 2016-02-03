@@ -12,7 +12,8 @@ from scrapyd.eggutils import activate_egg
 def project_environment(project):
     app = get_application()
     eggstorage = app.getComponent(IEggStorage)
-    version, eggfile = eggstorage.get(project)
+    eggversion = os.environ.get('SCRAPY_EGG_VERSION', None)
+    version, eggfile = eggstorage.get(project, eggversion)
     if eggfile:
         prefix = '%s-%s-' % (project, version)
         fd, eggpath = tempfile.mkstemp(prefix=prefix, suffix='.egg')
