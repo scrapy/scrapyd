@@ -47,7 +47,8 @@ class Schedule(WsResource):
         args = dict((k, v[0]) for k, v in txrequest.args.items())
         project = args.pop('project')
         spider = args.pop('spider')
-        spiders = get_spider_list(project)
+        version = args.get('_version', '')
+        spiders = get_spider_list(project, version=version)
         if not spider in spiders:
             return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
@@ -82,7 +83,7 @@ class AddVersion(WsResource):
         version = txrequest.args['version'][0]
         eggf = StringIO(txrequest.args['egg'][0])
         self.root.eggstorage.put(eggf, project, version)
-        spiders = get_spider_list(project)
+        spiders = get_spider_list(project, version=version)
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
@@ -105,7 +106,8 @@ class ListSpiders(WsResource):
 
     def render_GET(self, txrequest):
         project = txrequest.args['project'][0]
-        spiders = get_spider_list(project, runner=self.root.runner)
+        version = txrequest.args.get('_version', [''])[0]
+        spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
 class ListJobs(WsResource):
@@ -128,6 +130,7 @@ class DeleteProject(WsResource):
     def render_POST(self, txrequest):
         project = txrequest.args['project'][0]
         self._delete_version(project)
+        UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
 
     def _delete_version(self, project, version=None):
@@ -140,4 +143,5 @@ class DeleteVersion(DeleteProject):
         project = txrequest.args['project'][0]
         version = txrequest.args['version'][0]
         self._delete_version(project, version)
+        UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
