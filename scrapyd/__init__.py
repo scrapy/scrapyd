@@ -1,8 +1,8 @@
 from scrapy.utils.misc import load_object
 from .config import Config
 
-version_info = (0, 17, 1)
-__version__ = "0.17.1"
+version_info = (0, 17, 2)
+__version__ = "0.17.2"
 
 
 def get_application(config=None):
