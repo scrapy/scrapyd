@@ -2,6 +2,14 @@
 Overview
 ========
 
+.. warning::
+
+    This documentation is for the old |version| version of scrapyd.
+    Unless you are maintaining an old project that requires it,
+    you may instead want the
+    `latest version <http://scrapyd.readthedocs.org/en/latest/>`_.
+
+
 Projects and versions
 =====================
 

@@ -21,6 +21,15 @@ your project) and each target supports multiple projects.
 Each time you deploy a new version of a project, you can name it for later
 reference.
 
+.. warning::
+
+    This documentation is for the old |version| version of scrapyd.
+    Unless you are maintaining an old project that requires it,
+    you may instead want the
+    `latest version <http://scrapyd.readthedocs.org/en/latest/>`_.
+
+
+
 Show and define targets
 -----------------------
 
