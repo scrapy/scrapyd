@@ -1,4 +1,5 @@
 from os.path import join, dirname
+import sys
 
 with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
     version = f.read().strip()
@@ -34,6 +35,27 @@ try:
 except ImportError:
     from distutils.core import setup
 else:
-    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17']
+    if sys.version_info < (2, 7):
+        setup_args['install_requires'] = ['Twisted>=8.0,<=15.1', 'Scrapy>=0.17,<0.19', 'w3lib<1.9']
+    else:
+        setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17,<0.25', 'w3lib<1.9']
+
+
+try:
+    import wheel
+except ImportError:
+    pass
+else:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+    class bdist_wheel(_bdist_wheel):
+        description = (
+        'Building wheels is disabled for this unsupported version of scrapyd'
+        ' because of dynamic dependencies.'
+        ' If you need to build a wheel, try a newer version of scrapyd.'
+        )
+        def run(self):
+            raise SystemExit(self.description)
+    setup_args.setdefault('cmdclass', {}).update(bdist_wheel=bdist_wheel)
+
 
 setup(**setup_args)
