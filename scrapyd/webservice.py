@@ -25,16 +25,9 @@ class WsResource(JsonResource):
 class DaemonStatus(WsResource):
 
     def render_GET(self, txrequest):
-        running = 0
-        pending = 0
-        finished = 0
-        projects = self.root.scheduler.list_projects()
-        for project in projects:
-            spiders = self.root.launcher.processes.values()
-            running += len(spiders)
-            queue = self.root.poller.queues[project]
-            pending += queue.count()
-            finished += len(self.root.launcher.finished)
+        pending = sum(q.count() for q in self.root.poller.queues.values())
+        running = len(self.root.launcher.processes)
+        finished = len(self.root.launcher.finished)
 
         return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
 
