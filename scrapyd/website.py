@@ -70,7 +70,7 @@ class Home(resource.Resource):
 <li><a href="/jobs">Jobs</a></li>
 <li><a href="/items/">Items</li>
 <li><a href="/logs/">Logs</li>
-<li><a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Documentation</a></li>
+<li><a href="http://scrapyd.readthedocs.org/en/1.0/">Documentation</a></li>
 </ul>
 
 <h2>How to schedule a spider?</h2>
@@ -81,7 +81,7 @@ monitoring)</p>
 <p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
 <p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
 
-<p>For more information about the API, see the <a href="http://doc.scrapy.org/en/latest/topics/scrapyd.html">Scrapyd documentation</a></p>
+<p>For more information about the API, see the <a href="http://scrapyd.readthedocs.org/en/1.0/">Scrapyd documentation</a></p>
 </body>
 </html>
 """ % vars

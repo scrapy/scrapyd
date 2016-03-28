@@ -2,6 +2,14 @@
 Overview
 ========
 
+.. warning::
+
+    This documentation is for the old |version| version of scrapyd.
+    Unless you are maintaining an old project that requires it,
+    you may instead want the
+    `latest version <http://scrapyd.readthedocs.org/en/latest/>`_.
+
+
 Projects and versions
 =====================
 
@@ -47,11 +55,6 @@ distribution::
     scrapyd
 
 That should get your Scrapyd started.
-
-Or, if you want to start Scrapyd from inside a Scrapy project you can use the
-`server command`_, like this::
-
-    scrapy server
 
 Scheduling a spider run
 =======================
