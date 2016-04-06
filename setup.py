@@ -1,4 +1,16 @@
+import sys
+
+try:
+    from setuptools import setup
+    using_setuptools = True
+except ImportError:
+    from distutils.core import setup
+    using_setuptools = False
+
 from os.path import join, dirname
+
+if sys.version_info[:2] != (2, 7):
+    sys.exit('Python 2.7 is required for scrapyd')
 
 with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
     version = f.read().strip()
@@ -18,7 +30,6 @@ setup_args = {
     'zip_safe': False,
     'classifiers': [
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
@@ -27,17 +38,15 @@ setup_args = {
         'Environment :: No Input/Output (Daemon)',
         'Topic :: Internet :: WWW/HTTP',
     ],
-    'entry_points': '''\
-    [console_scripts]
-    scrapyd = scrapyd.scripts.scrapyd_run:main
-    '''
 }
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-else:
+
+if using_setuptools:
     setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17']
+    setup_args['entry_points'] = {'console_scripts': [
+        'scrapyd = scrapyd.scripts.scrapyd_run:main'
+    ]}
+else:
+    setup_args['scripts'] = ['scrapyd/scripts/scrapyd_run.py']
 
 setup(**setup_args)
