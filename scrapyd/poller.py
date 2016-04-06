@@ -23,9 +23,9 @@ class QueuePoller(object):
             return
         for p, q in self.queues.iteritems():
             c = yield maybeDeferred(q.count)
-            if c & self.has_slot_for_project(p):
-                msg = yield maybeDeferred(q.pop)
-                returnValue(self.dq.put(self._message(msg, p)))
+            if c and self.has_slot_for_project(p):
+                  msg = yield maybeDeferred(q.pop)
+                  returnValue(self.dq.put(self._message(msg, p)))
 
     def has_slot_for_project(self, project_name):
         running_jobs = 0
