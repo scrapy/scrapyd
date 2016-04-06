@@ -42,6 +42,12 @@ max_proc_per_cpu
 The maximum number of concurrent Scrapy process that will be started per cpu.
 Defaults to ``4``.
 
+max_jobs_per_project
+----------------
+
+The maximum number of concurrent Scrapy process per project.
+Defaults to ``4``.
+
 debug
 -----
 
