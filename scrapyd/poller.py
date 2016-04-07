@@ -20,11 +20,11 @@ class QueuePoller(object):
             return
         for p, q in self.queues.iteritems():
             c = yield maybeDeferred(q.count)
-            if c and self.has_slot_for_project(p, launcher):
+            if c and self._has_slot_for_project(p, launcher):
                 msg = yield maybeDeferred(q.pop)
                 returnValue(self.dq.put(self._message(msg, p)))
 
-    def has_slot_for_project(self, project_name, launcher):
+    def _has_slot_for_project(self, project_name, launcher):
         running_jobs = 0
         spiders = launcher.processes.values()
         for s in spiders:
