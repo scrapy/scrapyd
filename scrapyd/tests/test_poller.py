@@ -10,6 +10,8 @@ from scrapyd.config import Config
 from scrapyd.poller import QueuePoller
 from scrapyd.utils import get_spider_queues
 
+from unittest.mock import Mock
+
 class QueuePollerTest(unittest.TestCase):
 
     def setUp(self):
@@ -23,7 +25,9 @@ class QueuePollerTest(unittest.TestCase):
         config = Config(values={'eggs_dir': eggs_dir, 'dbs_dir': dbs_dir})
         self.queues = get_spider_queues(config)
         self.poller = QueuePoller(config)
-
+        self.lancher_mock = Mock()
+        self.lancher_mock.processes =  Mock(return_value={})
+        
     def test_interface(self):
         verifyObject(IPoller, self.poller)
 
@@ -34,8 +38,8 @@ class QueuePollerTest(unittest.TestCase):
         d2 = self.poller.next()
         self.failUnless(isinstance(d1, Deferred))
         self.failIf(hasattr(d1, 'result'))
-        self.poller.poll()
+        self.poller.poll(self.lancher_mock)
         self.queues['mybot1'].pop()
-        self.poller.poll()
+        self.poller.poll(self.lancher_mock)
         self.failUnlessEqual(d1.result, {'_project': 'mybot1', '_spider': 'spider1'})
         self.failUnlessEqual(d2.result, {'_project': 'mybot2', '_spider': 'spider2'})
