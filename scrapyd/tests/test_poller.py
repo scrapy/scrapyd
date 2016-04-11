@@ -10,7 +10,7 @@ from scrapyd.config import Config
 from scrapyd.poller import QueuePoller
 from scrapyd.utils import get_spider_queues
 
-from unittest.mock import Mock
+from mock import Mock
 
 class QueuePollerTest(unittest.TestCase):
 
@@ -26,8 +26,8 @@ class QueuePollerTest(unittest.TestCase):
         self.queues = get_spider_queues(config)
         self.poller = QueuePoller(config)
         self.lancher_mock = Mock()
-        self.lancher_mock.processes =  Mock(return_value={})
-        
+        self.lancher_mock.processes =  {}
+                
     def test_interface(self):
         verifyObject(IPoller, self.poller)
 
