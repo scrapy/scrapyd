@@ -12,7 +12,7 @@ class QueuePoller(object):
         self.config = config
         self.update_projects()
         self.dq = DeferredQueue(size=1)
-        self.max_jobs_per_project = int(self.config.get('max_jobs_per_project', 4))
+        self.max_jobs_per_project = self.config.getint('max_jobs_per_project', 4)
 
     @inlineCallbacks
     def poll(self, launcher):
