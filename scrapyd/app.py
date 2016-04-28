@@ -35,7 +35,7 @@ def application(config):
     webpath = config.get('webroot', 'scrapyd.website.Root')
     webcls = load_object(webpath)
 
-    timer = TimerService(poll_interval, poller.poll)
+    timer = TimerService(poll_interval, poller.poll, launcher)
     webservice = TCPServer(http_port, server.Site(webcls(config, app)), interface=bind_address)
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)

@@ -1,2 +1,3 @@
 Scrapy
 twisted==11.1.0
+mock
