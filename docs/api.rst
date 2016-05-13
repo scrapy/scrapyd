@@ -67,6 +67,7 @@ Schedule a spider run (also known as a job), returning the job id.
   * ``spider`` (string, required) - the spider name
   * ``setting`` (string, optional) - a Scrapy setting to use when running the spider
   * ``jobid`` (string, optional) - a job id used to identify the job, overrides the default generated UUID
+  * ``priority`` (float, optional) - priority for this project's spider queue — 0 by default
   * ``_version`` (string, optional) - the version of the project to use
   * any other parameter is passed as spider argument
 

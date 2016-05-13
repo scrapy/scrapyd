@@ -10,9 +10,9 @@ class SpiderScheduler(object):
         self.config = config
         self.update_projects()
 
-    def schedule(self, project, spider_name, **spider_args):
+    def schedule(self, project, spider_name, priority, **spider_args):
         q = self.queues[project]
-        q.add(spider_name, **spider_args)
+        q.add(spider_name, priority, **spider_args)
 
     def list_projects(self):
         return self.queues.keys()

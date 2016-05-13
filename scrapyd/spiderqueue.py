@@ -10,10 +10,9 @@ class SqliteSpiderQueue(object):
     def __init__(self, database=None, table='spider_queue'):
         self.q = JsonSqlitePriorityQueue(database, table)
 
-    def add(self, name, **spider_args):
+    def add(self, name, priority, **spider_args):
         d = spider_args.copy()
         d['name'] = name
-        priority = float(d.pop('priority', 0))
         self.q.put(d, priority)
 
     def pop(self):
