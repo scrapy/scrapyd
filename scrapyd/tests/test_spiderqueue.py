@@ -4,7 +4,7 @@ from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
 from scrapyd.interfaces import ISpiderQueue
-from scrapyd.spiderqueue import SqliteSpiderQueue
+from scrapyd import spiderqueue
 
 class SpiderQueueTest(unittest.TestCase):
     """This test case can be used easily for testing other SpiderQueue's by
@@ -15,12 +15,16 @@ class SpiderQueueTest(unittest.TestCase):
     def setUp(self):
         self.q = self._get_queue()
         self.name = 'spider1'
-        self.args = {'arg1': 'val1', 'arg2': 2}
+        self.args = {
+            'arg1': 'val1',
+            'arg2': 2,
+            'arg3': u'\N{SNOWMAN}',
+        }
         self.msg = self.args.copy()
         self.msg['name'] = self.name
 
     def _get_queue(self):
-        return SqliteSpiderQueue(':memory:')
+        return spiderqueue.SqliteSpiderQueue(':memory:')
 
     def test_interface(self):
         verifyObject(ISpiderQueue, self.q)
@@ -64,3 +68,13 @@ class SpiderQueueTest(unittest.TestCase):
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 0)
+
+
+class JsonSpiderQueueTest(unittest.TestCase):
+    def _get_queue(self):
+        return spiderqueue.JsonSqliteSpiderQueue(':memory:')
+
+
+class PickleSpiderQueueTest(unittest.TestCase):
+    def _get_queue(self):
+        return spiderqueue.PickleSqliteSpiderQueue(':memory:')
