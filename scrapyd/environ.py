@@ -52,6 +52,7 @@ class Environment(object):
         format_args = {}
         format_args['project'] = message['_project']
         format_args['spider'] = message['_spider']
+        format_args['job'] = message['_job']
         format_args['Y'] = now.year
         format_args['m'] = now.month
         format_args['d'] = now.day
