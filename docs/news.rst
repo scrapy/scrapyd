@@ -3,6 +3,33 @@
 Release notes
 =============
 
+1.1.1 - Unreleased
+------------------
+
+Removed
+~~~~~~~
+
+- Disabled bdist_wheel command in setup to define dynamic requirements
+  despite of pip-7 wheel caching bug.
+
+Fixed
+~~~~~
+
+- FEED_URI was always overridden by scrapyd
+- Specified maximum versions for requirements that became incompatible.
+- Marked package as zip-unsafe because twistd requires a plain ``txapp.py``
+- Don't install zipped scrapy in py26 CI env
+  because its setup doesn't include the ``scrapy/VERSION`` file.
+
+Added
+~~~~~
+
+- Enabled some missing tests for the sqlite queues.
+- Enabled CI tests for python2.6 because it was supported by the 1.1 release.
+- Document missing config options and include in default_scrapyd.conf
+- Note the spider queue's ``priority`` argument in the scheduler's doc.
+
+
 1.1.0
 -----
 *Release date: 2015-06-29*
