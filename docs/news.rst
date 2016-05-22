@@ -5,6 +5,7 @@ Release notes
 
 1.1.0
 -----
+*Release date: 2015-06-29*
 
 Features & Enhancements
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -51,6 +52,7 @@ Documentation
 
 1.0.2
 -----
+*Release date: 2016-03-28*
 
 setup script
 ~~~~~~~~~~~~
@@ -66,5 +68,6 @@ documentation
 
 1.0
 ---
+*Release date: 2013-09-02*
 
 First standalone release (it was previously shipped with Scrapy until Scrapy 0.16).
