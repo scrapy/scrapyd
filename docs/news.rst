@@ -66,8 +66,13 @@ documentation
 - Updated broken links, references to wrong versions and scrapy
 - Warn that scrapyd 1.0 felling out of support
 
-1.0
----
+1.0.1
+-----
+*Release date: 2013-09-02*
+*Trivial update*
+
+1.0.0
+-----
 *Release date: 2013-09-02*
 
 First standalone release (it was previously shipped with Scrapy until Scrapy 0.16).
