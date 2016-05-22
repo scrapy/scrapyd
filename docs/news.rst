@@ -10,6 +10,7 @@ Features & Enhancements
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 - Outsource scrapyd-deploy command to scrapyd-client (c1358dc, c9d66ca..191353e)
+  **If you rely on this command, install the scrapyd-client package from pypi.**
 - Look for a ``~/.scrapyd.conf`` file in the users home (1fce99b)
 - Adding the nodename to identify the process that is working on the job (fac3a5c..4aebe1c)
 - Allow remote items store (e261591..35a21db)
