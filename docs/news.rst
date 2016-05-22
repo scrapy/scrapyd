@@ -9,46 +9,44 @@ Release notes
 Features & Enhancements
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- Outsource scrapyd-deploy command to scrapyd-client (#92, #90)
-- Look for a .scrapyd.conf file in the users home (~/.scrapyd.conf) (#58)
-- Adding the nodename to identify the process that is working on the job (#42)
-- Allow remote items store (#48)
-- Debian sysvinit script (#41)
-- Add 'start_time' field in webservice for running jobs (#24)
-- Check if a spider exists before schedule it (with sqlite cache) (#8, #17)
+- Outsource scrapyd-deploy command to scrapyd-client (c1358dc, c9d66ca..191353e)
+- Look for a ``~/.scrapyd.conf`` file in the users home (1fce99b)
+- Adding the nodename to identify the process that is working on the job (fac3a5c..4aebe1c)
+- Allow remote items store (e261591..35a21db)
+- Debian sysvinit script (a54193a, ff457a9)
+- Add 'start_time' field in webservice for running jobs (6712af9, acd460b)
+- Check if a spider exists before schedule it (with sqlite cache) (#8, 288afef..a185ff2)
 
 Bugfixes
 ~~~~~~~~
 
-- Fix bug with --list-projects option in scrapyd-deploy (#88)
-- Sanitize version names when creating egg paths (#72)
-- Copy txweb/JsonResource import from scrapy (#62)
-- Use w3lib to generate feed uris (#73)
-- Fix GIT versioning for projects without annotated tags (#47)
-- Correcting HTML tags in scrapyd website monitor (#38)
-- Added missing anchor closing tags (#35)
-- Fix (at least) windows problem (#19)
+- F̶i̶x̶ ̶s̶c̶r̶a̶p̶y̶d̶-̶d̶e̶p̶l̶o̶y̶ ̶-̶-̶l̶i̶s̶t̶-̶p̶r̶o̶j̶e̶c̶t̶s̶ ̶(̶9̶4̶2̶a̶1̶b̶2̶)̶ → moved to scrapyd-client
+- Sanitize version names when creating egg paths (8023720)
+- Copy txweb/JsonResource from scrapy which no longer provides it (99ea920)
+- Use w3lib to generate correct feed uris (9a88ea5)
+- Fix GIT versioning for projects without annotated tags (e91dcf4 #34)
+- Correcting HTML tags in scrapyd website monitor (da5664f, 26089cd)
+- Fix FEED_URI path on windows (4f0060a)
 
 Setup script and Tests/CI
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Updating integration test script (#98)
-- Changed scripts to be installed using entry_points (#89)
-- Renovate scrapy upstart job a bit (#57)
-- Travis.yml: remove deprecated --use-mirros pip option (b3cdc61)
-- Make scrapyd package zip unsafe because the scrapyd command requires the txapp.py unpacked to run (f27c054, #49)
-- Removed python 2.6/lucid env from travis (#32)
+- Restore integration test script (66de25d)
+- Changed scripts to be installed using entry_points (b670f5e)
+- Renovate scrapy upstart job (d130770)
+- Travis.yml: remove deprecated ``--use-mirros`` pip option (b3cdc61)
+- Mark package as zip unsafe because twistd requires a plain ``txapp.py`` (f27c054)
+- Removed python 2.6/lucid env from travis (5277755)
 - Made Scrapyd package name lowercase (1adfc31)
 
 Documentation
 ~~~~~~~~~~~~~
 
-- Update api.rst (#79)
-- Fixing typo "mulitplied" (#51)
+- Spiders should allow for arbitrary keyword arguments (696154)
+- Various typos (51f1d69, 0a4a77a)
 - Fix release notes: 1.0 is already released (6c8dcfb)
-- Update index.rst (#37)
-- Changed the links to the new documentation page (#33)
-- Remove reference to 'scrapy server' command (f599b60, #25)
+- Point website module's links to readthedocs (215c700)
+- Remove reference to 'scrapy server' command (f599b60)
 
 1.0.2
 -----
