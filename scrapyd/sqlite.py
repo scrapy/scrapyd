@@ -1,5 +1,8 @@
 import sqlite3
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 import json
 from UserDict import DictMixin
 
@@ -67,10 +70,10 @@ class SqliteDict(DictMixin):
 class PickleSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return sqlite3.Binary(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
     def decode(self, obj):
-        return cPickle.loads(bytes(obj))
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqliteDict(SqliteDict):
@@ -155,10 +158,10 @@ class SqlitePriorityQueue(object):
 class PickleSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return sqlite3.Binary(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
     def decode(self, obj):
-        return cPickle.loads(bytes(obj))
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqlitePriorityQueue(SqlitePriorityQueue):
