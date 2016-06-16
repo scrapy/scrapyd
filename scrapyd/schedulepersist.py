@@ -2,18 +2,19 @@ import psycopg2
 import json
 import datetime
 import logging
+from scrapyd.config import Config
 
 logger = logging.getLogger(__name__)
 
 class MysqlSchedulePersist(object):
     
-    def __init__(self, config):
-        
-        self.db_name = config.get('postgres_db_name')
-        self.host = config.get('postgres_host')
-        self.port = config.get('postgres_port')
-        self.user = config.get('postgres_user')
-        self.password = config.get('postgres_password')
+    def __init__(self):
+        c = Config()
+        self.db_name = c.get('postgres_db_name')
+        self.host = c.get('postgres_host')
+        self.port = c.get('postgres_port')
+        self.user = c.get('postgres_user')
+        self.password = c.get('postgres_password')
         self.table = 'schedule'
         self.con = None
         self.cur = None
@@ -69,6 +70,37 @@ class MysqlSchedulePersist(object):
                 self.logger.info('Psycopg2 Error :' + e.pgerror)
                 self.con = None
                 self.cur = None
+        finally:
+            if self.con:
+                self.con.close()
+                
+    def setStart(self, jobid):
+        query = "update schedule set start_time = '" +\
+                unicode(datetime.datetime.now()) +"' " +\
+                " where jobid = '"+ jobid +"'"
+        self.executeQuey(query);
+
+                
+    def setEnd(self, jobid):
+        query = "update schedule set end_time = '" +\
+                unicode(datetime.datetime.now()) +"' " +\
+                " where jobid = '"+ jobid +"'"
+        self.executeQuey(query);
+        
+                
+    def executeQuey(self, query):
+        if self.con is None or self.con.closed != 0 or self.cur is None:
+            self.connect()
+        try:
+            self.logger.info("Executing query: " + query)
+            self.cur.execute(query)
+            self.con.commit()
+        except psycopg2.DatabaseError, e:
+            self.con.rollback()
+            self.con.close()
+            self.logger.info('Psycopg2 Error :' + e.pgerror)
+            self.con = None
+            self.cur = None
         finally:
             if self.con:
                 self.con.close()

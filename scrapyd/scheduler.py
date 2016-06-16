@@ -11,7 +11,7 @@ class SpiderScheduler(object):
     def __init__(self, config):
         self.config = config
         self.update_projects()
-        self.schedulePersist = MysqlSchedulePersist(config)
+        self.schedulePersist = MysqlSchedulePersist()
 
     def schedule(self, project, spider_name, **spider_args):
         q = self.queues[project]
