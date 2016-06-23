@@ -81,9 +81,13 @@ class MysqlSchedulePersist(object):
         self.executeQuey(query);
 
                 
-    def setEnd(self, jobid):
-        query = "update schedule set end_time = '" +\
-                unicode(datetime.datetime.now()) +"' " +\
+    def setEnd(self, jobid, error_count, warn_count, item_count, request_count):
+        query = "update schedule set end_time = '"          +\
+                unicode(datetime.datetime.now()) +"', "     +\
+                " error_count = " + str(error_count) + ", "      +\
+                " warn_count = " + str(warn_count) + ", "        +\
+                " item_count = " + str(item_count) + ", "        +\
+                " request_count = " + str(request_count) + " "  +\
                 " where jobid = '"+ jobid +"'"
         self.executeQuey(query);
         
