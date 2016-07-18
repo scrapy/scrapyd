@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class Postgres(object):
-    
+    con = None
     def __init__(self, database=None, table="dict"):
         c = Config()
         self.db_name = c.get('postgres_db_name')
@@ -23,18 +23,18 @@ class Postgres(object):
         self.port = c.get('postgres_port')
         self.user = c.get('postgres_user')
         self.password = c.get('postgres_password')
-        self.con = None
+        Postgres.con = None
         
     def connect(self, retries=0):
         try:
             log.msg('Connecting to Database')
-            self.con = psycopg2.connect(database=self.db_name,
+            Postgres.con = psycopg2.connect(database=self.db_name,
                                         user=self.user,
                                         password=self.password,
                                         host=self.host,
                                         port=self.port)
             
-            self.con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            Postgres.con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         except Exception as e:
             log.msg("Error to connect to database... ")
             if retries < 10 :
@@ -44,9 +44,9 @@ class Postgres(object):
                 raise e
 
     def execute(self, sql, param = None, query=False, uniqueResult=False):
-        if self.con is None or self.con.closed != 0 :
+        if Postgres.con is None or Postgres.con.closed != 0 :
             self.connect()
-        cur = self.con.cursor()
+        cur = Postgres.con.cursor()
         result = None
         try:
             log.msg("Executing query: " + sql)
@@ -86,7 +86,7 @@ class PostgresDict(DictMixin, Postgres):
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         q = "create table if not exists %s (key text, value text, PRIMARY KEY (key))" \
             % table
-        self.execute(q)
+        #self.execute(q)
         
     def __getitem__(self, key):
         key = self.encode(key)
@@ -166,7 +166,7 @@ class PostgresPriorityQueue(Postgres):
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         q = "create table if not exists %s (id serial, project character varying, " \
             "priority real, message text, primary key(id))" % table
-        self.execute(q)
+        #self.execute(q)
         
     def put(self, message, priority=0.0):
         args = (self.project, priority, self.encode(message))
