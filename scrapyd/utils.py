@@ -2,7 +2,7 @@ import sys
 import os
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
-from ConfigParser import NoSectionError
+from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
 
