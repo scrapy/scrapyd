@@ -1,10 +1,20 @@
 import sqlite3
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 import json
-from UserDict import DictMixin
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
+import six
+
+from scrapy.utils.python import to_bytes, to_unicode, to_native_str
 
 
-class SqliteDict(DictMixin):
+
+class SqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
     def __init__(self, database=None, table="dict"):
@@ -12,7 +22,7 @@ class SqliteDict(DictMixin):
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        q = "create table if not exists %s (key text primary key, value blob)" \
+        q = "create table if not exists %s (key blob primary key, value blob)" \
             % table
         self.conn.execute(q)
 
@@ -35,6 +45,14 @@ class SqliteDict(DictMixin):
         q = "delete from %s where key=?" % self.table
         self.conn.execute(q, (key,))
         self.conn.commit()
+
+    def __len__(self):
+        q = "select count(*) from %s" % self.table
+        return self.conn.execute(q).fetchone()[0]
+
+    def __iter__(self):
+        for k in self.iterkeys():
+            yield k
 
     def iterkeys(self):
         q = "select key from %s" % self.table
@@ -60,27 +78,26 @@ class SqliteDict(DictMixin):
     def encode(self, obj):
         return obj
 
-    def decode(self, text):
-        return text
+    def decode(self, obj):
+        return obj
 
 
 class PickleSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return buffer(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
-    def decode(self, text):
-        return cPickle.loads(str(text))
+    def decode(self, obj):
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return json.dumps(obj)
+        return sqlite3.Binary(to_bytes(json.dumps(obj)))
 
-    def decode(self, text):
-        return json.loads(text)
-
+    def decode(self, obj):
+        return json.loads(to_native_str(bytes(obj)))
 
 
 class SqlitePriorityQueue(object):
@@ -155,18 +172,16 @@ class SqlitePriorityQueue(object):
 class PickleSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return buffer(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
-    def decode(self, text):
-        return cPickle.loads(str(text))
+    def decode(self, obj):
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return json.dumps(obj)
+        return sqlite3.Binary(to_bytes(json.dumps(obj)))
 
-    def decode(self, text):
-        return json.loads(text)
-
-
+    def decode(self, obj):
+        return json.loads(to_native_str(bytes(obj)))
