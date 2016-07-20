@@ -15,7 +15,7 @@ class Config(object):
     def __init__(self, values=None, extra_sources=()):
         if values is None:
             sources = self._getsources()
-            default_config = get_data(__package__, 'default_scrapyd.conf')
+            default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
             self.cp = SafeConfigParser()
             self.cp.readfp(StringIO(default_config))
             self.cp.read(sources)

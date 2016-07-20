@@ -9,7 +9,7 @@ from scrapy.utils.misc import load_object
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
 
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 
 class Root(resource.Resource):
 

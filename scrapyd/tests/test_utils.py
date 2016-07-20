@@ -1,6 +1,9 @@
 import sys, os
 from pkgutil import get_data
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from twisted.trial import unittest
 
@@ -50,7 +53,8 @@ class GetSpiderListTest(unittest.TestCase):
 
     def add_test_version(self, file, project, version):
         eggstorage = self.app.getComponent(IEggStorage)
-        eggfile = StringIO(get_data("scrapyd.tests", file))
+        eggfile = BytesIO(get_data("scrapyd.tests", file))
+        #print("%r" % eggfile)
         eggstorage.put(eggfile, project, version)
 
     def test_get_spider_list(self):

@@ -1,6 +1,9 @@
 import traceback
 import uuid
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from twisted.python import log
 
@@ -15,7 +18,7 @@ class WsResource(JsonResource):
     def render(self, txrequest):
         try:
             return JsonResource.render(self, txrequest)
-        except Exception, e:
+        except Exception as e:
             if self.root.debug:
                 return traceback.format_exc()
             log.err()
@@ -74,7 +77,7 @@ class AddVersion(WsResource):
     def render_POST(self, txrequest):
         project = txrequest.args['project'][0]
         version = txrequest.args['version'][0]
-        eggf = StringIO(txrequest.args['egg'][0])
+        eggf = BytesIO(txrequest.args['egg'][0])
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
