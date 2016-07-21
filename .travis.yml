@@ -21,7 +21,7 @@ matrix:
           env: BUILDENV=latest
 
 install:
-    - pip install -r .travis/requirements-$BUILDENV.txt
+    - pip install -r reqs/requirements-$BUILDENV.txt
     - pip install .
 script:
     - trial scrapyd
