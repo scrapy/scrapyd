@@ -22,9 +22,12 @@ matrix:
 
 install:
     - pip install -r reqs/requirements-$BUILDENV.txt
+    - pip install -r reqs/requirements-tests.txt
     - pip install .
 script:
-    - trial scrapyd
+    - coverage run --branch $(which trial) scrapyd
+    - coverage combine && coverage report
+
 notifications:
     irc:
         channels:
