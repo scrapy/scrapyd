@@ -23,10 +23,15 @@ matrix:
 install:
     - pip install -r reqs/requirements-$BUILDENV.txt
     - pip install -r reqs/requirements-tests.txt
+    - pip install codecov
     - pip install .
+
 script:
     - coverage run --branch $(which trial) scrapyd
     - coverage combine && coverage report
+
+after_success:
+    - codecov
 
 notifications:
     irc:
