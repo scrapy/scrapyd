@@ -24,7 +24,9 @@ install:
     - pip install -r reqs/requirements-$BUILDENV.txt
     - pip install .
 script:
-    - trial scrapyd
+    - coverage run --branch trial scrapyd
+    - coverage combine && coverage report
+
 notifications:
     irc:
         channels:
