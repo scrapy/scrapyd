@@ -5,11 +5,11 @@ from scrapyd.postgres import Postgres
 
 logger = logging.getLogger(__name__)
 
-class MysqlSchedulePersist(Postgres):
+class MysqlSchedulePersist():
     
     def __init__(self):
         self.table = 'schedule'
-        Postgres.__init__(self, table=self.table)
+        #Postgres.__init__(self, table=self.table)
         self.logger = logger
         
     def add(self, project, spider_name, **spider_args):
@@ -26,13 +26,13 @@ class MysqlSchedulePersist(Postgres):
                 + spider_name + "','" \
                 + data + "','" \
                 + unicode(datetime.datetime.now()) + "')" 
-        self.execute(query);
+        Postgres.execute(query);
         
     def setStart(self, jobid):
         query = "update schedule set start_time = '" +\
                 unicode(datetime.datetime.now()) +"' " +\
                 " where jobid = '"+ jobid +"'"
-        self.execute(query);
+        Postgres.execute(query);
 
                 
     def setEnd(self, jobid, error_count, warn_count, item_count, request_count):
@@ -43,4 +43,4 @@ class MysqlSchedulePersist(Postgres):
                 " item_count = " + str(item_count) + ", "        +\
                 " request_count = " + str(request_count) + " "  +\
                 " where jobid = '"+ jobid +"'"
-        self.execute(query);
+        Postgres.execute(query);
