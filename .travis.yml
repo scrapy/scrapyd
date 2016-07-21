@@ -1,34 +1,28 @@
 language: python
-env:
-    TRAVISBUG="#1027"
-matrix:
-    exclude:
-        - env: TRAVISBUG="#1027"
-    include:
-        - python: "2.7"
-          env: BUILDENV=precise
-        - python: "2.7"
-          env: BUILDENV=latest
-        - python: "3.4"
-          env: BUILDENV=latest
-        - python: "pypy"
-          env: BUILDENV=latest
+python: 2.7
 
+sudo: false
+
+env:
+    - TOXENV=py27
+    - TOXENV=precise
+    - TOXENV=py34
+    - TOXENV=pypy
+
+matrix:
     allow_failures:
-        - python: "pypy"
-          env: BUILDENV=latest
-        - python: "3.4"
-          env: BUILDENV=latest
+
+        - env: TOXENV=py34
+          python: 2.7
+
+        - env: TOXENV=pypy
+          python: 2.7
 
 install:
-    - pip install -r reqs/requirements-$BUILDENV.txt
-    - pip install -r reqs/requirements-tests.txt
-    - pip install codecov
-    - pip install .
+    - pip install -U tox codecov
 
 script:
-    - coverage run --branch $(which trial) scrapyd
-    - coverage combine && coverage report
+    - tox
 
 after_success:
     - codecov
