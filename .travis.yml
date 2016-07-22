@@ -9,16 +9,30 @@ matrix:
           env: BUILDENV=precise
         - python: "2.7"
           env: BUILDENV=latest
+        - python: "3.4"
+          env: BUILDENV=latest
         - python: "pypy"
           env: BUILDENV=latest
+
     allow_failures:
         - python: "pypy"
           env: BUILDENV=latest
+        - python: "3.4"
+          env: BUILDENV=latest
+
 install:
-    - pip install -r .travis/requirements-$BUILDENV.txt
+    - pip install -r reqs/requirements-$BUILDENV.txt
+    - pip install -r reqs/requirements-tests.txt
+    - pip install codecov
     - pip install .
+
 script:
-    - trial scrapyd
+    - coverage run --branch $(which trial) scrapyd
+    - coverage combine && coverage report
+
+after_success:
+    - codecov
+
 notifications:
     irc:
         channels:
