@@ -103,6 +103,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     if runner is None:
         runner = Config().get('runner')
     env = os.environ.copy()
+    env['PYTHONIOENCODING'] = 'UTF-8'
     env['SCRAPY_PROJECT'] = project
     if pythonpath:
         env['PYTHONPATH'] = pythonpath
