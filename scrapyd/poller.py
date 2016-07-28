@@ -1,4 +1,5 @@
 from zope.interface import implementer
+from six import iteritems
 from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred, returnValue
 
 from .utils import get_spider_queues
@@ -16,7 +17,7 @@ class QueuePoller(object):
     def poll(self):
         if self.dq.pending:
             return
-        for p, q in self.queues.items():
+        for p, q in iteritems(self.queues):
             c = yield maybeDeferred(q.count)
             if c:
                 msg = yield maybeDeferred(q.pop)
