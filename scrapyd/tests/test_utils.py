@@ -92,6 +92,6 @@ class GetSpiderListTest(unittest.TestCase):
 
     def test_get_spider_list_unicode(self):
         # mybotunicode.egg has two spiders, araña1 and araña2
-        self.add_test_version('mybotunicode.egg', 'mybot', 'r1')
-        spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
+        self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
+        spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])
