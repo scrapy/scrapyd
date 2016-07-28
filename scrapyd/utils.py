@@ -2,12 +2,13 @@ import sys
 import os
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
+from six import iteritems
 from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
-from scrapy.utils.python import stringify_dict, unicode_to_str
+from scrapy.utils.python import to_native_str
 from scrapyd.config import Config
 
 
@@ -76,18 +77,31 @@ def get_project_list(config):
         pass
     return projects
 
+def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
+    """Return a (new) dict with unicode keys (and values when "keys_only" is
+    False) of the given dict converted to strings. `dct_or_tuples` can be a
+    dict or a list of tuples, like any dict constructor supports.
+    """
+    d = {}
+    for k, v in iteritems(dict(dct_or_tuples)):
+        k = to_native_str(k, encoding)
+        if not keys_only:
+            v = to_native_str(v, encoding)
+        d[k] = v
+    return d
+
 def get_crawl_args(message):
     """Return the command-line arguments to use for the scrapy crawl process
     that will be started for this message
     """
     msg = message.copy()
-    args = [unicode_to_str(msg['_spider'])]
+    args = [to_native_str(msg['_spider'])]
     del msg['_project'], msg['_spider']
     settings = msg.pop('settings', {})
-    for k, v in stringify_dict(msg, keys_only=False).items():
+    for k, v in native_stringify_dict(msg, keys_only=False).items():
         args += ['-a']
         args += ['%s=%s' % (k, v)]
-    for k, v in stringify_dict(settings, keys_only=False).items():
+    for k, v in native_stringify_dict(settings, keys_only=False).items():
         args += ['-s']
         args += ['%s=%s' % (k, v)]
     return args
