@@ -51,7 +51,7 @@ class UtilsCache:
         self.cache_manager[key] = value
 
 def get_spider_queues(config):
-    """Return a dict of Spider Quees keyed by project name"""
+    """Return a dict of Spider Queues keyed by project name"""
     dbsdir = config.get('dbs_dir', 'dbs')
     if not os.path.exists(dbsdir):
         os.makedirs(dbsdir)
