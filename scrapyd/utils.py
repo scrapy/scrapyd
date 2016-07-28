@@ -114,7 +114,9 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     if proc.returncode:
         msg = err or out or 'unknown error'
         raise RuntimeError(msg.splitlines()[-1])
-    tmp = out.splitlines();
+    # FIXME: can we reliably decode as UTF-8?
+    # scrapy list does `print(list)`
+    tmp = out.decode('utf-8').splitlines();
     try:
         project_cache = get_spider_list.cache[project]
         project_cache[version] = tmp
