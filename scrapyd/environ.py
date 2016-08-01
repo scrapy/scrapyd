@@ -62,9 +62,9 @@ class Environment(object):
 
         full_filename = os.path.join(self.logs_dir, filename)
 
-        log_dir = os.path.dirname(full_filename)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+        containing_dir = os.path.dirname(full_filename)
+        if not os.path.exists(containing_dir):
+            os.makedirs(containing_dir)
 
         return full_filename
 
