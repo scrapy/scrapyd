@@ -28,14 +28,29 @@ class QueuePollerTest(unittest.TestCase):
         verifyObject(IPoller, self.poller)
 
     def test_poll_next(self):
-        self.queues['mybot1'].add('spider1')
-        self.queues['mybot2'].add('spider2')
+        cfg = {'mybot1': 'spider1',
+               'mybot2': 'spider2'}
+        for prj, spd in cfg.items():
+            self.queues[prj].add(spd)
+
         d1 = self.poller.next()
         d2 = self.poller.next()
         self.failUnless(isinstance(d1, Deferred))
         self.failIf(hasattr(d1, 'result'))
+
+        # poll once
         self.poller.poll()
-        self.queues['mybot1'].pop()
+        self.failUnless(hasattr(d1, 'result') and getattr(d1, 'called', False))
+
+        # which project got run: project1 or project2?
+        self.failUnless(d1.result.get('_project'))
+        prj = d1.result['_project']
+        self.failUnlessEqual(d1.result['_spider'], cfg.pop(prj))
+
+        self.queues[prj].pop()
+
+        # poll twice
+        # check that the other project's spider got to run
         self.poller.poll()
-        self.failUnlessEqual(d1.result, {'_project': 'mybot1', '_spider': 'spider1'})
-        self.failUnlessEqual(d2.result, {'_project': 'mybot2', '_spider': 'spider2'})
+        prj, spd = cfg.popitem()
+        self.failUnlessEqual(d2.result, {'_project': prj, '_spider': spd})
