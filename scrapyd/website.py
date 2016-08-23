@@ -22,16 +22,16 @@ class Root(resource.Resource):
         local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
         self.app = app
         self.nodename = config.get('node_name', socket.gethostname())
-        self.putChild('', Home(self, local_items))
+        self.putChild(b'', Home(self, local_items))
         if logsdir:
-            self.putChild('logs', static.File(logsdir, 'text/plain'))
+            self.putChild(b'logs', static.File(logsdir.encode('ascii', 'ignore'), 'text/plain'))
         if local_items:
-            self.putChild('items', static.File(itemsdir, 'text/plain'))
-        self.putChild('jobs', Jobs(self, local_items))
+            self.putChild(b'items', static.File(itemsdir, 'text/plain'))
+        self.putChild(b'jobs', Jobs(self, local_items))
         services = config.items('services', ())
         for servName, servClsName in services:
           servCls = load_object(servClsName)
-          self.putChild(servName, servCls(self))
+          self.putChild(servName.encode('utf-8'), servCls(self))
         self.update_projects()
 
     def update_projects(self):
@@ -65,7 +65,7 @@ class Home(resource.Resource):
 
     def render_GET(self, txrequest):
         vars = {
-            'projects': ', '.join(self.root.scheduler.list_projects()),
+            'projects': ', '.join(self.root.scheduler.list_projects())
         }
         s = """
 <html>
@@ -95,7 +95,7 @@ monitoring)</p>
 </body>
 </html>
 """ % vars
-        return s
+        return s.encode('utf-8')
 
 class Jobs(resource.Resource):
 
@@ -148,4 +148,4 @@ class Jobs(resource.Resource):
         s += "</table>"
         s += "</body>"
         s += "</html>"
-        return s
+        return s.encode('utf-8')
