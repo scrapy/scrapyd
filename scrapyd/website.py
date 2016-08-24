@@ -148,4 +148,8 @@ class Jobs(resource.Resource):
         s += "</table>"
         s += "</body>"
         s += "</html>"
+
+        txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
+        txrequest.setHeader('Content-Length', len(s))
+
         return s.encode('utf-8')
