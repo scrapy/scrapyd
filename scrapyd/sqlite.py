@@ -11,6 +11,9 @@ except ImportError:
 import six
 
 
+from ._deprecate import deprecate_class
+
+
 class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
@@ -79,6 +82,7 @@ class JsonSqliteDict(MutableMapping):
         return json.loads(bytes(obj).decode('ascii'))
 
 
+@deprecate_class
 class PickleSqliteDict(JsonSqliteDict):
 
     def encode(self, obj):
@@ -88,6 +92,7 @@ class PickleSqliteDict(JsonSqliteDict):
         return pickle.loads(bytes(obj))
 
 
+@deprecate_class
 class SqliteDict(JsonSqliteDict):
 
     def encode(self, obj):
@@ -166,6 +171,7 @@ class JsonSqlitePriorityQueue(object):
         return json.loads(bytes(text).decode('ascii'))
 
 
+@deprecate_class
 class PickleSqlitePriorityQueue(JsonSqlitePriorityQueue):
 
     def encode(self, obj):
@@ -175,6 +181,7 @@ class PickleSqlitePriorityQueue(JsonSqlitePriorityQueue):
         return pickle.loads(bytes(obj))
 
 
+@deprecate_class
 class SqlitePriorityQueue(JsonSqlitePriorityQueue):
 
     def encode(self, obj):
