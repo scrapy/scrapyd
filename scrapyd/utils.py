@@ -86,7 +86,12 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     for k, v in iteritems(dict(dct_or_tuples)):
         k = to_native_str(k, encoding)
         if not keys_only:
-            v = to_native_str(v, encoding)
+            if isinstance(v, dict):
+                v = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
+            elif isinstance(v, list):
+                v = [to_native_str(e, encoding) for e in v]
+            else:
+                v = to_native_str(v, encoding)
         d[k] = v
     return d
 

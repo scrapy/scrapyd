@@ -6,8 +6,7 @@ from twisted.internet import reactor, defer, protocol, error
 from twisted.application.service import Service
 from twisted.python import log
 
-from scrapy.utils.python import stringify_dict
-from scrapyd.utils import get_crawl_args
+from scrapyd.utils import get_crawl_args, native_stringify_dict
 from scrapyd import __version__
 from .interfaces import IPoller, IEnvironment
 
@@ -35,13 +34,13 @@ class Launcher(Service):
         poller.next().addCallback(self._spawn_process, slot)
 
     def _spawn_process(self, message, slot):
-        msg = stringify_dict(message, keys_only=False)
+        msg = native_stringify_dict(message, keys_only=False)
         project = msg['_project']
         args = [sys.executable, '-m', self.runner, 'crawl']
         args += get_crawl_args(msg)
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
-        env = stringify_dict(env, keys_only=False)
+        env = native_stringify_dict(env, keys_only=False)
         pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
             msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
