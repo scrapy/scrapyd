@@ -1,2 +1,2 @@
-Scrapy
-twisted
+Scrapy>=1.1
+twisted<16.4
