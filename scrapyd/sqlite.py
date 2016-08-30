@@ -1,5 +1,8 @@
 import sqlite3
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
 import json
 from UserDict import DictMixin
 
@@ -12,7 +15,7 @@ class SqliteDict(DictMixin):
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        q = "create table if not exists %s (key text primary key, value blob)" \
+        q = "create table if not exists %s (key blob primary key, value blob)" \
             % table
         self.conn.execute(q)
 
@@ -60,26 +63,26 @@ class SqliteDict(DictMixin):
     def encode(self, obj):
         return obj
 
-    def decode(self, text):
-        return text
+    def decode(self, obj):
+        return obj
 
 
 class PickleSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return buffer(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
-    def decode(self, text):
-        return cPickle.loads(str(text))
+    def decode(self, obj):
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return json.dumps(obj)
+        return sqlite3.Binary(json.dumps(obj))
 
-    def decode(self, text):
-        return json.loads(text)
+    def decode(self, obj):
+        return json.loads(bytes(obj))
 
 
 
@@ -155,18 +158,16 @@ class SqlitePriorityQueue(object):
 class PickleSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return buffer(cPickle.dumps(obj, protocol=2))
+        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
 
-    def decode(self, text):
-        return cPickle.loads(str(text))
+    def decode(self, obj):
+        return pickle.loads(bytes(obj))
 
 
 class JsonSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return json.dumps(obj)
+        return sqlite3.Binary(json.dumps(obj))
 
-    def decode(self, text):
-        return json.loads(text)
-
-
+    def decode(self, obj):
+        return json.loads(bytes(obj))
