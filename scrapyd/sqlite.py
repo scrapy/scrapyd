@@ -136,8 +136,9 @@ class SqlitePriorityQueue(object):
         return n
 
     def clear(self):
-        self.conn.execute("delete from %s" % self.table)
+        c = self.conn.execute("delete from %s" % self.table)
         self.conn.commit()
+        return c.rowcount
 
     def __len__(self):
         q = "select count(*) from %s" % self.table

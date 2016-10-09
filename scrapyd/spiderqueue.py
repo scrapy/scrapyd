@@ -30,4 +30,4 @@ class SqliteSpiderQueue(object):
         return self.q.remove(func)
 
     def clear(self):
-        self.q.clear()
+        return self.q.clear()
