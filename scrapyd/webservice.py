@@ -3,7 +3,7 @@ import uuid
 from cStringIO import StringIO
 
 from twisted.python import log
-
+import re
 from .utils import get_spider_list, JsonResource, UtilsCache
 
 class WsResource(JsonResource):
@@ -52,69 +52,64 @@ class Schedule(WsResource):
 
 class Cancel(WsResource):
 
-    def render_POST(self, txrequest):
-        args = dict((k, v[0]) for k, v in txrequest.args.items())
-        project = args['project']
-        jobid = args['job']
-        signal = args.get('signal', 'TERM')
-        prevstate = None
-        queue = self.root.poller.queues[project]
-        c = queue.remove(lambda x: x["_job"] == jobid)
-        if c:
-            prevstate = "pending"
-        spiders = self.root.launcher.processes.values()
-        for s in spiders:
-            if s.job == jobid:
-                s.transport.signalProcess(signal)
-                prevstate = "running"
-        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate, "Warning": "Deprecated, use canceljob.json endpoint instead!"}
-
-class CancelJob(WsResource):
-
-    def render_POST(self, txrequest):
-        args = dict((k, v[0]) for k, v in txrequest.args.items())
-        project = args['project']
-        jobid = args['job']
-        signal = args.get('signal', 'TERM')
-        prevstate = None
-        queue = self.root.poller.queues[project]
-        c = queue.remove(lambda x: x["_job"] == jobid)
-        if c:
-            prevstate = "pending"
-        spiders = self.root.launcher.processes.values()
-        for s in spiders:
-            if s.job == jobid:
-                s.transport.signalProcess(signal)
-                prevstate = "running"
-        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
-
-class CancelProject(WsResource):
-
-    def render_POST(self, txrequest):
-        args = dict((k, v[0]) for k, v in txrequest.args.items())
-        project = args['project']
-        signal = args.get('signal', 'TERM')
-        queue = self.root.poller.queues[project]
-        cancelled = queue.remove(lambda x: x["_job"])
-        spiders = self.root.launcher.processes.values()
-        for s in spiders:
-            if s.project == project:
-                s.transport.signalProcess(signal)
-                cancelled+=1
-        return {"node_name": self.root.nodename, "status": "ok", "cancelled": cancelled}
-
-class CancelAll(WsResource):
-
     def render_GET(self, txrequest):
+        return self.redirect_cancel(txrequest)
+
+    def render_POST(self, txrequest):
+        return self.redirect_cancel(txrequest)
+
+    def redirect_cancel(self, txrequest):
         args = dict((k, v[0]) for k, v in txrequest.args.items())
-        signal = args.get('signal', 'TERM')
-        
-        cancelled = sum([queue.clear() for queue in self.root.poller.queues.itervalues()])
+        #Remove extension from endpoint; "cancel.json" becomes "cancel"
+        endpoint = txrequest.prepath[0]
+        function = endpoint.replace(re.findall(r"\.\w+", endpoint)[0], '')
+        values = getattr(self, function)(args)
+        values.update({"node_name": self.root.nodename, "status": "ok"})
+        return values
+
+    #Endpoint management starts here, all must receive 'args' as an argument
+    def cancel(self, args):
+        j = self.canceljob(args)
+        j.update({'Warning' : "Deprecated, use canceljob.json endpoint instead!"})
+        return j
+
+    def canceljob(self, args):
+        project = args['project']
+        jobid = args['job']
+        prevstate = None
+        queue = self.root.poller.queues[project]
+        c = queue.remove(lambda x: x["_job"] == jobid)
+        if c:
+            prevstate = "pending"
         spiders = self.root.launcher.processes.values()
         for s in spiders:
-            s.transport.signalProcess(signal)
-            cancelled+=1
-        return {"node_name": self.root.nodename, "status": "ok", "cancelled": cancelled}
+            if s.job == jobid:
+               self.clear_data([],[s])
+               prevstate = "running"
+        return {"prevstate": prevstate}
+
+    def cancelall(self, args):
+        queues = self.root.poller.queues.itervalues()
+        spiders = self.root.launcher.processes.values()
+        cancelled = self.clear_data(queues, spiders)
+        return {"cancelled": cancelled}
+
+    def cancelproject(self, args):
+        project = args['project']
+        queue = self.root.poller.queues[project]
+        spiders = [s for s in self.root.launcher.processes.values() if s.project == project]
+        to_delete = [[queue]]
+        to_delete.append()
+        cancelled = self.clear_data([queue],spiders)
+        return {"cancelled": cancelled}
+
+    def clear_data(self, queues, spiders):
+        cleared = 0
+        cleared += sum([queue.clear() for queue in queues])
+        for s in spiders:
+            s.transport.signalProcess('TERM')
+            cleared+=1
+        return cleared
         
 class AddVersion(WsResource):
 
