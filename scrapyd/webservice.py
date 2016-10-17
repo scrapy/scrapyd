@@ -52,6 +52,10 @@ class Schedule(WsResource):
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
         args['_job'] = jobid
+        callback_url = args.pop('callbackUrl', '')
+        args['_callback_url'] = callback_url
+        user_id = args.pop('userId', '')
+        args['_user_id'] = user_id
         self.root.scheduler.schedule(project, spider, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
