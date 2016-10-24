@@ -10,9 +10,6 @@ except ImportError:
     from collections import MutableMapping
 import six
 
-from scrapy.utils.python import to_bytes, to_unicode, to_native_str
-
-
 
 class SqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
@@ -94,10 +91,10 @@ class PickleSqliteDict(SqliteDict):
 class JsonSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return sqlite3.Binary(to_bytes(json.dumps(obj)))
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return json.loads(to_native_str(bytes(obj)))
+        return json.loads(bytes(obj).decode('ascii'))
 
 
 class SqlitePriorityQueue(object):
@@ -181,7 +178,7 @@ class PickleSqlitePriorityQueue(SqlitePriorityQueue):
 class JsonSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return sqlite3.Binary(to_bytes(json.dumps(obj)))
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return json.loads(to_native_str(bytes(obj)))
+        return json.loads(bytes(obj).decode('ascii'))
