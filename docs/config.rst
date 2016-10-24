@@ -68,22 +68,6 @@ storing logs set this option empty, like this::
 
     logs_dir =
 
-logs_filename
--------------
-
-The filename (appended to ``logs_dir``) to use for the crawl. ``{project}``,
-``{spider}`` and ``{job}`` placeholders will be substituted, as will certain
-datetime elements (but only ``{Y}``, ``{m}``, ``{d}``, ``{H}``, ``{M}``, ``{S}``).
-
-For example,
-
-   logs_filename = {spider}-{Y}{m}{d}.log
-
-If no value is specified, the default value is ``{project}/{spider}/{job}.log``.
-
-Note: if a custom value for ``logs_filename`` is used then ``jobs_to_keep`` is
-no longer applicable. Scrapyd will not delete old log files.
-
 .. _items_dir:
 
 items_dir
