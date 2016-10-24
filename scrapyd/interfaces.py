@@ -107,3 +107,23 @@ class IEnvironment(Interface):
         `message` is the message received from the IPoller.next() method
         `slot` is the Launcher slot where the process will be running.
         """
+
+
+class IConfig(Interface):
+    """A component to provide access to the active configuration"""
+
+    def get(option, default=None):
+        """Return the specified `option` from the config"""
+
+    def getint(option, default=None):
+        """Return the specified integer `option` from the config"""
+
+    def getfloat(option, default=None):
+        """Return the specified float `option` from the config"""
+
+    def getboolean(option, default=None):
+        """Return the specified boolean `option` from the config"""
+
+    def items(section, default=None):
+        """Return a list of (name, value) pairs
+        for each `option` in the scrapyd section"""

@@ -4,11 +4,15 @@ from pkgutil import get_data
 from ConfigParser import SafeConfigParser, NoSectionError, NoOptionError
 from os.path import expanduser
 
+from zope.interface import implements
 from scrapy.utils.conf import closest_scrapy_cfg
+
+from scrapyd.interfaces import IConfig
 
 class Config(object):
     """A ConfigParser wrapper to support defaults when calling instance
     methods, and also tied to a single section"""
+    implements(IConfig)
 
     SECTION = 'scrapyd'
 
