@@ -2,13 +2,13 @@ import sys
 import os
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
+import six
 from six import iteritems
 from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
-from scrapy.utils.python import to_native_str
 from scrapyd.config import Config
 
 
@@ -84,14 +84,14 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     """
     d = {}
     for k, v in iteritems(dict(dct_or_tuples)):
-        k = to_native_str(k, encoding)
+        k = _to_native_str(k, encoding)
         if not keys_only:
             if isinstance(v, dict):
                 v = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
             elif isinstance(v, list):
-                v = [to_native_str(e, encoding) for e in v]
+                v = [_to_native_str(e, encoding) for e in v]
             else:
-                v = to_native_str(v, encoding)
+                v = _to_native_str(v, encoding)
         d[k] = v
     return d
 
@@ -100,7 +100,7 @@ def get_crawl_args(message):
     that will be started for this message
     """
     msg = message.copy()
-    args = [to_native_str(msg['_spider'])]
+    args = [_to_native_str(msg['_spider'])]
     del msg['_project'], msg['_spider']
     settings = msg.pop('settings', {})
     for k, v in native_stringify_dict(msg, keys_only=False).items():
@@ -144,3 +144,15 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         project_cache = {version: tmp}
     get_spider_list.cache[project] = project_cache
     return tmp
+
+
+def _to_native_str(text, encoding='utf-8', errors='strict'):
+    if isinstance(text, str):
+        return text
+    if not isinstance(text, (bytes, six.text_type)):
+        raise TypeError('_to_native_str must receive a bytes, str or unicode '
+                        'object, got %s' % type(text).__name__)
+    if six.PY2:
+        return text.encode(encoding, errors)
+    else:
+        return text.decode(encoding, errors)
