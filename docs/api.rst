@@ -38,7 +38,10 @@ Schedule a spider run (also known as a job), returning the job id.
   * ``project`` (string, required) - the project name
   * ``spider`` (string, required) - the spider name
   * ``setting`` (string, optional) - a scrapy setting to use when running the spider
-  * any other parameter is passed as spider argument
+  * The spider queue also uses the optional ``priority`` argument (default 0.0)
+    which adjusts the priority of the scheduled spider run
+    in its project's queue. A greater number means higher priority.
+ * Any other parameter is passed as an argument to the spider.
 
 Example request::
 

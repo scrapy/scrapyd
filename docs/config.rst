@@ -75,11 +75,11 @@ items_dir
 
 .. versionadded:: 0.15
 
-The directory where the Scrapy items will be stored. If you want to disable
-storing feeds of scraped items (perhaps, because you use a database or other
-storage) set this option empty, like this::
-
-    items_dir =
+The directory where the Scrapy items will be stored.
+This option is disabled by default
+because you are expected to use a database or a feed exporter.
+Setting it to non-empty results in storing scraped item feeds
+to the specified directory by overriding the scrapy setting ``FEED_URI``.
 
 .. _jobs_to_keep:
 
@@ -88,10 +88,22 @@ jobs_to_keep
 
 .. versionadded:: 0.15
 
-The number of finished jobs to keep per spider. Defaults to ``5``. This
-includes logs and items.
+The number of finished jobs to keep per spider.
+Defaults to ``5``.
+This refers to logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
+
+.. _finished_to_keep:
+
+finished_to_keep
+----------------
+
+.. versionadded:: 0.14
+
+The number of finished processes to keep in the launcher.
+Defaults to ``100``.
+This only reflects on the website /jobs endpoint and relevant json webservices.
 
 poll_interval
 -------------
