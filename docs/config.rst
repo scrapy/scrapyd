@@ -108,7 +108,9 @@ This only reflects on the website /jobs endpoint and relevant json webservices.
 poll_interval
 -------------
 
-The interval used to poll queues, in seconds. Defaults to ``5``.
+The interval used to poll queues, in seconds.
+Defaults to ``5.0``.
+Can be a float, such as ``0.2``
 
 runner
 ------
