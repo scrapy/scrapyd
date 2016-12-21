@@ -4,10 +4,14 @@ try:
 except:
     import pickle
 import json
-from UserDict import DictMixin
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
+import six
 
 
-class SqliteDict(DictMixin):
+class SqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
     def __init__(self, database=None, table="dict"):
@@ -38,6 +42,14 @@ class SqliteDict(DictMixin):
         q = "delete from %s where key=?" % self.table
         self.conn.execute(q, (key,))
         self.conn.commit()
+
+    def __len__(self):
+        q = "select count(*) from %s" % self.table
+        return self.conn.execute(q).fetchone()[0]
+
+    def __iter__(self):
+        for k in self.iterkeys():
+            yield k
 
     def iterkeys(self):
         q = "select key from %s" % self.table
@@ -79,11 +91,10 @@ class PickleSqliteDict(SqliteDict):
 class JsonSqliteDict(SqliteDict):
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj))
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return json.loads(bytes(obj))
-
+        return json.loads(bytes(obj).decode('ascii'))
 
 
 class SqlitePriorityQueue(object):
@@ -167,7 +178,7 @@ class PickleSqlitePriorityQueue(SqlitePriorityQueue):
 class JsonSqlitePriorityQueue(SqlitePriorityQueue):
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj))
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return json.loads(bytes(obj))
+        return json.loads(bytes(obj).decode('ascii'))

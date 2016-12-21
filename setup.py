@@ -9,9 +9,6 @@ except ImportError:
 
 from os.path import join, dirname
 
-if sys.version_info[:2] != (2, 7):
-    sys.exit('Python 2.7 is required for scrapyd')
-
 with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
     version = f.read().strip()
 
@@ -31,6 +28,9 @@ setup_args = {
     'classifiers': [
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',
@@ -42,7 +42,7 @@ setup_args = {
 
 
 if using_setuptools:
-    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=0.17']
+    setup_args['install_requires'] = ['Twisted>=8.0', 'Scrapy>=1.0', 'six']
     setup_args['entry_points'] = {'console_scripts': [
         'scrapyd = scrapyd.scripts.scrapyd_run:main'
     ]}

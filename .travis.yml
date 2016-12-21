@@ -1,5 +1,5 @@
 language: python
-python: 2.7
+python: 3.5
 
 sudo: false
 
@@ -7,16 +7,14 @@ env:
     - TOXENV=py27
     - TOXENV=precise
     - TOXENV=py34
+    - TOXENV=py35
     - TOXENV=pypy
 
 matrix:
     allow_failures:
 
-        - env: TOXENV=py34
-          python: 2.7
-
         - env: TOXENV=pypy
-          python: 2.7
+          python: 3.5
 
 install:
     - |

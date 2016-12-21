@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -*-
 import sys, os
 from pkgutil import get_data
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from twisted.trial import unittest
 
@@ -50,7 +54,7 @@ class GetSpiderListTest(unittest.TestCase):
 
     def add_test_version(self, file, project, version):
         eggstorage = self.app.getComponent(IEggStorage)
-        eggfile = StringIO(get_data("scrapyd.tests", file))
+        eggfile = BytesIO(get_data("scrapyd.tests", file))
         eggstorage.put(eggfile, project, version)
 
     def test_get_spider_list(self):
@@ -85,3 +89,9 @@ class GetSpiderListTest(unittest.TestCase):
         UtilsCache.invalid_cache('mybot')
         spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
+
+    def test_get_spider_list_unicode(self):
+        # mybotunicode.egg has two spiders, araña1 and araña2
+        self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
+        spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
+        self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])

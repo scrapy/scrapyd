@@ -4,13 +4,12 @@ from os import path, makedirs, remove
 from shutil import copyfileobj, rmtree
 from distutils.version import LooseVersion
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from .interfaces import IEggStorage
 
+@implementer(IEggStorage)
 class FilesystemEggStorage(object):
-
-    implements(IEggStorage)
 
     def __init__(self, config):
         self.basedir = config.get('eggs_dir', 'eggs')

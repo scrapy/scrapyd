@@ -1,14 +1,13 @@
 import os
-from urlparse import urlparse, urlunparse
+from six.moves.urllib.parse import urlparse, urlunparse
 
 from w3lib.url import path_to_file_uri
-from zope.interface import implements
+from zope.interface import implementer
 
 from .interfaces import IEnvironment
 
+@implementer(IEnvironment)
 class Environment(object):
-
-    implements(IEnvironment)
 
     def __init__(self, config, initenv=os.environ):
         self.dbs_dir = config.get('dbs_dir', 'dbs')

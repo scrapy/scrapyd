@@ -16,7 +16,7 @@ class SqliteDictTest(unittest.TestCase):
         test = self.test_dict
         d = self.dict_class()
         d.update(test)
-        self.failUnlessEqual(d.items(), test.items())
+        self.failUnlessEqual(list(d.items()), list(test.items()))
         d.clear()
         self.failIf(d.items())
 

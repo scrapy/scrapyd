@@ -6,7 +6,7 @@ def activate_egg(eggpath):
     leave unwanted side effects.
     """
     try:
-        d = pkg_resources.find_distributions(eggpath).next()
+        d = next(pkg_resources.find_distributions(eggpath))
     except StopIteration:
         raise ValueError("Unknown or corrupt egg")
     d.activate()

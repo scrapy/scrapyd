@@ -1,12 +1,11 @@
-from zope.interface import implements
+from zope.interface import implementer
 
 from scrapyd.interfaces import ISpiderQueue
 from scrapyd.sqlite import JsonSqlitePriorityQueue
 
 
+@implementer(ISpiderQueue)
 class SqliteSpiderQueue(object):
-
-    implements(ISpiderQueue)
 
     def __init__(self, database=None, table='spider_queue'):
         self.q = JsonSqlitePriorityQueue(database, table)
