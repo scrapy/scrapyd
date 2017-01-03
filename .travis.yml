@@ -45,3 +45,15 @@ notifications:
             - "irc.freenode.org#scrapy"
         use_notice: true
         skip_join: true
+
+deploy:
+    provider: pypi
+    distributions: sdist bdist_wheel
+    user: redapple
+    password:
+        secure: IuHONsIRm8w54LkmUlZe0X0dFqW2iAjTyqeRyOyVMvHWIPaiydNpX+xipvRArJnswlnzf7/X3CtZw9ZF9ePznCrvG+3Y1SLHutncRbr6IxSQrcRJm+FTF2I2KNEaOkWqoQjO7xbEehpqo6fttHImCNrCzgZw32hCZqeGbDGPGJs=
+    on:
+        all_branches: true
+        tags: true
+        repo: scrapy/scrapyd
+        condition: "$TOXENV == py27 && $TRAVIS_TAG =~ ^[0-9]+[.][0-9]+[.][0-9]+([ab][0-9]+|rc[0-9]+|dev[0-9]+)?$"
