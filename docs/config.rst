@@ -137,6 +137,19 @@ Scrapyd includes an interface with a website to provide simple monitoring
 and access to the application's webresources.
 This setting must provide the root class of the twisted web resource.
 
+.. _spiderqueue:
+
+spiderqueue
+-----------
+
+The per-project spider queues are where the scheduler enqueues crawls
+for the poller to pick.
+You can define a custom spider queue class here
+as long as it implements the ISpiderQueue interface.
+
+Defaults to ``scrapyd.spiderqueue.SqliteSpiderQueue``.
+
+
 node_name
 ---------
 

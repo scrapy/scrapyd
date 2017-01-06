@@ -8,8 +8,11 @@ from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
 
-from scrapyd.spiderqueue import SqliteSpiderQueue
+from scrapy.utils.misc import load_object
 from scrapyd.config import Config
+
+
+DEFAULT_SPIDERQUEUE = 'scrapyd.spiderqueue.SqliteSpiderQueue'
 
 
 class JsonResource(resource.Resource):
@@ -56,10 +59,11 @@ def get_spider_queues(config):
     dbsdir = config.get('dbs_dir', 'dbs')
     if not os.path.exists(dbsdir):
         os.makedirs(dbsdir)
+    spiderqueue = load_object(config.get('spiderqueue', DEFAULT_SPIDERQUEUE))
     d = {}
     for project in get_project_list(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
+        d[project] = spiderqueue(dbpath)
     return d
 
 def get_project_list(config):
