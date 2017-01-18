@@ -111,7 +111,7 @@ class Jobs(resource.Resource):
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Start</th><th>Finish</th><th>Runtime</th><th>Log</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Start</th><th>Runtime</th><th>Finish</th><th>Log</th>"
         if self.local_items:
             s += "<th>Items</th>"
             cols = 9
@@ -130,8 +130,8 @@ class Jobs(resource.Resource):
             for a in ['project', 'spider', 'job', 'pid']:
                 s += "<td>%s</td>" % getattr(p, a)
             s += "<td>%s</td>" % p.start_time.replace(microsecond=0)
-            s += "<td></td>"
             s += "<td>%s</td>" % (datetime.now().replace(microsecond=0) - p.start_time.replace(microsecond=0))
+            s += "<td></td>"
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
                 s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
@@ -143,8 +143,8 @@ class Jobs(resource.Resource):
                 s += "<td>%s</td>" % getattr(p, a)
             s += "<td></td>"
             s += "<td>%s</td>" % p.start_time.replace(microsecond=0)
-            s += "<td>%s</td>" % p.end_time.replace(microsecond=0)
             s += "<td>%s</td>" % (p.end_time.replace(microsecond=0) - p.start_time.replace(microsecond=0))
+            s += "<td>%s</td>" % p.end_time.replace(microsecond=0)
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
                 s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
