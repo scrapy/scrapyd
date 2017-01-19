@@ -133,7 +133,9 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     out, err = proc.communicate()
     if proc.returncode:
         msg = err or out or 'unknown error'
-        raise RuntimeError(msg.splitlines()[-1])
+        msg = msg.decode('utf8')
+        msg.splitlines()[-1]
+        raise RuntimeError(msg.encode('unicode_escape') if six.PY2 else msg)
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
     tmp = out.decode('utf-8').splitlines();
