@@ -6,6 +6,8 @@ try:
 except ImportError:
     from io import BytesIO
 
+import six
+
 from twisted.trial import unittest
 
 from scrapy.utils.test import get_pythonpath
@@ -95,3 +97,19 @@ class GetSpiderListTest(unittest.TestCase):
         self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
         spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])
+
+    def test_failed_spider_list(self):
+        self.add_test_version('mybot3.egg', 'mybot3', 'r1')
+        pypath = get_pythonpath_scrapyd()
+        # Workaround missing support for context manager in twisted < 15
+        exc = self.assertRaises(RuntimeError,
+                                get_spider_list, 'mybot3', pythonpath=pypath)
+        tb = str(exc).rstrip()
+        tb = tb.decode('unicode_escape') if six.PY2 else tb
+        tb_regex = (
+            r'^Traceback \(most recent call last\):\n'
+            r'(?:  File .*\n(?:    .*\n)?)*'  # Skipped lines
+            r'  File "(?:[^"\\]|\\.)*/mybot3/settings\.py", line 1, in <module>\n'
+            r'Exception: This should break the `scrapy list` command$'
+        )
+        self.assertRegexpMatches(tb, tb_regex)
