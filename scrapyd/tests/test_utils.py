@@ -100,9 +100,11 @@ class GetSpiderListTest(unittest.TestCase):
 
     def test_failed_spider_list(self):
         self.add_test_version('mybot3.egg', 'mybot3', 'r1')
-        with self.assertRaises(RuntimeError) as error:
-            spiders = get_spider_list('mybot3', pythonpath=get_pythonpath_scrapyd())
-        tb = str(error.exception).rstrip()
+        pypath = get_pythonpath_scrapyd()
+        # Workaround missing support for context manager in twisted < 15
+        exc = self.assertRaises(RuntimeError,
+                                get_spider_list, 'mybot3', pythonpath=pypath)
+        tb = str(exc).rstrip()
         tb = tb.decode('unicode_escape') if six.PY2 else tb
         tb_regex = (
             r'^Traceback \(most recent call last\):\n'
