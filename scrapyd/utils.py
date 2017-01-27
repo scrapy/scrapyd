@@ -10,7 +10,8 @@ from twisted.web import resource
 from scrapy.utils.python import stringify_dict, unicode_to_str
 from scrapyd.config import Config
 from scrapyd.postgres import JsonPostgresDict
-from scrapyd.postgres_spiderqueue import PostgresSpiderQueue
+#from scrapyd.postgres_spiderqueue import PostgresSpiderQueue
+from scrapyd.rabbitmq_spiderqueue import RabbitmqSpiderQueue
 
 
 class JsonResource(resource.Resource):
@@ -62,7 +63,7 @@ def get_spider_queues(config):
     for project in get_project_list(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
         #d[project] = SqliteSpiderQueue(dbpath)
-        d[project] = PostgresSpiderQueue(project=project)
+        d[project] = RabbitmqSpiderQueue(project=project)
         
     return d
 

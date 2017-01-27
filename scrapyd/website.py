@@ -111,7 +111,7 @@ class Jobs(resource.Resource):
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job / Count</th><th>PID</th><th>Runtime</th><th>Log</th>"
         if self.local_items:
             s += "<th>Items</th>"
             cols = 7
