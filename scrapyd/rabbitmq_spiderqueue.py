@@ -2,7 +2,6 @@ from zope.interface import implements
 
 from scrapyd.interfaces import ISpiderQueue
 from scrapyd.config import Config
-from pyrabbit.api import Client
 from twisted.python import log
 import json
 from rabbitmq_utils import RabbitmqUtils
