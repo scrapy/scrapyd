@@ -10,11 +10,15 @@ them in order with the latest one taking more priority:
 * ``c:\scrapyd\scrapyd.conf`` (Windows)
 * ``/etc/scrapyd/conf.d/*`` (in alphabetical order, Unix)
 * ``scrapyd.conf``
-* ``~/.scrapyd.conf`` (users home directory)
+* ``~/.scrapyd.conf`` (user's home directory)
 
 The configuration file supports the following options (see default values in
 the :ref:`example <config-example>`).
 
+.. note::
+    The user's home directory is not expanded for the user that may be specified
+    with the ``--uid`` option, but for the user invoking ``scrapyd``.
+    
 http_port
 ---------
 
@@ -76,10 +80,12 @@ items_dir
 .. versionadded:: 0.15
 
 The directory where the Scrapy items will be stored.
-This option is disabled by default
-because you are expected to use a database or a feed exporter.
-Setting it to non-empty results in storing scraped item feeds
-to the specified directory by overriding the scrapy setting ``FEED_URI``.
+This option is disabled by default because you are expected to use a database 
+or a feed exporter.
+
+.. note:: warning
+    Setting this option will effectively override the ``FEED_URI`` that is 
+    defined in any project.
 
 .. _jobs_to_keep:
 
