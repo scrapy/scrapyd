@@ -22,35 +22,41 @@ class RabbitmqSpiderQueue(object):
         self.exchange = c.get('rabbitmq_exchange')
         self.exchange_dlq = c.get('rabbitmq_exchange_dlq')
         self.project = project
-         
+        self.init =False
         log.msg(project)
+        
+        
+    def getChannel(self):
         channel = RabbitmqUtils.getChannel()
-        
-        channel.exchange_declare(exchange=self.exchange, exchange_type='direct', durable=True)
-        channel.exchange_declare(exchange=self.exchange_dlq,exchange_type='direct', durable=True)
-        args = dict()
-        args['x-dead-letter-exchange'] = self.exchange_dlq
-        channel.queue_declare(queue=project, durable=True, arguments=args)
-        channel.queue_bind(queue=project, exchange=self.exchange, routing_key=project)
-        channel.queue_declare(queue=project+".dlq", durable=True)
-        channel.queue_bind(queue=project+".dlq", exchange=self.exchange_dlq, routing_key=project)
-        
+        if self.init == False:
+            channel.exchange_declare(exchange=self.exchange, exchange_type='direct', durable=True)
+            channel.exchange_declare(exchange=self.exchange_dlq,exchange_type='direct', durable=True)
+            args = dict()
+            args['x-dead-letter-exchange'] = self.exchange_dlq
+            channel.queue_declare(queue=self.project, durable=True, arguments=args)
+            channel.queue_bind(queue=self.project, exchange=self.exchange, routing_key=self.project)
+            channel.queue_declare(queue=self.project+".dlq", durable=True)
+            channel.queue_bind(queue=self.project+".dlq", exchange=self.exchange_dlq, routing_key=self.project)
+            self.init = True
+            
+        return channel
+            
     def add(self, name, **spider_args):
         d = spider_args.copy()
         d['name'] = name
         priority = float(d.pop('priority', 0))
         log.msg(json.dumps(d, ensure_ascii=False))
-        RabbitmqUtils.getChannel().basic_publish(self.exchange, self.project, json.dumps(d))
+        self.getChannel().basic_publish(self.exchange, self.project, json.dumps(d))
         #ver como priorizar uma msg no rabbitmq
         
     def pop(self):
-        method_frame, header_frame, body = RabbitmqUtils.getChannel().basic_get(self.project)
+        method_frame, header_frame, body = self.getChannel().basic_get(self.project)
         obj = json.loads(body)
         obj['delivery_tag'] = method_frame.delivery_tag
         return obj 
         
     def count(self):
-        queue = RabbitmqUtils.getChannel().queue_declare(queue=self.project, durable=True, passive=True)
+        queue = self.getChannel().queue_declare(queue=self.project, durable=True, passive=True)
         return int(queue.method.message_count)
         
     def list(self):
@@ -61,13 +67,6 @@ class RabbitmqSpiderQueue(object):
         job = dict()
         job['name'] = ''
         job['_job'] = count
-        #cl = Client(self.host+':15672', self.user, self.password)
-        #res = cl.get_messages(self.vhost, self.project, count, requeue=True)
-        #log.msg(res)
-        #if res != None:
-        #   for item in res:
-        #        log.msg(item['payload'])
-        #        jobs.append(json.loads(item['payload']))
         if count > 0:
             jobs.append(job)
         return jobs

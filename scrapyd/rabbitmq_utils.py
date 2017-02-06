@@ -24,6 +24,7 @@ class RabbitmqUtils(object):
             credentials = pika.PlainCredentials(user, password)
             parameters = pika.ConnectionParameters(credentials=credentials, host=host, port=int(port), virtual_host=vhost)
             RabbitmqUtils.connection = pika.BlockingConnection(parameters)
+            log.msg('The connection with the RabbitMQ was opened ')
         return RabbitmqUtils.connection; 
     
     @staticmethod
