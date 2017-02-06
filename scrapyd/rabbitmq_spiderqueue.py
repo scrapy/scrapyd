@@ -50,10 +50,15 @@ class RabbitmqSpiderQueue(object):
         #ver como priorizar uma msg no rabbitmq
         
     def pop(self):
-        method_frame, header_frame, body = self.getChannel().basic_get(self.project)
-        obj = json.loads(body)
-        obj['delivery_tag'] = method_frame.delivery_tag
-        return obj 
+        while True:
+            try:
+                method_frame, header_frame, body = self.getChannel().basic_get(self.project)
+                obj = json.loads(body)
+                obj['delivery_tag'] = method_frame.delivery_tag
+                return obj
+            except IOError, e:
+                if e.errno != errno.EINTR:
+                    raise
         
     def count(self):
         while True:
