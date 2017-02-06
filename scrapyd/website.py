@@ -122,7 +122,7 @@ class Jobs(resource.Resource):
                 s += "<tr>"
                 s += "<td>%s</td>" % project
                 s += "<td>%s</td>" % str(m['name'])
-                s += "<td>%s</td>" % str(m['_job'])
+                s += "<td><center>%s</center></td>" % str(m['_job'])
                 s += "</tr>"
         s += "<tr><th colspan='%s' style='background-color: #ddd'>Running</th></tr>" % cols
         for p in self.root.launcher.processes.values():
