@@ -5,7 +5,7 @@ from scrapyd.config import Config
 from twisted.python import log
 import json
 from rabbitmq_utils import RabbitmqUtils
- 
+import errno
 
 
 class RabbitmqSpiderQueue(object):
@@ -56,8 +56,13 @@ class RabbitmqSpiderQueue(object):
         return obj 
         
     def count(self):
-        queue = self.getChannel().queue_declare(queue=self.project, durable=True, passive=True)
-        return int(queue.method.message_count)
+        while True:
+            try:
+                queue = self.getChannel().queue_declare(queue=self.project, durable=True, passive=True)
+                return int(queue.method.message_count)
+            except IOError, e:
+                if e.errno != errno.EINTR:
+                    raise
         
     def list(self):
         count = self.count()
