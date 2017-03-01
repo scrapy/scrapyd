@@ -19,6 +19,8 @@ Removed
 Fixed
 ~~~~~
 
+- Use correct type adapter for sqlite3 blobs.
+  In some systems, a wrong type adapter leads to incorrect buffer reads/writes.
 - FEED_URI was always overridden by scrapyd
 - Specified maximum versions for requirements that became incompatible.
 - Marked package as zip-unsafe because twistd requires a plain ``txapp.py``
