@@ -11,7 +11,9 @@ class ScrapydDeprecationWarning(Warning):
 
 class WarningMeta(type):
     def __init__(cls, name, bases, clsdict):
-        offending_classes = tuple(c for c in bases if isinstance(c, WarningMeta))
+        offending_wrapper_classes = tuple(c.__bases__ for c in bases
+                                          if isinstance(c, WarningMeta))
+        offending_classes = tuple(c for c, in offending_wrapper_classes)
         if offending_classes:
             warnings.warn(
                 '%r inherits from %r which %s deprecated'
