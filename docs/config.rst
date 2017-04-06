@@ -23,7 +23,8 @@ The TCP port where the HTTP JSON API will listen. Defaults to ``6800``.
 bind_address
 ------------
 
-The IP address where the HTTP JSON API will listen. Defaults to ``0.0.0.0`` (all)
+The IP address where the website and json webservices will listen.
+Defaults to ``127.0.0.1`` (localhost)
 
 .. _max_proc:
 
