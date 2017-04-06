@@ -32,6 +32,8 @@ Added
 Removed
 ~~~~~~~
 
+- scrapyd's bind_address now defaults to 127.0.0.1 instead of 0.0.0.0
+  to listen only for connection from the local host
 - scrapy < 1.0 compatibility
 - python < 2.7 compatibility
 
