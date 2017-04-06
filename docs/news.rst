@@ -6,6 +6,39 @@ Release notes
 1.2.0 — Unreleased
 ------------------
 
+The highlight of this release is the long-awaited Python 3 support.
+
+The new scrapy requirement is version 1.0 or higher.
+Python 2.6 is no longer supported by scrapyd.
+
+Added
+~~~~~
+
+- Include full tracebacks from scrapy when failing to get spider list.
+  This will lead to more noisy webservice output
+  but will make debugging deployment problems much easier.
+- Include start/finish time in daemon's joblist page
+- Twisted 16 compatibility
+- Python 3 compatibility
+- Make console script executable
+- Project version argument in the schedule webservice
+- Configuration option for website root class
+- Optional jobid argument to schedule webservice
+  TODO: check if it's inconsistent with _jobid spider kwarg
+- Contribution documentation
+- Daemon status webservice
+
+Removed
+~~~~~~~
+
+- scrapy < 1.0 compatibility
+- python < 2.7 compatibility
+
+Fixed
+~~~~~
+
+- Poller race condition for concurrently accessed queues
+
 1.1.1
 -----
 *Release date: 2016-11-03*
