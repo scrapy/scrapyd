@@ -14,6 +14,7 @@ Python 2.6 is no longer supported by scrapyd.
 Added
 ~~~~~
 
+- Include run's PID in listjobs webservice.
 - Include full tracebacks from scrapy when failing to get spider list.
   This will lead to more noisy webservice output
   but will make debugging deployment problems much easier.
