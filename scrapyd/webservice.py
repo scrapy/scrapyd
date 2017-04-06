@@ -118,8 +118,9 @@ class ListJobs(WsResource):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
         spiders = self.root.launcher.processes.values()
-        running = [{"id": s.job, "spider": s.spider,
-            "start_time": s.start_time.isoformat(' ')} for s in spiders if s.project == project]
+        running = [{"id": s.job, "spider": s.spider, "pid": s.pid,
+                    "start_time": s.start_time.isoformat(' ')}
+                   for s in spiders if s.project == project]
         queue = self.root.poller.queues[project]
         pending = [{"id": x["_job"], "spider": x["name"]} for x in queue.list()]
         finished = [{"id": s.job, "spider": s.spider,
