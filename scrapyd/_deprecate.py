@@ -17,7 +17,7 @@ class WarningMeta(type):
         if offending_classes:
             warnings.warn(
                 '%r inherits from %r which %s deprecated'
-                ' and will be removed from a later scrapyd version'
+                ' and will be removed from a later scrapyd release'
                 % (cls, offending_classes,
                    ['is', 'are'][min(2, len(offending_classes))-1]),
                 ScrapydDeprecationWarning,
@@ -32,7 +32,7 @@ def deprecate_class(cls):
         if type(b) not in WarningMeta2.__bases__:
             WarningMeta2.__bases__ += (type(b),)
     def new_init(*args, **kwargs):
-        warnings.warn('%r will be removed from a later scrapyd version' % cls,
+        warnings.warn('%r will be removed from a later scrapyd release' % cls,
                       ScrapydDeprecationWarning)
         return cls.__init__(*args, **kwargs)
     return WarningMeta2(cls.__name__, (cls,), {'__init__': new_init})
