@@ -11,7 +11,10 @@ except ImportError:
 import six
 
 
-class SqliteDict(MutableMapping):
+from ._deprecate import deprecate_class
+
+
+class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
     def __init__(self, database=None, table="dict"):
@@ -73,13 +76,14 @@ class SqliteDict(MutableMapping):
         return list(self.iteritems())
 
     def encode(self, obj):
-        return obj
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return obj
+        return json.loads(bytes(obj).decode('ascii'))
 
 
-class PickleSqliteDict(SqliteDict):
+@deprecate_class
+class PickleSqliteDict(JsonSqliteDict):
 
     def encode(self, obj):
         return sqlite3.Binary(pickle.dumps(obj, protocol=2))
@@ -88,16 +92,17 @@ class PickleSqliteDict(SqliteDict):
         return pickle.loads(bytes(obj))
 
 
-class JsonSqliteDict(SqliteDict):
+@deprecate_class
+class SqliteDict(JsonSqliteDict):
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
+        return obj
 
     def decode(self, obj):
-        return json.loads(bytes(obj).decode('ascii'))
+        return obj
 
 
-class SqlitePriorityQueue(object):
+class JsonSqlitePriorityQueue(object):
     """SQLite priority queue. It relies on SQLite concurrency support for
     providing atomic inter-process operations.
     """
@@ -160,13 +165,14 @@ class SqlitePriorityQueue(object):
         return ((self.decode(x), y) for x, y in self.conn.execute(q))
 
     def encode(self, obj):
-        return obj
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, text):
-        return text
+        return json.loads(bytes(text).decode('ascii'))
 
 
-class PickleSqlitePriorityQueue(SqlitePriorityQueue):
+@deprecate_class
+class PickleSqlitePriorityQueue(JsonSqlitePriorityQueue):
 
     def encode(self, obj):
         return sqlite3.Binary(pickle.dumps(obj, protocol=2))
@@ -175,10 +181,11 @@ class PickleSqlitePriorityQueue(SqlitePriorityQueue):
         return pickle.loads(bytes(obj))
 
 
-class JsonSqlitePriorityQueue(SqlitePriorityQueue):
+@deprecate_class
+class SqlitePriorityQueue(JsonSqlitePriorityQueue):
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
+        return obj
 
     def decode(self, obj):
-        return json.loads(bytes(obj).decode('ascii'))
+        return obj
