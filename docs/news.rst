@@ -11,7 +11,7 @@ The highlight of this release is the long-awaited Python 3 support.
 The new scrapy requirement is version 1.0 or higher.
 Python 2.6 is no longer supported by scrapyd.
 
-Some unused sqlite utilities in are now deprecated
+Some unused sqlite utilities are now deprecated
 and will be removed from a later scrapyd release.
 Instantiating them or subclassing from them
 will trigger a deprecation warning.
