@@ -3,7 +3,7 @@
 Release notes
 =============
 
-1.2.0 — Unreleased
+1.2.0 — 2017-04-12
 ------------------
 
 The highlight of this release is the long-awaited Python 3 support.
