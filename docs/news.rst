@@ -16,6 +16,7 @@ and will be removed from a later scrapyd release.
 Instantiating them or subclassing from them
 will trigger a deprecation warning.
 These are located under ``scrapyd.sqlite``:
+
 - SqliteDict
 - SqlitePickleDict
 - SqlitePriorityQueue
