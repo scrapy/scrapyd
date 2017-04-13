@@ -37,7 +37,6 @@ Added
 - Project version argument in the schedule webservice
 - Configuration option for website root class
 - Optional jobid argument to schedule webservice
-  TODO: check if it's inconsistent with _jobid spider kwarg
 - Contribution documentation
 - Daemon status webservice
 
