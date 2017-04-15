@@ -1,0 +1,12 @@
+# Scrapy service
+
+ start on runlevel [2345]
+ stop on runlevel [06]
+
+ script
+     [ -r /etc/default/scrapyd ] && . /etc/default/scrapyd
+     logdir=/var/log/scrapyd
+     exec scrapyd -u scrapy -g scrapy \
+          --pidfile /var/run/scrapyd.pid \
+          -l $logdir/scrapyd.log >$logdir/scrapyd.out 2>$logdir/scrapyd.err
+end script

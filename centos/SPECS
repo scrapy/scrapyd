@@ -1,0 +1,132 @@
+%define name scrapyd
+%define version 1.0.1
+%define unmangled_version 1.0.1
+%define unmangled_version 1.0.1
+%define release 2%{?dist}
+
+Summary: A service for running Scrapy spiders, with an HTTP API
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Source0: %{name}.tar.gz
+License: BSD
+Group: Development/Libraries
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+Prefix: %{_prefix}
+BuildArch: x86_64
+Vendor: Scrapy developers <info@scrapy.org>
+Packager: Jérémy Richard <jeremy.richard@sciencespo.fr
+Url: https://github.com/scrapy/scrapyd
+
+%description
+=======
+Scrapyd
+=======
+
+.. image:: https://secure.travis-ci.org/scrapy/scrapyd.png?branch=master
+   :target: http://travis-ci.org/scrapy/scrapyd
+
+Scrapyd is a service for running `Scrapy`_ spiders.
+
+It allows you to deploy your Scrapy projects and control their spiders using a
+HTTP JSON API.
+
+The documentation (including installation and usage) can be found at:
+http://scrapyd.readthedocs.org/
+
+.. _Scrapy: https://github.com/scrapy/scrapy
+
+%pre
+echo "********** Pre Install Checks **********"
+echo " + Check Scrapy Python module..."
+error=0
+python -c "import scrapy" > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+        echo -e '\033[01;32m Scrapy module found! \033[m' 
+else
+        echo -e '\033[01;31m error: scrapy is needed by scrapyd-1.0.1-2.el6.x86_64 \033[m' 
+	pyversion=$(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+	if [ "$pyversion" == "2.6" ]; then
+		echo -e '\033[01;31m Please install Scrapy <= 0.18 for python 2.6 (for instance pip install Scrapy==0.18) \033[m'
+	else
+		echo -e '\033[01;31m Please install Scrapy (for instance pip install Scrapy) \033[m'
+	fi
+	error=1
+fi
+echo " + Check Twisted Python module..."
+python -c "import twisted" > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+        echo -e '\033[01;32m Twisted module found! \033[m' 
+else
+        echo -e '\033[01;31m error: twisted is needed by scrapyd-1.0.1-2.el6.x86_64 \033[m' 
+	error=1
+fi
+
+if [ $error == 1 ]; then
+	exit 1
+fi
+
+%preun
+echo "********** Pre Uninstall **********"
+echo " + Shutting down Scrapyd "
+stop scrapyd
+%prep
+%setup -n %{name}
+
+%build
+python setup.py build
+
+%install
+python setup.py install --single-version-externally-managed -O1 --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES
+
+
+mkdir -p $RPM_BUILD_ROOT/tmp/postinstall-scrapyd
+## JRI: ici on dit d'ajouter le dossier centos a la build
+install -m 600 centos/* $RPM_BUILD_ROOT/tmp/postinstall-scrapyd/
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files -f INSTALLED_FILES
+%defattr(-,root,root)
+## JRI ici on dit d'ajouter le dossier postinstall au rpm
+## et donc il va le mettre dans /tmp/postinstall-scrapyd à l'isntallation
+/tmp/postinstall-scrapyd
+
+## JRI ajout de l'enrobage du serveur (user, scripts, dossiers)
+%post
+echo "********** Post Install **********"
+echo " + Making directories"
+#Creation des dossiers
+for folder in `cat /tmp/postinstall-scrapyd/dirs`; do
+	mkdir -p $folder
+done
+echo " + Copying conf files"
+cp /tmp/postinstall-scrapyd/default-config /etc/scrapyd/conf.d/000-default
+cp /tmp/postinstall-scrapyd/upstart /etc/init/scrapyd.conf
+cp /tmp/postinstall-scrapyd/initd-script /etc/init.d/scrapyd
+chmod +x /etc/init.d/scrapyd
+echo " + User and permissions "
+#creation user
+adduser --system --home /var/lib/scrapyd --comment "scrapy" --no-create-home scrapy || true
+#affectation des droits
+chown -R scrapy:scrapy /var/log/scrapyd /var/lib/scrapyd
+echo " + Starting scrapyd "
+start scrapyd
+curl -s http://localhost:6800/listprojects.json >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+        echo -e '\033[01;31m error: Scrapyd is not running. See /var/log/scrapyd/scrapyd.err error log \033[m' 
+fi
+
+echo " + Cleaning install files"
+rm -fr /tmp/postinstall-scrapyd
+
+%postun
+echo "********** Post Uninstall **********"
+echo " + Removing folders (keeping /etc/scrapyd) "
+rm -fr /var/lib/scrapyd
+rm -fr /var/log/scrapyd
+rm -f /etc/init/scrapyd.conf
+rm -f /etc/init.d/scrapyd
+echo " + Removing User"
+userdel -f scrapy || true
