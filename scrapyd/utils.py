@@ -45,7 +45,9 @@ class UtilsCache:
         for p in UtilsCache.invalid_cached_projects:
             if p in self.cache_manager:
                 del self.cache_manager[p]
-        UtilsCache.invalid_cached_projects[:] = []
+        # HACK: comment out this statement to workaround the prolem that 
+        # scrapyd needs restart to acknowledge newly added spiders
+        #UtilsCache.invalid_cached_projects[:] = []
         return self.cache_manager[key]
 
     def __setitem__(self, key, value):
