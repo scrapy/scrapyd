@@ -1,8 +1,4 @@
 import sqlite3
-try:
-    import cPickle as pickle
-except:
-    import pickle
 import json
 try:
     from collections.abc import MutableMapping
@@ -82,26 +78,6 @@ class JsonSqliteDict(MutableMapping):
         return json.loads(bytes(obj).decode('ascii'))
 
 
-@deprecate_class
-class PickleSqliteDict(JsonSqliteDict):
-
-    def encode(self, obj):
-        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
-
-    def decode(self, obj):
-        return pickle.loads(bytes(obj))
-
-
-@deprecate_class
-class SqliteDict(JsonSqliteDict):
-
-    def encode(self, obj):
-        return obj
-
-    def decode(self, obj):
-        return obj
-
-
 class JsonSqlitePriorityQueue(object):
     """SQLite priority queue. It relies on SQLite concurrency support for
     providing atomic inter-process operations.
@@ -169,23 +145,3 @@ class JsonSqlitePriorityQueue(object):
 
     def decode(self, text):
         return json.loads(bytes(text).decode('ascii'))
-
-
-@deprecate_class
-class PickleSqlitePriorityQueue(JsonSqlitePriorityQueue):
-
-    def encode(self, obj):
-        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
-
-    def decode(self, obj):
-        return pickle.loads(bytes(obj))
-
-
-@deprecate_class
-class SqlitePriorityQueue(JsonSqlitePriorityQueue):
-
-    def encode(self, obj):
-        return obj
-
-    def decode(self, obj):
-        return obj
