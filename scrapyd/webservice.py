@@ -79,9 +79,10 @@ class Cancel(WsResource):
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
-        project = txrequest.args[b'project'][0].decode('utf-8')
-        version = txrequest.args[b'version'][0].decode('utf-8')
-        eggf = BytesIO(txrequest.args[b'egg'][0])
+        eggf = BytesIO(txrequest.args.pop(b'egg')[0])
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        version = args['version'][0]
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
