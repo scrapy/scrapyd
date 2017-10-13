@@ -66,7 +66,7 @@ class SqlitePriorityQueueTest(unittest.TestCase):
 
     queue_class = SqlitePriorityQueue
 
-    supported_values = ["bytes", u"\xa3", 123, 1.2, True]
+    supported_values = [b"bytes", u"\xa3", 123, 1.2, True]
 
     def setUp(self):
         self.q = self.queue_class()
