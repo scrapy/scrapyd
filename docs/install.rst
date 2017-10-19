@@ -38,6 +38,10 @@ send a pull request on Github.
 Installing Scrapyd in Ubuntu
 ----------------------------
 
+Caution!
+
+These packages are currently not updated and may not work on Ubuntu 16.04 and above.
+
 Scrapyd comes with official Ubuntu packages ready to use in your Ubuntu
 servers. They are shipped in the same APT repos of Scrapy, which can be added
 as described in `Scrapy Ubuntu packages`_. Once you have added the Scrapy APT
