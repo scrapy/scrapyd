@@ -41,7 +41,7 @@ class Launcher(Service):
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
+        pp = ScrapyProcessProtocol(args, slot, project, msg['_spider'], \
             msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
@@ -66,7 +66,8 @@ class Launcher(Service):
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
+    def __init__(self, arguments, slot, project, spider, job, env):
+        self.arguments = arguments
         self.slot = slot
         self.pid = None
         self.project = project
