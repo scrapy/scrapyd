@@ -3,6 +3,15 @@
 Release notes
 =============
 
+1.3.0
+-----
+*Unreleased*
+
+Removed
+~~~~~~~
+
+- Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
+
 1.2.0
 -----
 *Release date: 2017-04-12*
