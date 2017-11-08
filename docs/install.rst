@@ -12,9 +12,10 @@ Requirements
 Scrapyd depends on the following libraries, but the installation process
 takes care of installing the missing ones:
 
-* Python 2.6 or above
+* Python 2.7 or above
 * Twisted 8.0 or above
-* Scrapy 0.17 or above
+* Scrapy 1.0 or above
+* six
 
 Installing Scrapyd (generic way)
 --------------------------------
