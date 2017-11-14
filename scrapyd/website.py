@@ -106,12 +106,21 @@ monitoring)</p>
 """ % vars
         return s.encode('utf-8')
 
+
 class Jobs(resource.Resource):
 
     def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
         self.local_items = local_items
+
+    cancel_button = """
+    <form method='post' action='/cancel.json'>
+    <input type='hidden' name='project' value='{project}'/>"
+    <input type='hidden' name='job' value='{jobid}'/>"
+    <input type='submit' style='float: left;' value='Cancel'/>
+    </form>
+    """.format
 
     def render(self, txrequest):
         cols = 8
@@ -120,10 +129,10 @@ class Jobs(resource.Resource):
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Start</th><th>Runtime</th><th>Finish</th><th>Log</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Start</th><th>Runtime</th><th>Finish</th><th>Log</th><th>Cancel</th>"
         if self.local_items:
             s += "<th>Items</th>"
-            cols = 9
+            cols += 1
         s += "</tr>"
         s += "<tr><th colspan='%s' style='background-color: #ddd'>Pending</th></tr>" % cols
         for project, queue in self.root.poller.queues.items():
@@ -132,6 +141,11 @@ class Jobs(resource.Resource):
                 s += "<td>%s</td>" % project
                 s += "<td>%s</td>" % str(m['name'])
                 s += "<td>%s</td>" % str(m['_job'])
+                s += "<td/>" * (cols - 4)
+                s += '<td>' 
+                if 'cancel.json' in self.root.children:
+                    s += self.cancel_button(project=project, jobid=m['_job'])
+                s += "</td>"
                 s += "</tr>"
         s += "<tr><th colspan='%s' style='background-color: #ddd'>Running</th></tr>" % cols
         for p in self.root.launcher.processes.values():
@@ -140,23 +154,28 @@ class Jobs(resource.Resource):
                 s += "<td>%s</td>" % getattr(p, a)
             s += "<td>%s</td>" % microsec_trunc(p.start_time)
             s += "<td>%s</td>" % microsec_trunc(datetime.now() - p.start_time)
-            s += "<td></td>"
+            s += "<td/>"  # Finish
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
                 s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
+            s += '<td>' 
+            if 'cancel.json' in self.root.children:
+                s += self.cancel_button(project=p.project, jobid=p.job)
+            s += '</td>' 
             s += "</tr>"
         s += "<tr><th colspan='%s' style='background-color: #ddd'>Finished</th></tr>" % cols
         for p in self.root.launcher.finished:
             s += "<tr>"
             for a in ['project', 'spider', 'job']:
                 s += "<td>%s</td>" % getattr(p, a)
-            s += "<td></td>"
+            s += "<td/>"  # PID
             s += "<td>%s</td>" % microsec_trunc(p.start_time)
             s += "<td>%s</td>" % microsec_trunc(p.end_time - p.start_time)
             s += "<td>%s</td>" % microsec_trunc(p.end_time)
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
                 s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
+            s += "<td/>"
             s += "</tr>"
         s += "</table>"
         s += "</body>"
