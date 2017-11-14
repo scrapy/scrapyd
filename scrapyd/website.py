@@ -11,6 +11,15 @@ from .interfaces import IPoller, IEggStorage, ISpiderScheduler
 
 from six.moves.urllib.parse import urlparse
 
+
+def microsec_trunc(timelike):
+    if hasattr(timelike, 'microsecond'):
+        ms = timelike.microsecond
+    else:
+        ms = timelike.microseconds
+    return timelike - datetime.timedelta(microseconds=ms)
+
+
 class Root(resource.Resource):
 
     def __init__(self, config, app):
@@ -129,8 +138,8 @@ class Jobs(resource.Resource):
             s += "<tr>"
             for a in ['project', 'spider', 'job', 'pid']:
                 s += "<td>%s</td>" % getattr(p, a)
-            s += "<td>%s</td>" % p.start_time.replace(microsecond=0)
-            s += "<td>%s</td>" % (datetime.now().replace(microsecond=0) - p.start_time.replace(microsecond=0))
+            s += "<td>%s</td>" % microsec_trunc(p.start_time)
+            s += "<td>%s</td>" % microsec_trunc(datetime.now() - p.start_time)
             s += "<td></td>"
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
@@ -142,9 +151,9 @@ class Jobs(resource.Resource):
             for a in ['project', 'spider', 'job']:
                 s += "<td>%s</td>" % getattr(p, a)
             s += "<td></td>"
-            s += "<td>%s</td>" % p.start_time.replace(microsecond=0)
-            s += "<td>%s</td>" % (p.end_time.replace(microsecond=0) - p.start_time.replace(microsecond=0))
-            s += "<td>%s</td>" % p.end_time.replace(microsecond=0)
+            s += "<td>%s</td>" % microsec_trunc(p.start_time)
+            s += "<td>%s</td>" % microsec_trunc(p.end_time - p.start_time)
+            s += "<td>%s</td>" % microsec_trunc(p.end_time)
             s += "<td><a href='/logs/%s/%s/%s.log'>Log</a></td>" % (p.project, p.spider, p.job)
             if self.local_items:
                 s += "<td><a href='/items/%s/%s/%s.jl'>Items</a></td>" % (p.project, p.spider, p.job)
