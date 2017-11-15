@@ -118,16 +118,27 @@ class ListJobs(WsResource):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
         spiders = self.root.launcher.processes.values()
-        running = [{"id": s.job, "spider": s.spider, "pid": s.pid,
-                    "start_time": s.start_time.isoformat(' ')}
-                   for s in spiders if s.project == project]
         queue = self.root.poller.queues[project]
-        pending = [{"id": x["_job"], "spider": x["name"]} for x in queue.list()]
-        finished = [{"id": s.job, "spider": s.spider,
-            "start_time": s.start_time.isoformat(' '),
-            "end_time": s.end_time.isoformat(' ')} for s in self.root.launcher.finished
-            if s.project == project]
-        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
+        pending = [
+            {"spider": x["name"], "id": x["_job"]}
+            for x in queue.list()
+        ]
+        running = [
+            {
+                "spider": s.spider,
+                "id": s.job, "pid": s.pid,
+                "start_time": s.start_time.isoformat(' '),
+            } for s in spiders if s.project == project
+        ]
+        finished = [
+            {
+                "spider": s.spider, "id": s.job,
+                "start_time": s.start_time.isoformat(' '),
+                "end_time": s.end_time.isoformat(' '),
+            } for s in self.root.launcher.finished if s.project == project
+        ]
+        return {"node_name": self.root.nodename, "status": "ok",
+                "pending": pending, "running": running, "finished": finished}
 
 class DeleteProject(WsResource):
 
