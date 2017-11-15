@@ -127,14 +127,14 @@ class ListJobs(WsResource):
             {
                 "spider": s.spider,
                 "id": s.job, "pid": s.pid,
-                "start_time": s.start_time.isoformat(' '),
+                "start_time": str(s.start_time),
             } for s in spiders if s.project == project
         ]
         finished = [
             {
                 "spider": s.spider, "id": s.job,
-                "start_time": s.start_time.isoformat(' '),
-                "end_time": s.end_time.isoformat(' '),
+                "start_time": str(s.start_time),
+                "end_time": str(s.end_time)
             } for s in self.root.launcher.finished if s.project == project
         ]
         return {"node_name": self.root.nodename, "status": "ok",
