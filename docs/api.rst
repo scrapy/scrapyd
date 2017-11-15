@@ -172,18 +172,38 @@ Get the list of pending, running and finished jobs of some project.
 * Supported Request Methods: ``GET``
 * Parameters:
 
-  * ``project`` (string, required) - the project name
+  * ``project`` (string, option) - restrict results to project name
 
 Example request::
 
-    $ curl http://localhost:6800/listjobs.json?project=myproject
+    $ curl http://localhost:6800/listjobs.json?project=myproject | python -m json.tool
 
 Example response::
 
-    {"status": "ok",
-     "pending": [{"id": "78391cc0fcaf11e1b0090800272a6d06", "spider": "spider1"}],
-     "running": [{"id": "422e608f9f28cef127b3d5ef93fe9399", "spider": "spider2", "start_time": "2012-09-12 10:14:03.594664"}],
-     "finished": [{"id": "2f16646cfcaf11e1b0090800272a6d06", "spider": "spider3", "start_time": "2012-09-12 10:14:03.594664", "end_time": "2012-09-12 10:24:03.594664"}]}
+    {
+        "status": "ok",
+        "pending": [
+            {
+                "project": "myproject", "spider": "spider1",
+                "id": "78391cc0fcaf11e1b0090800272a6d06"
+            }
+        ],
+        "running": [
+            {
+                "id": "422e608f9f28cef127b3d5ef93fe9399",
+                "project": "myproject", "spider": "spider2",
+                "start_time": "2012-09-12 10:14:03.594664"
+            }
+        ],
+        "finished": [
+            {
+                "id": "2f16646cfcaf11e1b0090800272a6d06",
+                "project": "myproject", "spider": "spider3",
+                "start_time": "2012-09-12 10:14:03.594664",
+                "end_time": "2012-09-12 10:24:03.594664"
+            }
+        ]
+    }
 
 .. note:: All job data is kept in memory and will be reset when the Scrapyd service is restarted. See `issue 12`_.
 

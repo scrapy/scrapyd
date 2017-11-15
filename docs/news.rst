@@ -7,6 +7,12 @@ Release notes
 -----
 *Unreleased*
 
+Added
+~~~~~
+
+- Make project argument to listjobs.json optional,
+  so that we can easily query for all jobs.
+
 Removed
 ~~~~~~~
 

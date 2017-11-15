@@ -116,26 +116,30 @@ class ListJobs(WsResource):
 
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
+        project = args.get('project', [None])[0]
         spiders = self.root.launcher.processes.values()
-        queue = self.root.poller.queues[project]
+        queues = self.root.poller.queues
         pending = [
-            {"spider": x["name"], "id": x["_job"]}
-            for x in queue.list()
+            {"project": project, "spider": x["name"], "id": x["_job"]}
+            for qname in (queues if project is None else [project])
+            for x in queues[qname].list()
         ]
         running = [
             {
+                "project": project,
                 "spider": s.spider,
                 "id": s.job, "pid": s.pid,
                 "start_time": str(s.start_time),
-            } for s in spiders if s.project == project
+            } for s in spiders if project is None or s.project == project
         ]
         finished = [
             {
+                "project": project,
                 "spider": s.spider, "id": s.job,
                 "start_time": str(s.start_time),
                 "end_time": str(s.end_time)
-            } for s in self.root.launcher.finished if s.project == project
+            } for s in self.root.launcher.finished
+            if project is None or s.project == project
         ]
         return {"node_name": self.root.nodename, "status": "ok",
                 "pending": pending, "running": running, "finished": finished}
