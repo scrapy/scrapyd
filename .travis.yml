@@ -18,6 +18,9 @@ matrix:
         - env: TOXENV=pypy
           python: 2.7
 
+before_install:
+    - pip install -U six
+
 install:
     - |
       if [ "$TOXENV" = "pypy" ]; then
