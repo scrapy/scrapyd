@@ -7,6 +7,12 @@ Release notes
 -----
 *Unreleased*
 
+
+Added
+~~~~~
+
+- Jobs website shortcut to cancel a job using the cancel.json webservice.
+
 Removed
 ~~~~~~~
 
