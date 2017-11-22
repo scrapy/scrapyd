@@ -106,6 +106,28 @@ Example response::
 
     {"status": "ok", "prevstate": "running"}
 
+status.json
+-----------
+
+    .. versionadded:: 1.2.1
+
+    View the status of a spider run (aka. job).
+
+    * Supported Request Methods: ``GET``
+    * Parameters:
+
+      * ``project`` (string, optional) - the project name
+      * ``job`` (string, required) - the job id
+
+    Example request::
+
+        $ curl "http://localhost:6800/status.json?job=6487ec79947edab326d6db28a2d86511e8247444&project=myproject"
+
+    Example response::
+
+        { "node_name": "node-name", "status": "running" }
+
+
 listprojects.json
 -----------------
 

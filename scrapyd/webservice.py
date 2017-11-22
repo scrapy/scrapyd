@@ -35,7 +35,6 @@ class DaemonStatus(WsResource):
 
         return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
 
-
 class Schedule(WsResource):
 
     def render_POST(self, txrequest):
@@ -111,6 +110,34 @@ class ListSpiders(WsResource):
         version = args.get('_version', [''])[0]
         spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
+
+class JobStatus(WsResource):
+
+    def render_GET(self, txrequest):
+        result = {"node_name": self.root.nodename, "status":"unknown"}
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        job = args['job'][0]
+        project = args.get('project', [None])[0]
+        spiders = self.root.launcher.processes.values()
+        queues = self.root.poller.queues
+
+        for s in self.root.launcher.finished:
+            if (project is None or s.project == project) and (s.job == job):
+                result["status"] = "finished"
+                return result
+
+        for s in spiders:
+            if (project is None or s.project == project) and (s.job == job):
+                result["status"] = "running"
+                return result
+
+        for x in queues[qname].list():
+            for qname in (queues if project is None else [project]):
+                if(x["_job"] == job):
+                    result["status"] = "pending"
+                    return result
+
+        return result
 
 class ListJobs(WsResource):
 
