@@ -44,13 +44,14 @@ class Postgres(object):
                 raise e
             
     @staticmethod
-    def execute(sql, param = None, query=False, uniqueResult=False):
+    def execute(sql, param=None, query=False, uniqueResult=False, log_query=True):
         if Postgres.con is None or Postgres.con.closed != 0 :
             Postgres.connect()
         cur = Postgres.con.cursor()
         result = None
         try:
-            log.msg("Executing query: " + sql)
+            if log_query:
+                log.msg("Executing query: " + sql)
             if(param is not None):
                 cur.execute(sql, param)
             else:
@@ -202,7 +203,7 @@ class PostgresPriorityQueue(object):
 
     def __len__(self):
         q = "select count(*) from %s where project = %%s" % self.table
-        n = Postgres.execute(q, (self.project,), True, True)
+        n = Postgres.execute(q, (self.project,), True, True, False)
         return int(n[0])
 
     def __iter__(self):
