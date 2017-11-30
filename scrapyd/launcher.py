@@ -95,10 +95,10 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
     def processEnded(self, status):
         if isinstance(status.value, error.ProcessDone):
             self.log("Process finished: ")
-            RabbitmqUtils.ack(self.delivery_tag)
+            #RabbitmqUtils.ack(self.delivery_tag)
         else:
             self.log("Process died: exitstatus=%r " % status.value.exitCode)
-            RabbitmqUtils.reject(self.delivery_tag)
+            #RabbitmqUtils.reject(self.delivery_tag)
         self.deferred.callback(self)
 
     def log(self, action):
