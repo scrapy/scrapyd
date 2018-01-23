@@ -122,12 +122,21 @@ class Jobs(resource.Resource):
     </form>
     """.format
 
+    redo_button = """
+    <form method="post" action="/schedule.json">
+    <input type="hidden" name="project" value="{project}"/>
+    <input type="hidden" name="spider" value="{spider}"/>
+    {args}
+    <input type="submit" style="float: left;" value="redo"/>
+    </form>
+    """.format
+
     header_cols = [
         'Project', 'Spider',
         'Job', 'PID',
         'Start', 'Runtime', 'Finish',
         'Log', 'Items',
-        'Cancel',
+        'Process',
     ]
 
     def gen_css(self):
@@ -203,7 +212,7 @@ class Jobs(resource.Resource):
                 Runtime=microsec_trunc(datetime.now() - p.start_time),
                 Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
                 Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
-                Cancel=self.cancel_button(project=p.project, jobid=p.job)
+                Process=self.cancel_button(project=p.project, jobid=p.job)
             ))
             for p in self.root.launcher.processes.values()
         )
@@ -218,6 +227,10 @@ class Jobs(resource.Resource):
                 Finish=microsec_trunc(p.end_time),
                 Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
                 Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
+                Process=self.redo_button(project=p.project, spider=p.spider, \
+                    args="\n".join(['<input type="hidden" name="%s" value="%s"/>'%(k, v) \
+                            for (k, v) in p.args.items() if not k.startswith('_')] \
+                        )),
             ))
             for p in self.root.launcher.finished
         )
