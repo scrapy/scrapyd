@@ -42,7 +42,7 @@ class Launcher(Service):
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
         pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+            msg['_job'], env, args)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -66,12 +66,13 @@ class Launcher(Service):
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
+    def __init__(self, slot, project, spider, job, env, arguments):
         self.slot = slot
         self.pid = None
         self.project = project
         self.spider = spider
         self.job = job
+        self.arguments = arguments
         self.start_time = datetime.now()
         self.end_time = None
         self.env = env
