@@ -48,6 +48,18 @@ distribution::
 
 That should get your Scrapyd started.
 
+Running with Docker
+===================
+
+You can run scrapyd using docker by running::
+
+    docker run -p 6800:6800 -v ~/scrapyd_data:/app/data scrapinghub/scrapyd
+
+You can modify the behavior of scrapyd by mounting a ``scrapyd.conf`` file to
+``/app/scrapyd.conf``, check out :ref:`configuration <config>` for more
+details.
+
+
 Scheduling a spider run
 =======================
 
