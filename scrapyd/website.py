@@ -75,12 +75,12 @@ class Home(resource.Resource):
 <h1>Scrapyd</h1>
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
-<li><a href="/jobs">Jobs</a></li>
+<li><a href="jobs">Jobs</a></li>
 """ % vars
         if self.local_items:
             s += '<li><a href="/items/">Items</a></li>'
         s += """
-<li><a href="/logs/">Logs</a></li>
+<li><a href="logs/">Logs</a></li>
 <li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
 </ul>
 
@@ -159,7 +159,7 @@ class Jobs(resource.Resource):
             '<style type="text/css">' + self.gen_css() + '</style>'
             '</head>'
             '<body><h1>Jobs</h1>'
-            '<p><a href="..">Go back</a></p>'
+            '<a href='#' onclick='javascript:history.back(-1)'>Go back</a></p>'
             + self.prep_table() +
             '</body>'
             '</html>'
