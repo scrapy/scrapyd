@@ -179,7 +179,10 @@ class DeleteVersion(DeleteProject):
 ########################################################
 
 class AddGitProject(WsResource):
-
+    """
+    添加git代码
+    GET: http://127.0.0.1:6800/addgitproject.json?url=<git_ssh_url>
+    """
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         url = args['url'][0]
@@ -197,7 +200,10 @@ class AddGitProject(WsResource):
 
 
 class PullGitProject(WsResource):
-
+    """
+    更新git代码
+    GET: http://127.0.0.1:6800/pullgitproject.json ?project=<project_name>
+    """
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
@@ -214,7 +220,10 @@ class PullGitProject(WsResource):
 
 
 class DeployGitProject(WsResource):
-
+    """
+    部署git代码项目
+    GET: http://127.0.0.1:6800/deploygitproject.json?project=<project_name>
+    """
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
