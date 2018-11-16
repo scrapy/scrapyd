@@ -1,6 +1,11 @@
+# -*- encoding: utf-8 -*-
+
 from copy import copy
 import traceback
 import uuid
+
+import os
+
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -9,6 +14,7 @@ except ImportError:
 from twisted.python import log
 
 from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from .config import Config
 
 class WsResource(JsonResource):
 
@@ -166,3 +172,59 @@ class DeleteVersion(DeleteProject):
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
+
+
+########################################################
+# 以下为新加的内容,添加、部署、更新git仓库的项目 by Peng shiyu
+########################################################
+
+class AddGitProject(WsResource):
+
+    def render_GET(self, txrequest):
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        url = args['url'][0]
+        ret = self.add_project(url)
+        return {"node_name": self.root.nodename, "status":"ok", "ret": ret}
+
+    def add_project(self, url):
+        config = Config()
+        project_dir = config.get("project_dir")
+        if not os.path.exists(project_dir):
+            os.mkdir(project_dir)
+        cmd = "cd {};git clone {}".format(project_dir, url)
+        pipe = os.popen(cmd)
+        return pipe.read()
+
+
+class PullGitProject(WsResource):
+
+    def render_GET(self, txrequest):
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        ret = self.pull_project(project)
+        return {"node_name": self.root.nodename, "status":"ok", "ret": ret}
+
+    def pull_project(self, project):
+        config = Config()
+        project_dir = config.get("project_dir")
+
+        cmd = "cd {};cd {};git pull".format(project_dir, project)
+        pipe = os.popen(cmd)
+        return pipe.read()
+
+
+class DeployGitProject(WsResource):
+
+    def render_GET(self, txrequest):
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        ret = self.deploy_project(project)
+        return {"node_name": self.root.nodename, "status":"ok", "ret": ret}
+
+    def deploy_project(self, project):
+        config = Config()
+        project_dir = config.get("project_dir")
+
+        cmd = "cd {};cd {};scrapyd-deploy".format(project_dir, project)
+        pipe = os.popen(cmd)
+        return pipe.read()
