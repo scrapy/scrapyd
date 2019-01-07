@@ -24,6 +24,7 @@ class Root(resource.Resource):
         self.app = app
         self.nodename = config.get('node_name', socket.gethostname())
         self.putChild(b'', Home(self, local_items))
+        self.putChild(b'ui', Home(self, local_items))
         if logsdir:
             self.putChild(b'logs', static.File(logsdir.encode('ascii', 'ignore'), 'text/plain'))
         if local_items:
@@ -58,7 +59,7 @@ class Root(resource.Resource):
 
 
 class Home(resource.Resource):
-
+    isLeaf = True
     def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
@@ -69,43 +70,18 @@ class Home(resource.Resource):
             'projects': ', '.join(self.root.scheduler.list_projects())
         }
         s = """
-<html>
-<head><title>Scrapyd</title></head>
-<body>
-<h1>Scrapyd</h1>
-<p>Available projects: <b>%(projects)s</b></p>
-<ul>
-<li><a href="/jobs">Jobs</a></li>
-""" % vars
-        if self.local_items:
-            s += '<li><a href="/items/">Items</a></li>'
-        s += """
-<li><a href="/logs/">Logs</a></li>
-<li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
-</ul>
-
-<h2>How to schedule a spider?</h2>
-
-<p>To schedule a spider you need to use the API (this web UI is only for
-monitoring)</p>
-
-<p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
-<p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
-
-<p>For more information about the API, see the <a href="http://scrapyd.readthedocs.org/en/latest/">Scrapyd documentation</a></p>
-</body>
-</html>
-""" % vars
+            <html>
+            <head><title>Scrapyd</title>
+            <link rel="shortcut icon" href="https://scrapy.org/favicons/apple-touch-icon-180x180.png">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/mojtabaasadi/react-scrapyd-ui/build/latest.css"></link>
+            </head>
+            <body>
+            <div id="root"></div>
+            </body>
+            <script src="https://cdn.jsdelivr.net/gh/mojtabaasadi/react-scrapyd-ui/build/latest.js"></script>
+            </html>
+        """
         return s.encode('utf-8')
-
-
-def microsec_trunc(timelike):
-    if hasattr(timelike, 'microsecond'):
-        ms = timelike.microsecond
-    else:
-        ms = timelike.microseconds
-    return timelike - timedelta(microseconds=ms)
-
 
 class Jobs(resource.Resource):
 
