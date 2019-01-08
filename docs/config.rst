@@ -23,7 +23,8 @@ The TCP port where the HTTP JSON API will listen. Defaults to ``6800``.
 bind_address
 ------------
 
-The IP address where the HTTP JSON API will listen. Defaults to ``0.0.0.0`` (all)
+The IP address where the website and json webservices will listen.
+Defaults to ``127.0.0.1`` (localhost)
 
 .. _max_proc:
 
@@ -68,22 +69,6 @@ storing logs set this option empty, like this::
 
     logs_dir =
 
-logs_filename
--------------
-
-The filename (appended to ``logs_dir``) to use for the crawl. ``{project}``,
-``{spider}`` and ``{job}`` placeholders will be substituted, as will certain
-datetime elements (but only ``{Y}``, ``{m}``, ``{d}``, ``{H}``, ``{M}``, ``{S}``).
-
-For example,
-
-   logs_filename = {spider}-{Y}{m}{d}.log
-
-If no value is specified, the default value is ``{project}/{spider}/{job}.log``.
-
-Note: if a custom value for ``logs_filename`` is used then ``jobs_to_keep`` is
-no longer applicable. Scrapyd will not delete old log files.
-
 .. _items_dir:
 
 items_dir
@@ -124,7 +109,9 @@ This only reflects on the website /jobs endpoint and relevant json webservices.
 poll_interval
 -------------
 
-The interval used to poll queues, in seconds. Defaults to ``5``.
+The interval used to poll queues, in seconds.
+Defaults to ``5.0``.
+Can be a float, such as ``0.2``
 
 runner
 ------

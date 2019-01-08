@@ -1,13 +1,16 @@
 import sqlite3
-try:
-    import cPickle as pickle
-except:
-    import pickle
 import json
-from UserDict import DictMixin
+try:
+    from collections.abc import MutableMapping
+except ImportError:
+    from collections import MutableMapping
+import six
 
 
-class SqliteDict(DictMixin):
+from ._deprecate import deprecate_class
+
+
+class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
     def __init__(self, database=None, table="dict"):
@@ -39,6 +42,14 @@ class SqliteDict(DictMixin):
         self.conn.execute(q, (key,))
         self.conn.commit()
 
+    def __len__(self):
+        q = "select count(*) from %s" % self.table
+        return self.conn.execute(q).fetchone()[0]
+
+    def __iter__(self):
+        for k in self.iterkeys():
+            yield k
+
     def iterkeys(self):
         q = "select key from %s" % self.table
         return (self.decode(x[0]) for x in self.conn.execute(q))
@@ -61,32 +72,13 @@ class SqliteDict(DictMixin):
         return list(self.iteritems())
 
     def encode(self, obj):
-        return obj
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, obj):
-        return obj
+        return json.loads(bytes(obj).decode('ascii'))
 
 
-class PickleSqliteDict(SqliteDict):
-
-    def encode(self, obj):
-        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
-
-    def decode(self, obj):
-        return pickle.loads(bytes(obj))
-
-
-class JsonSqliteDict(SqliteDict):
-
-    def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj))
-
-    def decode(self, obj):
-        return json.loads(bytes(obj))
-
-
-
-class SqlitePriorityQueue(object):
+class JsonSqlitePriorityQueue(object):
     """SQLite priority queue. It relies on SQLite concurrency support for
     providing atomic inter-process operations.
     """
@@ -150,25 +142,7 @@ class SqlitePriorityQueue(object):
         return ((self.decode(x), y) for x, y in self.conn.execute(q))
 
     def encode(self, obj):
-        return obj
+        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
 
     def decode(self, text):
-        return text
-
-
-class PickleSqlitePriorityQueue(SqlitePriorityQueue):
-
-    def encode(self, obj):
-        return sqlite3.Binary(pickle.dumps(obj, protocol=2))
-
-    def decode(self, obj):
-        return pickle.loads(bytes(obj))
-
-
-class JsonSqlitePriorityQueue(SqlitePriorityQueue):
-
-    def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj))
-
-    def decode(self, obj):
-        return json.loads(bytes(obj))
+        return json.loads(bytes(text).decode('ascii'))

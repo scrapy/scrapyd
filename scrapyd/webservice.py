@@ -1,10 +1,14 @@
+from copy import copy
 import traceback
 import uuid
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from twisted.python import log
-import re
-from .utils import get_spider_list, JsonResource, UtilsCache
+from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+
 
 class WsResource(JsonResource):
 
@@ -14,13 +18,13 @@ class WsResource(JsonResource):
 
     def render(self, txrequest):
         try:
-            return JsonResource.render(self, txrequest)
-        except Exception, e:
+            return JsonResource.render(self, txrequest).encode('utf-8')
+        except Exception as e:
             if self.root.debug:
-                return traceback.format_exc()
+                return traceback.format_exc().encode('utf-8')
             log.err()
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
-            return self.render_object(r, txrequest)
+            return self.render_object(r, txrequest).encode('utf-8')
 
 class DaemonStatus(WsResource):
 
@@ -35,9 +39,10 @@ class DaemonStatus(WsResource):
 class Schedule(WsResource):
 
     def render_POST(self, txrequest):
-        settings = txrequest.args.pop('setting', [])
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        settings = args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
-        args = dict((k, v[0]) for k, v in txrequest.args.items())
+        args = dict((k, v[0]) for k, v in args.items())
         project = args.pop('project')
         spider = args.pop('spider')
         version = args.get('_version', '')
@@ -50,73 +55,75 @@ class Schedule(WsResource):
         self.root.scheduler.schedule(project, spider, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
+
 class Cancel(WsResource):
+    def build_arguments(self, txrequest):
+        args = dict((k, v[0])
+                    for k, v in native_stringify_dict(copy(txrequest.args),
+                                                      keys_only=False).items())
+        self.project = args.get('project')
+        self.jobid = args.get('job')
+        self.signal = args.get('signal', 'TERM')
 
-    def render_GET(self, txrequest):
-        return self.redirect_cancel(txrequest)
+    def shutdown_spider(self, spider, signal='TERM'):
+        spider.transport.signalProcess(signal)
 
-    def render_POST(self, txrequest):
-        return self.redirect_cancel(txrequest)
-
-    def redirect_cancel(self, txrequest):
-        args = dict((k, v[0]) for k, v in txrequest.args.items())
-        #Remove extension from endpoint; "cancel.json" becomes "cancel"
-        endpoint = txrequest.prepath[0]
-        function = endpoint.replace(re.findall(r"\.\w+", endpoint)[0], '')
-        values = getattr(self, function)(args)
-        values.update({"node_name": self.root.nodename, "status": "ok"})
-        return values
-
-    #Endpoint management starts here, all must receive 'args' as an argument
-    def cancel(self, args):
-        j = self.canceljob(args)
-        j.update({'Warning' : "Deprecated, use canceljob.json endpoint instead!"})
-        return j
-
-    def canceljob(self, args):
-        project = args['project']
-        jobid = args['job']
+    def cancel_job(self, txrequest):
+        self.build_arguments(txrequest)
         prevstate = None
-        queue = self.root.poller.queues[project]
-        c = queue.remove(lambda x: x["_job"] == jobid)
+        queue = self.root.poller.queues[self.project]
+        c = queue.remove(lambda x: x["_job"] == self.jobid)
         if c:
             prevstate = "pending"
         spiders = self.root.launcher.processes.values()
         for s in spiders:
-            if s.job == jobid:
-               self.clear_data([],[s])
-               prevstate = "running"
-        return {"prevstate": prevstate}
+            if s.job == self.jobid:
+                self.shutdown_spider(s)
+                prevstate = "running"
+        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
-    def cancelall(self, args):
-        queues = self.root.poller.queues.itervalues()
+    def render_POST(self, txrequest):
+        response = self.cancel_job(txrequest)
+        response['warning'] = "Deprecated: use canceljob.json instead."
+        return response
+
+
+class CancelJob(Cancel):
+
+    def render_POST(self, txrequest):
+        return self.cancel_job(txrequest)
+
+
+class CancelProject(Cancel):
+
+    def render_POST(self, txrequest):
+        self.build_arguments(txrequest)
+        queue = self.root.poller.queues[self.project]
+        cancelled = queue.clear()
         spiders = self.root.launcher.processes.values()
-        cancelled = self.clear_data(queues, spiders)
-        return {"cancelled": cancelled}
-
-    def cancelproject(self, args):
-        project = args['project']
-        queue = self.root.poller.queues[project]
-        spiders = [s for s in self.root.launcher.processes.values() if s.project == project]
-        to_delete = [[queue]]
-        to_delete.append()
-        cancelled = self.clear_data([queue],spiders)
-        return {"cancelled": cancelled}
-
-    def clear_data(self, queues, spiders):
-        cleared = 0
-        cleared += sum([queue.clear() for queue in queues])
         for s in spiders:
-            s.transport.signalProcess('TERM')
-            cleared+=1
-        return cleared
-        
+            if s.project == self.project:
+                self.shutdown_spider(s)
+                cancelled += 1
+        return {"node_name": self.root.nodename, "status": "ok", "cancelled": cancelled}
+
+
+class CancelAll(Cancel):
+    def render_GET(self, txrequest):
+        cancelled = sum([queue.clear() for queue in self.root.poller.queues.values()])
+        spiders = self.root.launcher.processes.values()
+        for s in spiders:
+            self.shutdown_spider(s)
+            cancelled += 1
+        return {"node_name": self.root.nodename, "status": "ok", "cancelled": cancelled}
+
+
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
-        project = txrequest.args['project'][0]
-        version = txrequest.args['version'][0]
-        eggf = StringIO(txrequest.args['egg'][0])
+        project = txrequest.args[b'project'][0].decode('utf-8')
+        version = txrequest.args[b'version'][0].decode('utf-8')
+        eggf = BytesIO(txrequest.args[b'egg'][0])
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
@@ -124,46 +131,71 @@ class AddVersion(WsResource):
         return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
             "spiders": len(spiders)}
 
+
 class ListProjects(WsResource):
 
     def render_GET(self, txrequest):
-        projects = self.root.scheduler.list_projects()
+        projects = list(self.root.scheduler.list_projects())
         return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
+
 
 class ListVersions(WsResource):
 
     def render_GET(self, txrequest):
-        project = txrequest.args['project'][0]
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
         versions = self.root.eggstorage.list(project)
         return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
+
 
 class ListSpiders(WsResource):
 
     def render_GET(self, txrequest):
-        project = txrequest.args['project'][0]
-        version = txrequest.args.get('_version', [''])[0]
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        version = args.get('_version', [''])[0]
         spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
+
 
 class ListJobs(WsResource):
 
     def render_GET(self, txrequest):
-        project = txrequest.args['project'][0]
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args.get('project', [None])[0]
         spiders = self.root.launcher.processes.values()
-        running = [{"id": s.job, "spider": s.spider,
-            "start_time": s.start_time.isoformat(' ')} for s in spiders if s.project == project]
-        queue = self.root.poller.queues[project]
-        pending = [{"id": x["_job"], "spider": x["name"]} for x in queue.list()]
-        finished = [{"id": s.job, "spider": s.spider,
-            "start_time": s.start_time.isoformat(' '),
-            "end_time": s.end_time.isoformat(' ')} for s in self.root.launcher.finished
-            if s.project == project]
-        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
+        queues = self.root.poller.queues
+        pending = [
+            {"project": project, "spider": x["name"], "id": x["_job"]}
+            for qname in (queues if project is None else [project])
+            for x in queues[qname].list()
+        ]
+        running = [
+            {
+                "project": project,
+                "spider": s.spider,
+                "id": s.job, "pid": s.pid,
+                "start_time": str(s.start_time),
+            } for s in spiders if project is None or s.project == project
+        ]
+        finished = [
+            {
+                "project": project,
+                "spider": s.spider, "id": s.job,
+                "start_time": str(s.start_time),
+                "end_time": str(s.end_time)
+            } for s in self.root.launcher.finished
+            if project is None or s.project == project
+        ]
+        return {"node_name": self.root.nodename, "status": "ok",
+                "pending": pending, "running": running, "finished": finished}
+
 
 class DeleteProject(WsResource):
 
     def render_POST(self, txrequest):
-        project = txrequest.args['project'][0]
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
@@ -172,11 +204,13 @@ class DeleteProject(WsResource):
         self.root.eggstorage.delete(project, version)
         self.root.update_projects()
 
+
 class DeleteVersion(DeleteProject):
 
     def render_POST(self, txrequest):
-        project = txrequest.args['project'][0]
-        version = txrequest.args['version'][0]
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        version = args['version'][0]
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}

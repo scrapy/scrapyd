@@ -1,6 +1,12 @@
+# -*- coding: utf-8 -*-
 import sys, os
 from pkgutil import get_data
-from cStringIO import StringIO
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
+
+import six
 
 from twisted.trial import unittest
 
@@ -50,7 +56,7 @@ class GetSpiderListTest(unittest.TestCase):
 
     def add_test_version(self, file, project, version):
         eggstorage = self.app.getComponent(IEggStorage)
-        eggfile = StringIO(get_data("scrapyd.tests", file))
+        eggfile = BytesIO(get_data("scrapyd.tests", file))
         eggstorage.put(eggfile, project, version)
 
     def test_get_spider_list(self):
@@ -85,3 +91,25 @@ class GetSpiderListTest(unittest.TestCase):
         UtilsCache.invalid_cache('mybot')
         spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
+
+    def test_get_spider_list_unicode(self):
+        # mybotunicode.egg has two spiders, araña1 and araña2
+        self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
+        spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
+        self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])
+
+    def test_failed_spider_list(self):
+        self.add_test_version('mybot3.egg', 'mybot3', 'r1')
+        pypath = get_pythonpath_scrapyd()
+        # Workaround missing support for context manager in twisted < 15
+        exc = self.assertRaises(RuntimeError,
+                                get_spider_list, 'mybot3', pythonpath=pypath)
+        tb = str(exc).rstrip()
+        tb = tb.decode('unicode_escape') if six.PY2 else tb
+        tb_regex = (
+            r'^Traceback \(most recent call last\):\n'
+            r'(?:  File .*\n(?:    .*\n)?)*'  # Skipped lines
+            r'  File "(?:[^"\\]|\\.)*/mybot3/settings\.py", line 1, in <module>\n'
+            r'Exception: This should break the `scrapy list` command$'
+        )
+        self.assertRegexpMatches(tb, tb_regex)

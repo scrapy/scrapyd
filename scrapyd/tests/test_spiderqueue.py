@@ -7,13 +7,11 @@ from scrapyd.interfaces import ISpiderQueue
 from scrapyd import spiderqueue
 
 class SpiderQueueTest(unittest.TestCase):
-    """This test case can be used easily for testing other SpiderQueue's by
-    just changing the _get_queue() method. It also supports queues with
-    deferred methods.
+    """This test case also supports queues with deferred methods.
     """
 
     def setUp(self):
-        self.q = self._get_queue()
+        self.q = spiderqueue.SqliteSpiderQueue(':memory:')
         self.name = 'spider1'
         self.args = {
             'arg1': 'val1',
@@ -23,8 +21,6 @@ class SpiderQueueTest(unittest.TestCase):
         self.msg = self.args.copy()
         self.msg['name'] = self.name
 
-    def _get_queue(self):
-        return spiderqueue.SqliteSpiderQueue(':memory:')
 
     def test_interface(self):
         verifyObject(ISpiderQueue, self.q)
@@ -68,13 +64,3 @@ class SpiderQueueTest(unittest.TestCase):
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 0)
-
-
-class JsonSpiderQueueTest(unittest.TestCase):
-    def _get_queue(self):
-        return spiderqueue.JsonSqliteSpiderQueue(':memory:')
-
-
-class PickleSpiderQueueTest(unittest.TestCase):
-    def _get_queue(self):
-        return spiderqueue.PickleSqliteSpiderQueue(':memory:')

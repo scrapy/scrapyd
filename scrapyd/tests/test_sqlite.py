@@ -3,20 +3,20 @@ from datetime import datetime
 from decimal import Decimal
 
 from scrapy.http import Request
-from scrapyd.sqlite import SqlitePriorityQueue, JsonSqlitePriorityQueue, \
-    PickleSqlitePriorityQueue, SqliteDict, JsonSqliteDict, PickleSqliteDict
+from scrapyd.sqlite import JsonSqlitePriorityQueue, JsonSqliteDict
 
 
-class SqliteDictTest(unittest.TestCase):
+class JsonSqliteDictTest(unittest.TestCase):
 
-    dict_class = SqliteDict
-    test_dict = {'hello': 'world', 'int': 1, 'float': 1.5}
+    dict_class = JsonSqliteDict
+    test_dict = {'hello': 'world', 'int': 1, 'float': 1.5, 'null': None,
+                 'list': ['a', 'word'], 'dict': {'some': 'dict'}}
 
     def test_basic_types(self):
         test = self.test_dict
         d = self.dict_class()
         d.update(test)
-        self.failUnlessEqual(d.items(), test.items())
+        self.failUnlessEqual(list(d.items()), list(test.items()))
         d.clear()
         self.failIf(d.items())
 
@@ -39,34 +39,19 @@ class SqliteDictTest(unittest.TestCase):
         self.assertEqual(d.get('test'), 456)
 
 
-class JsonSqliteDictTest(SqliteDictTest):
+class JsonSqlitePriorityQueueTest(unittest.TestCase):
 
-    dict_class = JsonSqliteDict
-    test_dict = SqliteDictTest.test_dict.copy()
-    test_dict.update({'list': ['a', 'world'], 'dict': {'some': 'dict'}})
+    queue_class = JsonSqlitePriorityQueue
 
-
-class PickleSqliteDictTest(JsonSqliteDictTest):
-
-    dict_class = PickleSqliteDict
-    test_dict = JsonSqliteDictTest.test_dict.copy()
-    test_dict.update({'decimal': Decimal("10"), 'datetime': datetime.now()})
-
-    def test_request_persistance(self):
-        r1 = Request("http://www.example.com", body="some")
-        d = self.dict_class()
-        d['request'] = r1
-        r2 = d['request']
-        self.failUnless(isinstance(r2, Request))
-        self.failUnlessEqual(r1.url, r2.url)
-        self.failUnlessEqual(r1.body, r2.body)
-
-
-class SqlitePriorityQueueTest(unittest.TestCase):
-
-    queue_class = SqlitePriorityQueue
-
-    supported_values = ["bytes", u"\xa3", 123, 1.2, True]
+    supported_values = [
+        "native ascii str",
+        u"\xa3",
+        123,
+        1.2,
+        True,
+        ["a", "list", 1],
+        {"a": "dict"},
+    ]
 
     def setUp(self):
         self.q = self.queue_class()
@@ -143,31 +128,3 @@ class SqlitePriorityQueueTest(unittest.TestCase):
         for x in self.supported_values:
             self.q.put(x)
             self.failUnlessEqual(self.q.pop(), x)
-
-
-class JsonSqlitePriorityQueueTest(SqlitePriorityQueueTest):
-
-    queue_class = JsonSqlitePriorityQueue
-
-    supported_values = SqlitePriorityQueueTest.supported_values + [
-        ["a", "list", 1],
-        {"a": "dict"},
-    ]
-
-
-class PickleSqlitePriorityQueueTest(JsonSqlitePriorityQueueTest):
-
-    queue_class = PickleSqlitePriorityQueue
-
-    supported_values = JsonSqlitePriorityQueueTest.supported_values + [
-        Decimal("10"),
-        datetime.now(),
-    ]
-
-    def test_request_persistance(self):
-        r1 = Request("http://www.example.com", body="some")
-        self.q.put(r1)
-        r2 = self.q.pop()
-        self.failUnless(isinstance(r2, Request))
-        self.failUnlessEqual(r1.url, r2.url)
-        self.failUnlessEqual(r1.body, r2.body)

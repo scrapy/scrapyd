@@ -1,11 +1,10 @@
-from zope.interface import implements
+from zope.interface import implementer
 
 from .interfaces import ISpiderScheduler
 from .utils import get_spider_queues
 
+@implementer(ISpiderScheduler)
 class SpiderScheduler(object):
-
-    implements(ISpiderScheduler)
 
     def __init__(self, config):
         self.config = config
