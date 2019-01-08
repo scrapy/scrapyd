@@ -7,6 +7,7 @@ except ImportError:
     from io import BytesIO
 
 from twisted.python import log
+
 from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
 
 
@@ -25,6 +26,7 @@ class WsResource(JsonResource):
             log.err()
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest).encode('utf-8')
+
 
 class DaemonStatus(WsResource):
 
@@ -57,6 +59,7 @@ class Schedule(WsResource):
 
 
 class Cancel(WsResource):
+
     def build_arguments(self, txrequest):
         args = dict((k, v[0])
                     for k, v in native_stringify_dict(copy(txrequest.args),
@@ -109,6 +112,7 @@ class CancelProject(Cancel):
 
 
 class CancelAll(Cancel):
+
     def render_GET(self, txrequest):
         cancelled = sum([queue.clear() for queue in self.root.poller.queues.values()])
         spiders = self.root.launcher.processes.values()
