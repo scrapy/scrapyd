@@ -10,6 +10,7 @@ from scrapy.utils.python import stringify_dict
 from scrapyd.utils import get_crawl_args
 from scrapyd import __version__
 from .interfaces import IPoller, IEnvironment
+from rabbitmq_utils import RabbitmqUtils
 
 class Launcher(Service):
 
@@ -43,7 +44,7 @@ class Launcher(Service):
         env = e.get_environment(msg, slot)
         env = stringify_dict(env, keys_only=False)
         pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+            msg['_job'], msg['delivery_tag'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -67,7 +68,7 @@ class Launcher(Service):
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
+    def __init__(self, slot, project, spider, job, delivery_tag, env):
         self.slot = slot
         self.pid = None
         self.project = project
@@ -76,6 +77,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.start_time = datetime.now()
         self.end_time = None
         self.env = env
+        self.delivery_tag = delivery_tag
         self.logfile = env.get('SCRAPY_LOG_FILE')
         self.itemsfile = env.get('SCRAPY_FEED_URI')
         self.deferred = defer.Deferred()
@@ -93,8 +95,10 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
     def processEnded(self, status):
         if isinstance(status.value, error.ProcessDone):
             self.log("Process finished: ")
+            #RabbitmqUtils.ack(self.delivery_tag)
         else:
             self.log("Process died: exitstatus=%r " % status.value.exitCode)
+            #RabbitmqUtils.reject(self.delivery_tag)
         self.deferred.callback(self)
 
     def log(self, action):

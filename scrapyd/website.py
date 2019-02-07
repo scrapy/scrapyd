@@ -111,7 +111,7 @@ class Jobs(resource.Resource):
         s += "<h1>Jobs</h1>"
         s += "<p><a href='..'>Go back</a></p>"
         s += "<table border='1'>"
-        s += "<tr><th>Project</th><th>Spider</th><th>Job</th><th>PID</th><th>Runtime</th><th>Log</th>"
+        s += "<tr><th>Project</th><th>Spider</th><th>Job / Count</th><th>PID</th><th>Runtime</th><th>Log</th>"
         if self.local_items:
             s += "<th>Items</th>"
             cols = 7
@@ -122,7 +122,7 @@ class Jobs(resource.Resource):
                 s += "<tr>"
                 s += "<td>%s</td>" % project
                 s += "<td>%s</td>" % str(m['name'])
-                s += "<td>%s</td>" % str(m['_job'])
+                s += "<td><center>%s</center></td>" % str(m['_job'])
                 s += "</tr>"
         s += "<tr><th colspan='%s' style='background-color: #ddd'>Running</th></tr>" % cols
         for p in self.root.launcher.processes.values():

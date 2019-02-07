@@ -1,14 +1,18 @@
 from zope.interface import implements
 from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred, returnValue
-
+from random import sample
+from twisted.python import log
+import sys
 from .utils import get_spider_queues
 from .interfaces import IPoller
+from twisted.application.service import IServiceCollection
+
 
 class QueuePoller(object):
 
     implements(IPoller)
 
-    def __init__(self, config):
+    def __init__(self, config, app):
         self.config = config
         self.update_projects()
         self.dq = DeferredQueue(size=1)
@@ -16,17 +20,23 @@ class QueuePoller(object):
 
     @inlineCallbacks
     def poll(self, launcher):
-        if self.dq.pending:
-            return
-        for p, q in self.queues.iteritems():
-            c = yield maybeDeferred(q.count)
-            if c and self._has_slot_for_project(p, launcher):
-                msg = yield maybeDeferred(q.pop)
-                returnValue(self.dq.put(self._message(msg, p)))
+        try:
+            if self.dq.pending:
+                return
+            for p, q in sample(self.queues.items(), len(self.queues)):
+                c = yield maybeDeferred(q.count)
+                if c and self._has_slot_for_project(p, launcher):
+                    msg = yield maybeDeferred(q.pop)
+                    returnValue(self.dq.put(self._message(msg, p)))
+        except:
+            log.msg( sys.exc_info());
+            pass
 
     def _has_slot_for_project(self, project_name, launcher):
         running_jobs = 0
         spiders = launcher.processes.values()
+        
+        
         for s in spiders:
             if s.project == project_name:
                 running_jobs += 1
@@ -43,3 +53,12 @@ class QueuePoller(object):
         d['_project'] = project
         d['_spider'] = d.pop('name')
         return d
+
+    @property
+    def launcher(self):
+        """
+        Copied from website.Root
+        Should do some refactory to avoid this duplicated code
+        """
+        app = IServiceCollection(self.app, self.app)
+        return app.getServiceNamed('launcher')

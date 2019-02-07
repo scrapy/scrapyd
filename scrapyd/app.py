@@ -18,7 +18,7 @@ def application(config):
     bind_address = config.get('bind_address', '0.0.0.0')
     poll_interval = config.getfloat('poll_interval', 5)
 
-    poller = QueuePoller(config)
+    poller = QueuePoller(config, app)
     eggstorage = FilesystemEggStorage(config)
     scheduler = SpiderScheduler(config)
     environment = Environment(config)

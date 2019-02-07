@@ -1,14 +1,17 @@
 import sys
 import os
-from .sqlite import JsonSqliteDict
+#from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
 from ConfigParser import NoSectionError
 import json
 from twisted.web import resource
 
-from scrapyd.spiderqueue import SqliteSpiderQueue
+#rom scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapy.utils.python import stringify_dict, unicode_to_str
 from scrapyd.config import Config
+from scrapyd.postgres import JsonPostgresDict
+from scrapyd.postgres_spiderqueue import PostgresSpiderQueue
+#from scrapyd.rabbitmq_spiderqueue import RabbitmqSpiderQueue
 
 
 class JsonResource(resource.Resource):
@@ -33,7 +36,8 @@ class UtilsCache:
     invalid_cached_projects = []
 
     def __init__(self):
-        self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
+        #self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
+        self.cache_manager = JsonPostgresDict(table="utils_cache_manager")
 
     # Invalid the spider's list's cache of a given project (by name)
     @staticmethod
@@ -58,7 +62,9 @@ def get_spider_queues(config):
     d = {}
     for project in get_project_list(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
+        #d[project] = SqliteSpiderQueue(dbpath)
+        d[project] = PostgresSpiderQueue(project=project)
+        
     return d
 
 def get_project_list(config):
