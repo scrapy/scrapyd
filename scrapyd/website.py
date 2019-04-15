@@ -118,7 +118,15 @@ class Jobs(resource.Resource):
     <form method="post" action="/cancel.json">
     <input type="hidden" name="project" value="{project}"/>
     <input type="hidden" name="job" value="{jobid}"/>
-    <input type="submit" style="cursor: pointer; float: left;" value="Cancel"/>
+    <input type="submit" value="Cancel"/>
+    </form>
+    """.format
+
+    schedule_button = """
+    <form method="post" action="/schedule.json">
+    <input type="hidden" name="project" value="{project}"/>
+    <input type="hidden" name="spider" value="{spider}"/>
+    <input type="submit" value="Schedule"/>
     </form>
     """.format
 
@@ -127,20 +135,27 @@ class Jobs(resource.Resource):
         'Job', 'PID',
         'Start', 'Runtime', 'Finish',
         'Log', 'Items',
-        'Cancel',
+        'Action',
     ]
 
     def gen_css(self):
         css = [
             '#jobs>thead td {text-align: center; font-weight: bold}',
             '#jobs>tbody>tr:first-child {background-color: #eee}',
+            'input[type="submit"] {cursor: pointer; float: left; width: 100%;}',
         ]
         if not self.local_items:
             col_idx = self.header_cols.index('Items') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
-        if 'cancel.json' not in self.root.children and b'cancel.json' not in self.root.children:
-            col_idx = self.header_cols.index('Cancel') + 1
+        cancel_json_activated = 'cancel.json' in self.root.children or b'cancel.json' in self.root.children
+        schedule_json_activated = 'schedule.json' in self.root.children or b'schedule.json' in self.root.children
+        if not cancel_json_activated and not schedule_json_activated:
+            col_idx = self.header_cols.index('Action') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
+        elif not cancel_json_activated:
+            css.append('input[value="Cancel"] {display: none}')
+        elif not schedule_json_activated:
+            css.append('input[value="Schedule"] {display: none}')
         return '\n'.join(css)
 
     def prep_row(self, cells):
@@ -188,7 +203,7 @@ class Jobs(resource.Resource):
         return '\n'.join(
             self.prep_row(dict(
                 Project=project, Spider=m['name'], Job=m['_job'],
-                Cancel=self.cancel_button(project=project, jobid=m['_job'])
+                Action=self.cancel_button(project=project, jobid=m['_job'])
             ))
             for project, queue in self.root.poller.queues.items()
             for m in queue.list()
@@ -203,7 +218,7 @@ class Jobs(resource.Resource):
                 Runtime=microsec_trunc(datetime.now() - p.start_time),
                 Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
                 Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
-                Cancel=self.cancel_button(project=p.project, jobid=p.job)
+                Action=self.cancel_button(project=p.project, jobid=p.job)
             ))
             for p in self.root.launcher.processes.values()
         )
@@ -218,6 +233,7 @@ class Jobs(resource.Resource):
                 Finish=microsec_trunc(p.end_time),
                 Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
                 Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
+                Action=self.schedule_button(project=p.project, spider=p.spider)
             ))
             for p in self.root.launcher.finished
         )
