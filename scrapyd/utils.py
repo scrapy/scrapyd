@@ -25,8 +25,8 @@ class JsonResource(resource.Resource):
         txrequest.setHeader('Content-Type', 'application/json')
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
         txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
-        txrequest.setHeader('Content-Length', len(r))
+        txrequest.setHeader('Access-Control-Allow-Headers', 'X-Requested-With')
+        txrequest.setHeader('Content-Length', str(len(r)))
         return r
 
 class UtilsCache:
