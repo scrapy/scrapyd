@@ -172,7 +172,7 @@ Get the list of pending, running and finished jobs of some project.
 * Supported Request Methods: ``GET``
 * Parameters:
 
-  * ``project`` (string, option) - restrict results to project name
+  * ``project`` (string, optional) - restrict results to project name
 
 Example request::
 
