@@ -123,11 +123,11 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         runner = Config().get('runner')
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'UTF-8'
-    env['SCRAPY_PROJECT'] = project
+    env['SCRAPY_PROJECT'] = str(project)
     if pythonpath:
         env['PYTHONPATH'] = pythonpath
     if version:
-        env['SCRAPY_EGG_VERSION'] = version
+        env['SCRAPY_EGG_VERSION'] = str(version)
     pargs = [sys.executable, '-m', runner, 'list']
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
