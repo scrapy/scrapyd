@@ -118,7 +118,7 @@ class Jobs(resource.Resource):
     <form method="post" action="/cancel.json">
     <input type="hidden" name="project" value="{project}"/>
     <input type="hidden" name="job" value="{jobid}"/>
-    <input type="submit" style="float: left;" value="Cancel"/>
+    <input type="submit" style="cursor: pointer; float: left;" value="Cancel"/>
     </form>
     """.format
 
