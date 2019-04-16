@@ -147,14 +147,14 @@ class Jobs(resource.Resource):
         if not self.local_items:
             col_idx = self.header_cols.index('Items') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
-        cancel_json_activated = 'cancel.json' in self.root.children or b'cancel.json' in self.root.children
-        schedule_json_activated = 'schedule.json' in self.root.children or b'schedule.json' in self.root.children
-        if not cancel_json_activated and not schedule_json_activated:
+        cancel_json_deactivated = b'cancel.json' not in self.root.children
+        schedule_json_deactivated = b'schedule.json' not in self.root.children
+        if cancel_json_deactivated and schedule_json_deactivated:
             col_idx = self.header_cols.index('Action') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
-        elif not cancel_json_activated:
+        elif cancel_json_deactivated:
             css.append('input[value="Cancel"] {display: none}')
-        elif not schedule_json_activated:
+        elif schedule_json_deactivated:
             css.append('input[value="Schedule"] {display: none}')
         return '\n'.join(css)
 
