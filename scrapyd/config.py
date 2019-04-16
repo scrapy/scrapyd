@@ -1,5 +1,5 @@
 import glob
-from io import StringIO
+import io
 from pkgutil import get_data
 from six.moves.configparser import SafeConfigParser, NoSectionError, NoOptionError
 from os.path import expanduser
@@ -17,10 +17,14 @@ class Config(object):
             sources = self._getsources()
             default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
             self.cp = SafeConfigParser()
-            self.cp.readfp(StringIO(default_config))
-            self.cp.read(sources)
-            for fp in extra_sources:
-                self.cp.readfp(fp)
+            self.cp.readfp(io.StringIO(default_config))
+            sources.extend(extra_sources)
+            for fname in sources:
+                try:
+                    with io.open(fname) as fp:
+                        self.cp.readfp(fp)
+                except (IOError, OSError):
+                    pass
         else:
             self.cp = SafeConfigParser(values)
             self.cp.add_section(self.SECTION)
