@@ -225,5 +225,5 @@ class Jobs(resource.Resource):
     def render(self, txrequest):
         doc = self.prep_doc()
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
-        txrequest.setHeader('Content-Length', len(doc))
+        txrequest.setHeader('Content-Length', str(len(doc)))
         return doc.encode('utf-8')
