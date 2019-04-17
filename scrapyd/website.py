@@ -159,7 +159,7 @@ class Jobs(resource.Resource):
             '<style type="text/css">' + self.gen_css() + '</style>'
             '</head>'
             '<body><h1>Jobs</h1>'
-            '<p><a href="..">Go back</a></p>'
+            '<p><a href="..">Go up</a></p>'
             + self.prep_table() +
             '</body>'
             '</html>'
