@@ -45,7 +45,7 @@ setup_args = {
 if using_setuptools:
     setup_args['install_requires'] = [
         'Twisted>=8.0',
-        'Scrapy>=1.0',
+        'Scrapy>=1.0,<1.6',
         'six',
         'enum-compat',
     ]
