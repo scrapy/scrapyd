@@ -96,6 +96,7 @@ monitoring)</p>
 </body>
 </html>
 """ % vars
+        txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
         return s.encode('utf-8')
 
 
