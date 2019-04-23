@@ -1,5 +1,7 @@
+import os
+
 from twisted.application.service import Application
-from twisted.application.internet import TimerService, TCPServer
+from twisted.application.internet import TimerService, TCPServer, UNIXServer
 from twisted.web import server
 from twisted.python import log
 
@@ -16,6 +18,9 @@ def application(config):
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)
     bind_address = config.get('bind_address', '127.0.0.1')
+    uds_path = config.get('unix_socket_path', '')
+    uds_path = uds_path and os.path.abspath(uds_path)
+
     poll_interval = config.getfloat('poll_interval', 5)
 
     poller = QueuePoller(config)
@@ -33,15 +38,22 @@ def application(config):
     launcher = laucls(config, app)
 
     webpath = config.get('webroot', 'scrapyd.website.Root')
-    webcls = load_object(webpath)
+    website = server.Site(load_object(webpath)(config, app))
 
     timer = TimerService(poll_interval, poller.poll)
-    webservice = TCPServer(http_port, server.Site(webcls(config, app)), interface=bind_address)
-    log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
-            bind_address=bind_address, http_port=http_port)
 
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
-    webservice.setServiceParent(app)
+
+    if http_port:
+        webservice = TCPServer(http_port, website, interface=bind_address)
+        log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
+                http_port=http_port, bind_address=bind_address)
+        webservice.setServiceParent(app)
+    if uds_path:
+        webservice = UNIXServer(uds_path, website, mode=0o660)
+        log.msg(format=u"Scrapyd web console available at http+unix://%(uds_path)s",
+                uds_path=uds_path)
+        webservice.setServiceParent(app)
 
     return app

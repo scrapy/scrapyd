@@ -13,6 +13,8 @@ Added
 - Jobs website shortcut to cancel a job using the cancel.json webservice.
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
+- Scrapyd can now listen on a unix socket.
+  This allows securing the application from users on the same system.
 
 Removed
 ~~~~~~~

@@ -26,6 +26,13 @@ bind_address
 The IP address where the website and json webservices will listen.
 Defaults to ``127.0.0.1`` (localhost)
 
+unix_socket_path
+----------------
+
+The filesystem path for a unix socket where the HTTP JSON API will listen.
+Example: ``/var/run/scrapyd/http-api.socket``
+File permissions: 0660
+
 .. _max_proc:
 
 max_proc
