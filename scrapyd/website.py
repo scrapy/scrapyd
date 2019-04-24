@@ -97,7 +97,9 @@ monitoring)</p>
 </html>
 """ % vars
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
-        return s.encode('utf-8')
+        s = s.encode('utf8')
+        txrequest.setHeader('Content-Length', str(len(s)))
+        return s
 
 
 def microsec_trunc(timelike):
@@ -226,5 +228,6 @@ class Jobs(resource.Resource):
     def render(self, txrequest):
         doc = self.prep_doc()
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
+        doc = doc.encode('utf-8')
         txrequest.setHeader('Content-Length', str(len(doc)))
-        return doc.encode('utf-8')
+        return doc
