@@ -1,0 +1,105 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+
+<head>
+    <title>Scrapyd</title>
+    <style type="text/css">
+        #jobs>thead td {
+            text-align: center;
+            font-weight: bold
+        }
+
+        #jobs>tbody>tr:first-child {
+            background-color: #eee
+        }
+
+        #jobs>*>tr>*:nth-child(9) {
+            display: none
+        }
+
+        #jobs>*>tr>*:nth-child(10) {
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+  <t:transparent t:render="header" />
+    <h2>Jobs</h2>
+    <p><a href="..">Go back</a></p>
+    <table id="jobs" border="1">
+        <thead>
+            <tr>
+                <td>Project</td>
+                <td>Spider</td>
+                <td>Job</td>
+                <td>PID</td>
+                <td>Start</td>
+                <td>Runtime</td>
+                <td>Finish</td>
+                <td>Log</td>
+                <td>Items</td>
+                <td>Cancel</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th colspan="10">Pending</th>
+            </tr>
+            <tr t:render="pending">
+              <td><t:slot name="project" /></td>
+              <td><t:slot name="spider" /></td>
+              <td><t:slot name="job" /></td>
+              <td><t:slot name="pid" /></td>
+              <td><t:slot name="start" /></td>
+              <td><t:slot name="runtime" /></td>
+              <td><t:slot name="finish" /></td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="log" /></t:attr>logs</a> </td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="items" /></t:attr>items</a> </td>
+              <td></td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <th colspan="10">Running</th>
+            </tr>
+            <tr t:render="running">
+              <td><t:slot name="project" /></td>
+              <td><t:slot name="spider" /></td>
+              <td><t:slot name="job" /></td>
+              <td><t:slot name="pid" /></td>
+              <td><t:slot name="start" /></td>
+              <td><t:slot name="runtime" /></td>
+              <td><t:slot name="finish" /></td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="log" /></t:attr>logs</a> </td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="items" /></t:attr>items</a> </td>
+              <td>
+              <form method="post" action="/cancel.json" target="_blank">
+                <input type="hidden" name="project" ><t:attr name="value"><t:slot name="project" /></t:attr></input>
+                <input type="hidden" name="job" ><t:attr name="value"><t:slot name="job" /></t:attr></input>
+                <input type="submit" style="float: left;" value="Cancel"/>
+              </form>
+              </td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <th colspan="10">Finished</th>
+            </tr>
+            <tr t:render="finished">
+              <td><t:slot name="project" /></td>
+              <td><t:slot name="spider" /></td>
+              <td><t:slot name="job" /></td>
+              <td><t:slot name="pid" /></td>
+              <td><t:slot name="start" /></td>
+              <td><t:slot name="runtime" /></td>
+              <td><t:slot name="finish" /></td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="log" /></t:attr>logs</a> </td>
+              <td><a target="_blank"><t:attr name="href"><t:slot name="items" /></t:attr>items</a> </td>
+              <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <t:transparent t:render="footer" />
+</body>
+
+</html>

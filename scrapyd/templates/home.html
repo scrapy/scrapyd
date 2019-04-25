@@ -1,0 +1,27 @@
+<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">
+
+<head>
+    <title>Scrapyd</title>
+</head>
+
+<body>
+    <t:transparent t:render="header" />
+    <p>Available projects: <b t:render="projects"></b></p>
+    <ul>
+        <li><a href="/jobs">Jobs</a></li>
+        <t:transparent t:render="local_items" />
+        <li><a href="/logs/">Logs</a></li>
+        <li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
+    </ul>
+
+    <h2>How to schedule a spider?</h2>
+
+    <p>To schedule a spider you need to use the API (this web UI is only for monitoring)
+    </p>
+
+    <p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
+    <p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
+    <t:transparent t:render="footer" />
+</body>
+
+</html>
