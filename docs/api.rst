@@ -16,6 +16,10 @@ Example request::
 
     curl http://localhost:6800/daemonstatus.json
 
+If basic authentication is enabled::
+
+    curl -u yourusername:yourpassword http://localhost:6800/daemonstatus.json
+
 Example response::
 
     { "status": "ok", "running": "0", "pending": "0", "finished": "0", "node_name": "node-name" }

@@ -26,6 +26,20 @@ bind_address
 The IP address where the website and json webservices will listen.
 Defaults to ``127.0.0.1`` (localhost)
 
+username
+----------------
+
+.. versionadded:: 1.3
+
+Set up both ``username`` and ``password`` to enable basic authentication.
+
+password
+----------------
+
+.. versionadded:: 1.3
+
+See the ``username`` option above.
+
 .. _max_proc:
 
 max_proc
