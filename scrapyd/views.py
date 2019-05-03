@@ -72,8 +72,8 @@ class JobsElement(BaseElement):
             for m in queue.list()
         ]
         for job in data:
-            tag.fillSlots(**job)
-        return tag if len(list(data)) else ""
+            yield tag.clone().fillSlots(**job)
+        return ""
 
     @renderer
     def finished(self,request,tag):
@@ -88,8 +88,8 @@ class JobsElement(BaseElement):
             for p in self._root.launcher.finished
         ]
         for job in data:
-            tag.fillSlots(**job)
-        return tag if len(list(data)) else ""
+            yield tag.clone().fillSlots(**job)
+        return ""
 
     @renderer
     def running(self,request,tag):
@@ -105,5 +105,5 @@ class JobsElement(BaseElement):
             for p in self._root.launcher.processes.values()
         ]
         for job in data:
-            tag.fillSlots(**job)
-        return tag if len(list(data)) else ""
+            yield tag.clone().fillSlots(**job)
+        return ""
