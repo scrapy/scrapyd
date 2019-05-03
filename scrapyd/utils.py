@@ -1,4 +1,3 @@
-import re
 import sys
 import os
 from .sqlite import JsonSqliteDict
@@ -8,13 +7,13 @@ from six import iteritems
 from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
-import datetime
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.config import Config
 
 
 class JsonResource(resource.Resource):
+
     json_encoder = json.JSONEncoder()
 
     def render(self, txrequest):
@@ -26,10 +25,9 @@ class JsonResource(resource.Resource):
         txrequest.setHeader('Content-Type', 'application/json')
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
         txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        txrequest.setHeader('Access-Control-Allow-Headers', ' X-Requested-With')
+        txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
         txrequest.setHeader('Content-Length', str(len(r)))
         return r
-
 
 class UtilsCache:
     # array of project name that need to be invalided
@@ -53,7 +51,6 @@ class UtilsCache:
     def __setitem__(self, key, value):
         self.cache_manager[key] = value
 
-
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
     dbsdir = config.get('dbs_dir', 'dbs')
@@ -64,7 +61,6 @@ def get_spider_queues(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
         d[project] = SqliteSpiderQueue(dbpath)
     return d
-
 
 def get_project_list(config):
     """Get list of projects by inspecting the eggs dir and the ones defined in
@@ -80,7 +76,6 @@ def get_project_list(config):
     except NoSectionError:
         pass
     return projects
-
 
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     """Return a (new) dict with unicode keys (and values when "keys_only" is
@@ -100,7 +95,6 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
         d[k] = v
     return d
 
-
 def get_crawl_args(message):
     """Return the command-line arguments to use for the scrapy crawl process
     that will be started for this message
@@ -116,7 +110,6 @@ def get_crawl_args(message):
         args += ['-s']
         args += ['%s=%s' % (k, v)]
     return args
-
 
 def get_spider_list(project, runner=None, pythonpath=None, version=''):
     """Return the spider list from the given project, using the given runner"""
@@ -167,6 +160,8 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
 
 
 def parse_spider_log(project, spider, jobid, keyword):
+    import re
+    import datetime
     logdir = Config().get('logs_dir')
     file_name = os.path.join(os.path.join(logdir, os.path.join(project, spider)), jobid + '.log')
     logs, res = '', {}
