@@ -157,3 +157,23 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
         return text.encode(encoding, errors)
     else:
         return text.decode(encoding, errors)
+
+
+def parse_spider_log(project, spider, jobid, keyword):
+    import re
+    import datetime
+    logdir = Config().get('logs_dir')
+    file_name = os.path.join(os.path.join(logdir, os.path.join(project, spider)), jobid + '.log')
+    logs, res = '', {}
+    if os.path.exists(file_name):
+        with open(file_name, 'r') as f:
+            data = f.readline()
+            while data:
+                if keyword in data: logs = data
+                data = f.readline()
+    if logs:
+        match_str = re.search('{.*?}\n$', logs)
+        if match_str: res = eval(match_str.group().strip())
+        if 'start_time' in res: res['start_time'] = res['start_time'].strftime('%Y-%m-%d %H:%M:%S')
+        if 'finish_time' in res: res['finish_time'] = res['finish_time'].strftime('%Y-%m-%d %H:%M:%S')
+    return res

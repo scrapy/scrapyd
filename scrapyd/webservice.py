@@ -8,7 +8,7 @@ except ImportError:
 
 from twisted.python import log
 
-from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict, parse_spider_log
 
 class WsResource(JsonResource):
 
@@ -166,3 +166,12 @@ class DeleteVersion(DeleteProject):
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
+
+class JobStats(WsResource):
+    def render_GET(self, txrequest):
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args.get('project', [None])[0]
+        spider = args.get('spider', [None])[0]
+        job_id = args.get('jobId', [None])[0]
+        keyword = args.get('keyword', ['scrapy.extensions.logstats'])[0]
+        return {"id": job_id, "stats": parse_spider_log(project, spider, job_id, keyword)}
