@@ -31,7 +31,7 @@ username
 
 .. versionadded:: 1.3
 
-Set up both ``username`` and ``password`` to enable basic authentication.
+Set both ``username`` and ``password`` to non-empty to enable basic authentication.
 
 password
 ----------------
