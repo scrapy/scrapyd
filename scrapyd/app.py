@@ -44,10 +44,10 @@ def application(config):
 
     username = config.get('username', '')
     password = config.get('password', '')
+    if ':' in username:
+        sys.exit("The `username` option contains illegal character ':', "
+                 "check and update the configuration file of Scrapyd")
     if username and password:
-        if ':' in username:
-            sys.exit("The `username` option contains illegal character ':', "
-                     "check and update the configuration file of Scrapyd")
         portal = Portal(PublicHTMLRealm(webcls(config, app)),
                         [StringCredentialsChecker(username, password)])
         credential_factory = BasicCredentialFactory("Auth")
