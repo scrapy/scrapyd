@@ -4,15 +4,43 @@ import socket
 
 from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
+from twisted.cred.portal import Portal
+from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
+from twisted.python import log
 
 from scrapy.utils.misc import load_object
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
+from .basicauth import PublicHTMLRealm, StringCredentialsChecker
 
 from six.moves.urllib.parse import urlparse
 
 
 class Root(resource.Resource):
+
+    @classmethod
+    def with_basic_auth(cls, config, app):
+        username = config.get('username', '')
+        password = config.get('password', '')
+        if ':' in username:
+            sys.exit("The `username` option contains illegal character ':', "
+                     "check and update the configuration file of Scrapyd")
+        orig_resource = super(Root, cls).__new__(cls, config, app)
+        orig_resource.__init__(config, app)  # see __new__ on python datamodel
+        portal = Portal(PublicHTMLRealm(orig_resource),
+                        [StringCredentialsChecker(username, password)])
+        credential_factory = BasicCredentialFactory("Auth")
+        return HTTPAuthSessionWrapper(portal, [credential_factory])
+
+    def __new__(cls, config, app):
+        if config.get('username', '') and config.get('password', ''):
+            res = cls.with_basic_auth(config, app)
+            log.msg("Basic authentication enabled")
+        else:
+            log.msg("Basic authentication disabled '
+                    'as either `username` or `password` is unset")
+            res = super(Root, cls).__new__(cls, config, app)
+        return res
 
     def __init__(self, config, app):
         resource.Resource.__init__(self)
