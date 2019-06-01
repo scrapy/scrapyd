@@ -138,7 +138,7 @@ class Jobs(resource.Resource):
         if not self.local_items:
             col_idx = self.header_cols.index('Items') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
-        if 'cancel.json' not in self.root.children:
+        if b'cancel.json' not in self.root.children:
             col_idx = self.header_cols.index('Cancel') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
         return '\n'.join(css)
