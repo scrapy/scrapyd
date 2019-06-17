@@ -3,6 +3,17 @@
 Release notes
 =============
 
+1.2.1
+-----
+*Release date: 2019-06-17*
+
+fixed
+~~~~~
+- http header types were breaking newer twisted versions
+- DeferredQueue was hiding a pending job when reaching max_proc
+- AddVersion's arguments' string types were breaking the environment in windows
+- Tests: Updated binary eggs to be scrapy-1.x compatible
+
 1.2.0
 -----
 *Release date: 2017-04-12*
