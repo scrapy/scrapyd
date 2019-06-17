@@ -1,15 +1,37 @@
+import sys
+
 from scrapy.utils.misc import load_object
 from twisted.application.service import Application
 from twisted.application.internet import TimerService, TCPServer
 from twisted.web import server
 from twisted.python import log
+from twisted.cred.portal import Portal
+from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
 
 from .interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment
 from .eggstorage import FilesystemEggStorage
 from .scheduler import SpiderScheduler
 from .poller import QueuePoller
 from .environ import Environment
-from .website import get_resource
+from .basicauth import PublicHTMLRealm, StringCredentialsChecker
+
+
+def get_resource(webcls, config, app):
+    username = config.get('username', '')
+    password = config.get('password', '')
+    if ':' in username:
+        sys.exit("The `username` option contains illegal character ':', "
+                 "check and update the configuration file of Scrapyd")
+    resource = webcls(config, app)
+    if username and password:
+        log.msg("Basic authentication enabled")
+        portal = Portal(PublicHTMLRealm(resource),
+                        [StringCredentialsChecker(username, password)])
+        credential_factory = BasicCredentialFactory("Auth")
+        return HTTPAuthSessionWrapper(portal, [credential_factory])
+    else:
+        log.msg("Basic authentication disabled as either `username` or `password` is unset")
+        return resource
 
 
 def application(config):

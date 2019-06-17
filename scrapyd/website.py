@@ -1,36 +1,12 @@
 from datetime import datetime, timedelta
 import socket
-import sys
 
 from scrapy.utils.misc import load_object
 from six.moves.urllib.parse import urlparse
 from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
-from twisted.cred.portal import Portal
-from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
-from twisted.python import log
-
 
 from .interfaces import IPoller, IEggStorage, ISpiderScheduler
-from .basicauth import PublicHTMLRealm, StringCredentialsChecker
-
-
-def get_resource(webcls, config, app):
-    username = config.get('username', '')
-    password = config.get('password', '')
-    if username and password:
-        if ':' in username:
-            sys.exit("The `username` option contains illegal character ':', "
-                     "check and update the configuration file of Scrapyd")
-        portal = Portal(PublicHTMLRealm(webcls(config, app)),
-                        [StringCredentialsChecker(username, password)])
-        credential_factory = BasicCredentialFactory("Auth")
-        resource = HTTPAuthSessionWrapper(portal, [credential_factory])
-        log.msg("Basic authentication enabled")
-    else:
-        resource = webcls(config, app)
-        log.msg("Basic authentication disabled as either `username` or `password` is unset")
-    return resource
 
 
 class Root(resource.Resource):
