@@ -16,30 +16,31 @@ from .basicauth import PublicHTMLRealm, StringCredentialsChecker
 from six.moves.urllib.parse import urlparse
 
 
+def wrap_in_basic_auth(res, config):
+    'Wraps a resource in an HTTP Auth layer, '\
+        'using the username and password defined in the config file'
+    username = config.get('username', '')
+    password = config.get('password', '')
+    if ':' in username:
+        sys.exit("The `username` option contains illegal character ':', "
+                 "check and update the configuration file of Scrapyd")
+    portal = Portal(PublicHTMLRealm(res),
+                    [StringCredentialsChecker(username, password)])
+    credential_factory = BasicCredentialFactory("Auth")
+    return HTTPAuthSessionWrapper(portal, [credential_factory])
+
+
 class Root(resource.Resource, object):
 
-    @classmethod
-    def with_basic_auth(cls, config, app):
-        username = config.get('username', '')
-        password = config.get('password', '')
-        if ':' in username:
-            sys.exit("The `username` option contains illegal character ':', "
-                     "check and update the configuration file of Scrapyd")
-        orig_resource = super(Root, cls).__new__(cls, config, app)
-        orig_resource.__init__(config, app)  # see __new__ on python datamodel
-        portal = Portal(PublicHTMLRealm(orig_resource),
-                        [StringCredentialsChecker(username, password)])
-        credential_factory = BasicCredentialFactory("Auth")
-        return HTTPAuthSessionWrapper(portal, [credential_factory])
-
     def __new__(cls, config, app):
+        res = super(Root, cls).__new__(cls, config, app)
         if config.get('username', '') and config.get('password', ''):
-            res = cls.with_basic_auth(config, app)
+            res.__init__(config, app)  # see __new__ on python datamodel
+            wrapped = wrap_in_basic_auth(res)
             log.msg("Basic authentication enabled")
-        else:
-            log.msg("Basic authentication disabled '
-                    'as either `username` or `password` is unset")
-            res = super(Root, cls).__new__(cls, config, app)
+            return wrapped
+        log.msg("Basic authentication disabled "
+                "as either `username` or `password` is unset")
         return res
 
     def __init__(self, config, app):
