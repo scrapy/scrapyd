@@ -13,6 +13,7 @@ class SpiderQueueTest(unittest.TestCase):
     def setUp(self):
         self.q = spiderqueue.SqliteSpiderQueue(':memory:')
         self.name = 'spider1'
+        self.priority = 5
         self.args = {
             'arg1': 'val1',
             'arg2': 2,
@@ -30,7 +31,7 @@ class SpiderQueueTest(unittest.TestCase):
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 0)
 
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 1)
@@ -46,16 +47,16 @@ class SpiderQueueTest(unittest.TestCase):
         l = yield maybeDeferred(self.q.list)
         self.assertEqual(l, [])
 
-        yield maybeDeferred(self.q.add, self.name, **self.args)
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         l = yield maybeDeferred(self.q.list)
         self.assertEqual(l, [self.msg, self.msg])
 
     @inlineCallbacks
     def test_clear(self):
-        yield maybeDeferred(self.q.add, self.name, **self.args)
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 2)

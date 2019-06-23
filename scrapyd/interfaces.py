@@ -49,7 +49,7 @@ class IPoller(Interface):
 
 class ISpiderQueue(Interface):
 
-    def add(name, **spider_args):
+    def add(name, priority, **spider_args):
         """Add a spider to the queue given its name a some spider arguments.
 
         This method can return a deferred. """
@@ -87,7 +87,7 @@ class ISpiderQueue(Interface):
 class ISpiderScheduler(Interface):
     """A component to schedule spider runs"""
 
-    def schedule(project, spider_name, **spider_args):
+    def schedule(project, spider_name, priority, **spider_args):
         """Schedule a spider for the given project"""
 
     def list_projects():
