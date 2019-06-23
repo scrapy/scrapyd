@@ -16,7 +16,7 @@ from .basicauth import PublicHTMLRealm, StringCredentialsChecker
 from six.moves.urllib.parse import urlparse
 
 
-class Root(resource.Resource):
+class Root(resource.Resource, object):
 
     @classmethod
     def with_basic_auth(cls, config, app):
