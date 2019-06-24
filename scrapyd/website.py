@@ -124,7 +124,7 @@ class Jobs(resource.Resource):
 
     header_cols = [
         'Project', 'Spider',
-        'Job', 'PID',
+        'Job', 'Priority', 'PID',
         'Start', 'Runtime', 'Finish',
         'Log', 'Items',
         'Cancel',
@@ -187,18 +187,24 @@ class Jobs(resource.Resource):
     def prep_tab_pending(self):
         return '\n'.join(
             self.prep_row(dict(
-                Project=project, Spider=m['name'], Job=m['_job'],
+                Project=project,
+                Spider=m['name'],
+                Job=m['_job'],
+                Priority=priority,
                 Cancel=self.cancel_button(project=project, jobid=m['_job'])
             ))
             for project, queue in self.root.poller.queues.items()
-            for m in queue.list()
+            for (m, priority) in queue.list()
         )
 
     def prep_tab_running(self):
         return '\n'.join(
             self.prep_row(dict(
-                Project=p.project, Spider=p.spider,
-                Job=p.job, PID=p.pid,
+                Project=p.project,
+                Spider=p.spider,
+                Job=p.job,
+                Priority=p.priority,
+                PID=p.pid,
                 Start=microsec_trunc(p.start_time),
                 Runtime=microsec_trunc(datetime.now() - p.start_time),
                 Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
@@ -211,8 +217,10 @@ class Jobs(resource.Resource):
     def prep_tab_finished(self):
         return '\n'.join(
             self.prep_row(dict(
-                Project=p.project, Spider=p.spider,
+                Project=p.project,
+                Spider=p.spider,
                 Job=p.job,
+                Priority=p.priority,
                 Start=microsec_trunc(p.start_time),
                 Runtime=microsec_trunc(p.end_time - p.start_time),
                 Finish=microsec_trunc(p.end_time),

@@ -189,21 +189,27 @@ Example response::
         "status": "ok",
         "pending": [
             {
-                "project": "myproject", "spider": "spider1",
-                "id": "78391cc0fcaf11e1b0090800272a6d06"
+                "project": "myproject",
+                "spider": "spider1",
+                "id": "78391cc0fcaf11e1b0090800272a6d06",
+                "priority": 0.0,
             }
         ],
         "running": [
             {
+                "project": "myproject",
+                "spider": "spider2",
                 "id": "422e608f9f28cef127b3d5ef93fe9399",
-                "project": "myproject", "spider": "spider2",
+                "priority": 0.0,
                 "start_time": "2012-09-12 10:14:03.594664"
             }
         ],
         "finished": [
             {
+                "project": "myproject",
+                "spider": "spider3",
                 "id": "2f16646cfcaf11e1b0090800272a6d06",
-                "project": "myproject", "spider": "spider3",
+                "priority": 0.0,
                 "start_time": "2012-09-12 10:14:03.594664",
                 "end_time": "2012-09-12 10:24:03.594664"
             }

@@ -99,19 +99,19 @@ class JsonSqlitePriorityQueue(object):
         self.conn.commit()
 
     def pop(self):
-        q = "select id, message from %s order by priority desc limit 1" \
+        q = "select id, message, priority from %s order by priority desc limit 1" \
             % self.table
-        idmsg = self.conn.execute(q).fetchone()
-        if idmsg is None:
+        result = self.conn.execute(q).fetchone()
+        if result is None:
             return
-        id, msg = idmsg
+        id, msg, priority = result
         q = "delete from %s where id=?" % self.table
         c = self.conn.execute(q, (id,))
         if not c.rowcount: # record vanished, so let's try again
             self.conn.rollback()
             return self.pop()
         self.conn.commit()
-        return self.decode(msg)
+        return self.decode(msg), priority
 
     def remove(self, func):
         q = "select id, message from %s" % self.table

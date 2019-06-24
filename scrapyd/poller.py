@@ -20,9 +20,9 @@ class QueuePoller(object):
         for p, q in iteritems(self.queues):
             c = yield maybeDeferred(q.count)
             if c:
-                msg = yield maybeDeferred(q.pop)
+                msg, priority = yield maybeDeferred(q.pop)
                 if msg is not None:  # In case of a concurrently accessed queue
-                    returnValue(self.dq.put(self._message(msg, p)))
+                    returnValue(self.dq.put(self._message(msg, p, priority)))
 
     def next(self):
         return self.dq.get()
@@ -30,8 +30,9 @@ class QueuePoller(object):
     def update_projects(self):
         self.queues = get_spider_queues(self.config)
 
-    def _message(self, queue_msg, project):
+    def _message(self, queue_msg, project, priority):
         d = queue_msg.copy()
         d['_project'] = project
         d['_spider'] = d.pop('name')
+        d['_priority'] = str(priority)
         return d
