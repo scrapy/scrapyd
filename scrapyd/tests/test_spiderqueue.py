@@ -37,7 +37,7 @@ class SpiderQueueTest(unittest.TestCase):
         self.assertEqual(c, 1)
 
         m = yield maybeDeferred(self.q.pop)
-        self.assertEqual(m, self.msg)
+        self.assertEqual(m, (self.msg, float(self.priority)))
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 0)
@@ -51,7 +51,7 @@ class SpiderQueueTest(unittest.TestCase):
         yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         l = yield maybeDeferred(self.q.list)
-        self.assertEqual(l, [self.msg, self.msg])
+        self.assertEqual(l, [(self.msg, float(self.priority))] * 2)
 
     @inlineCallbacks
     def test_clear(self):

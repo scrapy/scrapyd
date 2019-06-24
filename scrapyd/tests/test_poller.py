@@ -54,4 +54,4 @@ class QueuePollerTest(unittest.TestCase):
         # check that the other project's spider got to run
         self.poller.poll()
         prj, spd = cfg.popitem()
-        self.failUnlessEqual(d2.result, {'_project': prj, '_spider': spd})
+        self.failUnlessEqual(d2.result, {'_project': prj, '_spider': spd, '_priority': '0.0'})

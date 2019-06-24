@@ -39,7 +39,6 @@ class SpiderSchedulerTest(unittest.TestCase):
         self.sched.schedule('mybot1', 'myspider1', 2, a='b')
         self.sched.schedule('mybot2', 'myspider2', 1, c='d')
         self.sched.schedule('mybot2', 'myspider3', 10, e='f')
-        self.assertEqual(q1.pop(), {'name': 'myspider1', 'a': 'b'})
-        self.assertEqual(q2.pop(), {'name': 'myspider3', 'e': 'f'})
-        self.assertEqual(q2.pop(), {'name': 'myspider2', 'c': 'd'})
-
+        self.assertEqual(q1.pop(), ({'name': 'myspider1', 'a': 'b'}, 2.0))
+        self.assertEqual(q2.pop(), ({'name': 'myspider3', 'e': 'f'}, 10.0))
+        self.assertEqual(q2.pop(), ({'name': 'myspider2', 'c': 'd'}, 1.0))
