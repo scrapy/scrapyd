@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import os
 try:
     from collections.abc import MutableMapping
 except ImportError:
@@ -82,19 +83,29 @@ class JsonSqlitePriorityQueue(object):
     """SQLite priority queue. It relies on SQLite concurrency support for
     providing atomic inter-process operations.
     """
+    project_priority_map = {}
 
     def __init__(self, database=None, table="queue"):
         self.database = database or ':memory:'
         self.table = table
+        if database:
+            dbname = os.path.split(database)[-1]
+            self.project = os.path.splitext(dbname)[0]
+        else:
+            self.project = self.database
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
         q = "create table if not exists %s (id integer primary key, " \
-            "priority real key, message blob)" % table
+            "priority real key, message blob, insert_time TIMESTAMP)" % table
         self.conn.execute(q)
+        self.ensure_insert_time_column()  # Backward compatibility for scrapyd<1.3.0
+        self.create_triggers()
+        self.update_project_priority_map()
 
     def put(self, message, priority=0.0):
         args = (priority, self.encode(message))
-        q = "insert into %s (priority, message) values (?,?)" % self.table
+        q = "insert into %s (priority, message, insert_time) values (?,?, CURRENT_TIMESTAMP)" \
+            % self.table
         self.conn.execute(q, args)
         self.conn.commit()
 
@@ -130,6 +141,35 @@ class JsonSqlitePriorityQueue(object):
     def clear(self):
         self.conn.execute("delete from %s" % self.table)
         self.conn.commit()
+
+    def ensure_insert_time_column(self):
+        q = "SELECT sql FROM sqlite_master WHERE type='table' AND name='%s'" % self.table
+        if 'insert_time TIMESTAMP' not in self.conn.execute(q).fetchone()[0]:
+            q = "ALTER TABLE %s ADD COLUMN insert_time TIMESTAMP" % self.table
+            self.conn.execute(q)
+            q = "UPDATE %s SET insert_time=CURRENT_TIMESTAMP" % self.table
+            self.conn.execute(q)
+            self.conn.commit()
+
+    def create_triggers(self):
+        self.conn.create_function("update_project_priority_map", 0, self.update_project_priority_map)
+        for action in ['INSERT', 'UPDATE', 'DELETE']:
+            name = 'trigger_on_%s' % action.lower()
+            self.conn.execute("""
+                CREATE TRIGGER IF NOT EXISTS %s AFTER %s ON %s
+                BEGIN
+                    SELECT update_project_priority_map();
+                END;
+            """ % (name, action, self.table))
+
+    def update_project_priority_map(self):
+        q = "select priority, strftime('%%s', insert_time) from %s order by priority desc limit 1" \
+            % self.table
+        result = self.conn.execute(q).fetchone()
+        if result is None:
+            self.project_priority_map.pop(self.project, None)
+        else:
+            self.project_priority_map[self.project] = (result[0], -int(result[-1]))
 
     def __len__(self):
         q = "select count(*) from %s" % self.table
