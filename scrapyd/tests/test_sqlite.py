@@ -66,14 +66,14 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q = self.queue_class()
 
     def test_empty(self):
-        self.failUnless(self.q.pop() is None)
+        self.failUnlessEqual(self.q.pop(), (None, self.default_priority))
 
     def test_one(self):
         msg = "a message"
         self.q.put(msg)
         self.failIf("_id" in msg)
         self.failUnlessEqual(self.q.pop(), (msg, self.default_priority))
-        self.failUnless(self.q.pop() is None)
+        self.failUnlessEqual(self.q.pop(), (None, self.default_priority))
 
     def test_multiple(self):
         msg1 = "first message"
@@ -85,7 +85,7 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         out.append(self.q.pop())
         self.failUnless((msg1, self.default_priority) in out)
         self.failUnless((msg2, self.default_priority) in out)
-        self.failUnless(self.q.pop() is None)
+        self.failUnlessEqual(self.q.pop(), (None, self.default_priority))
 
     def test_priority(self):
         self.q.put(self.msg1, priority=self.priority1)
