@@ -103,7 +103,7 @@ class JsonSqlitePriorityQueue(object):
             % self.table
         result = self.conn.execute(q).fetchone()
         if result is None:
-            return
+            return None, 0.0
         id, msg, priority = result
         q = "delete from %s where id=?" % self.table
         c = self.conn.execute(q, (id,))
