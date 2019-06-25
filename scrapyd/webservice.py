@@ -72,7 +72,7 @@ class Cancel(WsResource):
             prevstate = "pending"
         spiders = self.root.launcher.processes.values()
         for s in spiders:
-            if s.job == jobid:
+            if s.project == project and s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
