@@ -7,7 +7,7 @@ from scrapyd.sqlite import JsonSqlitePriorityQueue
 @implementer(ISpiderQueue)
 class SqliteSpiderQueue(object):
 
-    def __init__(self, database=None, table='spider_queue'):
+    def __init__(self, database=None, table='spider_queue_with_triggers'):
         self.q = JsonSqlitePriorityQueue(database, table)
 
     def add(self, name, priority=0.0, **spider_args):
@@ -29,3 +29,10 @@ class SqliteSpiderQueue(object):
 
     def clear(self):
         self.q.clear()
+
+    def get_project_with_highest_priority(self):
+        if self.q.project_priority_map:
+            return sorted(self.q.project_priority_map,
+                          key=lambda x: self.q.project_priority_map[x], reverse=True)[0]
+        else:
+            return None
