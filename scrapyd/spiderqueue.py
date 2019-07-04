@@ -7,7 +7,7 @@ from scrapyd.sqlite import JsonSqlitePriorityQueue
 @implementer(ISpiderQueue)
 class SqliteSpiderQueue(object):
 
-    def __init__(self, database=None, table='spider_queue'):
+    def __init__(self, database=None, table='spider_queue_with_triggers'):
         self.q = JsonSqlitePriorityQueue(database, table)
 
     def add(self, name, priority=0.0, **spider_args):

@@ -98,7 +98,6 @@ class JsonSqlitePriorityQueue(object):
         q = "create table if not exists %s (id integer primary key, " \
             "priority real key, message blob, insert_time TIMESTAMP)" % table
         self.conn.execute(q)
-        self.ensure_insert_time_column()  # Backward compatibility for scrapyd<1.3.0
         self.create_triggers()
         self.update_project_priority_map()
 
@@ -141,15 +140,6 @@ class JsonSqlitePriorityQueue(object):
     def clear(self):
         self.conn.execute("delete from %s" % self.table)
         self.conn.commit()
-
-    def ensure_insert_time_column(self):
-        q = "SELECT sql FROM sqlite_master WHERE type='table' AND name='%s'" % self.table
-        if 'insert_time TIMESTAMP' not in self.conn.execute(q).fetchone()[0]:
-            q = "ALTER TABLE %s ADD COLUMN insert_time TIMESTAMP" % self.table
-            self.conn.execute(q)
-            q = "UPDATE %s SET insert_time=CURRENT_TIMESTAMP" % self.table
-            self.conn.execute(q)
-            self.conn.commit()
 
     def create_triggers(self):
         self.conn.create_function("update_project_priority_map", 0, self.update_project_priority_map)
