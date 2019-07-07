@@ -109,6 +109,15 @@ This refers to logs and items.
 
 This setting was named ``logs_to_keep`` in previous versions.
 
+.. _remove_pending_jobs:
+
+remove_pending_jobs
+----------------
+
+.. versionadded:: 1.3
+
+Whether to remove pending jobs at startup. Defaults to ``off``.
+
 .. _finished_to_keep:
 
 finished_to_keep

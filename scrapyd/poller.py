@@ -1,6 +1,7 @@
 from zope.interface import implementer
 from six import iteritems
 from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred, returnValue
+from twisted.python import log
 
 from .utils import get_spider_queues
 from .interfaces import IPoller
@@ -12,6 +13,7 @@ class QueuePoller(object):
         self.config = config
         self.update_projects()
         self.dq = DeferredQueue()
+        self.remove_pending_jobs()
 
     @inlineCallbacks
     def poll(self):
@@ -35,3 +37,9 @@ class QueuePoller(object):
         d['_project'] = project
         d['_spider'] = d.pop('name')
         return d
+
+    def remove_pending_jobs(self):
+        if self.config.getboolean('remove_pending_jobs', False):
+            log.msg("Removing pending jobs...")
+            for p, q in iteritems(self.queues):
+                q.clear()
