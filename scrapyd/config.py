@@ -2,7 +2,8 @@ import glob
 import io
 from pkgutil import get_data
 from six.moves.configparser import SafeConfigParser, NoSectionError, NoOptionError
-from os.path import expanduser
+from os.path import abspath, dirname, expanduser, join
+from twisted.python import log
 
 from scrapy.utils.conf import closest_scrapy_cfg
 
@@ -15,6 +16,8 @@ class Config(object):
     def __init__(self, values=None, extra_sources=()):
         if values is None:
             sources = self._getsources()
+            current_dir = dirname(abspath(__file__))
+            log.msg("Reading default configuration in %s" % join(current_dir, 'default_scrapyd.conf'))
             default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
             self.cp = SafeConfigParser()
             self.cp.readfp(io.StringIO(default_config))
@@ -25,6 +28,13 @@ class Config(object):
                         self.cp.readfp(fp)
                 except (IOError, OSError):
                     pass
+                else:
+                    log.msg("Reading custom configuration in %s" % abspath(fname))
+            logs_dir = self.get('logs_dir')
+            if logs_dir:
+                log.msg("Scrapy logs will be stored in %s" % abspath(logs_dir))
+            else:
+                log.msg("Scrapy logs storage is disabled")
         else:
             self.cp = SafeConfigParser(values)
             self.cp.add_section(self.SECTION)
