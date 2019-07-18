@@ -13,6 +13,7 @@ from .interfaces import IEggStorage, IPoller, ISpiderScheduler, IEnvironment
 from .eggstorage import FilesystemEggStorage
 from .scheduler import SpiderScheduler
 from .poller import QueuePoller
+from .contrib.fix_poll_order.poller import FixQueuePoller
 from .environ import Environment
 from .config import Config
 from .basicauth import PublicHTMLRealm, StringCredentialsChecker
@@ -23,7 +24,11 @@ def application(config):
     bind_address = config.get('bind_address', '127.0.0.1')
     poll_interval = config.getfloat('poll_interval', 5)
 
-    poller = QueuePoller(config)
+    if config.getboolean('fix_poll_order', False):
+        log.msg("Activating contrib modules for fix_poll_order")
+        poller = FixQueuePoller(config)
+    else:
+        poller = QueuePoller(config)
     eggstorage = FilesystemEggStorage(config)
     scheduler = SpiderScheduler(config)
     environment = Environment(config)

@@ -64,6 +64,13 @@ Whether debug mode is enabled. Defaults to ``off``. When debug mode is enabled
 the full Python traceback will be returned (as plain text responses) when there
 is an error processing a JSON API call.
 
+fix_poll_order
+-----
+
+.. versionadded:: 1.3
+
+Whether to activate contrib modules for fix_poll_order. Defaults to ``off``. See `issue 187`_.
+
 eggs_dir
 --------
 
@@ -168,3 +175,4 @@ Here is an example configuration file with all the defaults:
 
 .. literalinclude:: ../scrapyd/default_scrapyd.conf
 .. _Twisted Application Framework: http://twistedmatrix.com/documents/current/core/howto/application.html
+.. _issue 187: https://github.com/scrapy/scrapyd/issues/187
