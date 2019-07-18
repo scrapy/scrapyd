@@ -9,6 +9,7 @@ import json
 from twisted.web import resource
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
+from scrapyd.contrib.fix_poll_order.spiderqueue import FixSqliteSpiderQueue
 from scrapyd.config import Config
 
 
@@ -59,7 +60,10 @@ def get_spider_queues(config):
     d = {}
     for project in get_project_list(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
+        if config.getboolean('fix_poll_order', False):
+            d[project] = FixSqliteSpiderQueue(dbpath)
+        else:
+            d[project] = SqliteSpiderQueue(dbpath)
     return d
 
 def get_project_list(config):
