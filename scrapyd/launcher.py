@@ -8,7 +8,7 @@ from twisted.python import log
 
 from scrapyd.utils import get_crawl_args, native_stringify_dict
 from scrapyd import __version__
-from .interfaces import IPoller, IEnvironment
+from .interfaces import IPoller, IEnvironment, IJobStorage
 
 class Launcher(Service):
 
@@ -16,11 +16,11 @@ class Launcher(Service):
 
     def __init__(self, config, app):
         self.processes = {}
-        self.finished = []
-        self.finished_to_keep = config.getint('finished_to_keep', 100)
+        self.finished = app.getComponent(IJobStorage)
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
         self.app = app
+        
 
     def startService(self):
         for slot in range(self.max_proc):
@@ -50,8 +50,7 @@ class Launcher(Service):
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)
         process.end_time = datetime.now()
-        self.finished.append(process)
-        del self.finished[:-self.finished_to_keep] # keep last 100 finished jobs
+        self.finished.add(process)
         self._wait_for_project(slot)
 
     def _get_max_proc(self, config):

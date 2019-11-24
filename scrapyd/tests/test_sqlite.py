@@ -3,7 +3,8 @@ from datetime import datetime
 from decimal import Decimal
 
 from scrapy.http import Request
-from scrapyd.sqlite import JsonSqlitePriorityQueue, JsonSqliteDict
+from scrapyd.jobstorage import Job
+from scrapyd.sqlite import JsonSqlitePriorityQueue, JsonSqliteDict, SqliteFinishedJobs
 
 
 class JsonSqliteDictTest(unittest.TestCase):
@@ -128,3 +129,30 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         for x in self.supported_values:
             self.q.put(x)
             self.assertEqual(self.q.pop(), x)
+
+
+class SqliteFinishedJobsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.q = SqliteFinishedJobs(':memory:')
+        self.j1, self.j2, self.j3 = Job('p1', 's1'), Job('p2', 's2'), Job('p3', 's3')
+        self.q.add(self.j1)
+        self.q.add(self.j2)
+        self.q.add(self.j3)
+
+    def test_add(self):
+        self.assertEqual(len(self.q), 3)
+
+    def test_clear_all(self):
+        self.q.clear()
+        self.assertEqual(len(self.q), 0)
+
+    def test_clear_keep_2(self):
+        self.q.clear(finished_to_keep=2)
+        self.assertEqual(len(self.q), 2)
+
+    def test__iter__(self):
+        l = [j for j in self.q]
+        self.assertEqual((l[0][0], l[0][1]), ('p3', 's3'))
+        self.assertEqual((l[1][0], l[1][1]), ('p2', 's2'))
+        self.assertEqual((l[2][0], l[2][1]), ('p1', 's1'))
