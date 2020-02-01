@@ -125,7 +125,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         env['PYTHONPATH'] = pythonpath
     if version:
         env['SCRAPY_EGG_VERSION'] = version
-    pargs = [sys.executable, '-m', runner, 'list']
+    pargs = [sys.executable, '-m', runner, 'list', "--set=LOG_STDOUT=0"]
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
     if proc.returncode:
