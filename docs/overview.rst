@@ -66,6 +66,9 @@ Web Interface
 Scrapyd comes with a minimal web interface (for monitoring running processes
 and accessing logs) which can be accessed at http://localhost:6800/
 
+Alternatively, you can use `ScrapydWeb`_ to manage your Scrapyd cluster.
+
 .. _distutils: http://docs.python.org/library/distutils.html
 .. _Twisted Application Framework: http://twistedmatrix.com/documents/current/core/howto/application.html
 .. _server command: http://doc.scrapy.org/en/latest/topics/commands.html#server
+.. _ScrapydWeb: https://github.com/my8100/scrapydweb

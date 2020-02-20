@@ -30,8 +30,9 @@ class QueuePollerTest(unittest.TestCase):
     def test_poll_next(self):
         cfg = {'mybot1': 'spider1',
                'mybot2': 'spider2'}
+        priority = 0
         for prj, spd in cfg.items():
-            self.queues[prj].add(spd)
+            self.queues[prj].add(spd, priority)
 
         d1 = self.poller.next()
         d2 = self.poller.next()

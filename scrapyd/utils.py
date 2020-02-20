@@ -26,7 +26,7 @@ class JsonResource(resource.Resource):
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
         txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
         txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
-        txrequest.setHeader('Content-Length', len(r))
+        txrequest.setHeader('Content-Length', str(len(r)))
         return r
 
 class UtilsCache:
@@ -67,14 +67,11 @@ def get_project_list(config):
     the scrapyd.conf [settings] section
     """
     eggs_dir = config.get('eggs_dir', 'eggs')
+    projects = []
     if os.path.exists(eggs_dir):
-        projects = os.listdir(eggs_dir)
-    else:
-        projects = []
-    try:
-        projects += [x[0] for x in config.cp.items('settings')]
-    except NoSectionError:
-        pass
+        projects.extend(d for d in os.listdir(eggs_dir)
+                        if os.path.isdir('%s/%s' % (eggs_dir, d)))
+    projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects
 
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):

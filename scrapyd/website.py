@@ -147,7 +147,7 @@ class Jobs(resource.Resource):
         if not self.local_items:
             col_idx = self.header_cols.index('Items') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
-        if 'cancel.json' not in self.root.children:
+        if b'cancel.json' not in self.root.children:
             col_idx = self.header_cols.index('Cancel') + 1
             css.append('#jobs>*>tr>*:nth-child(%d) {display: none}' % col_idx)
         return '\n'.join(css)
@@ -168,7 +168,7 @@ class Jobs(resource.Resource):
             '<style type="text/css">' + self.gen_css() + '</style>'
             '</head>'
             '<body><h1>Jobs</h1>'
-            '<p><a href="..">Go back</a></p>'
+            '<p><a href="..">Go up</a></p>'
             + self.prep_table() +
             '</body>'
             '</html>'
@@ -238,5 +238,5 @@ class Jobs(resource.Resource):
     def render(self, txrequest):
         doc = self.prep_doc()
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
-        txrequest.setHeader('Content-Length', len(doc))
+        txrequest.setHeader('Content-Length', str(len(doc)))
         return doc.encode('utf-8')
