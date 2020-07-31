@@ -7,3 +7,9 @@ docs/_build
 venv
 dist
 build
+venv/*
+.idea/*
+scrapyd/scripts/dbs/
+scrapyd/scripts/eggs/
+scrapyd/scripts/logs/
+

@@ -23,16 +23,16 @@ class Environment(object):
     def get_environment(self, message, slot):
         project = message['_project']
         env = self.initenv.copy()
-        env['SCRAPY_SLOT'] = str(slot)
+        env['SLOT'] = str(slot)
         env['SCRAPY_PROJECT'] = project
-        env['SCRAPY_SPIDER'] = message['_spider']
-        env['SCRAPY_JOB'] = message['_job']
+        env['SPIDER'] = message['_spider']
+        env['JOB'] = message['_job']
         if '_version' in message:
             env['SCRAPY_EGG_VERSION'] = message['_version']
         if project in self.settings:
             env['SCRAPY_SETTINGS_MODULE'] = self.settings[project]
         if self.logs_dir:
-            env['SCRAPY_LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
+            env['LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
             env['SCRAPY_FEED_URI'] = self._get_feed_uri(message, 'jl')
         return env
