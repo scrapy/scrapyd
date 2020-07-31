@@ -10,3 +10,5 @@ build
 .vscode
 /dbs/
 .idea
+scrapyd
+
