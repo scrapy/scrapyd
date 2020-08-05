@@ -1,2 +1,2 @@
-Scrapy>=1.1
+Scrapy>=2.1
 twisted

@@ -14,7 +14,7 @@ takes care of installing the missing ones:
 
 * Python 2.7 or above
 * Twisted 8.0 or above
-* Scrapy 1.0 or above
+* Scrapy 2.1 or above
 * six
 
 Installing Scrapyd (generic way)
