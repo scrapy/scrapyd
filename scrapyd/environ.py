@@ -32,7 +32,7 @@ class Environment(object):
         if project in self.settings:
             env['SCRAPY_SETTINGS_MODULE'] = self.settings[project]
         if self.logs_dir:
-            env['SCRAPY_LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
+            env['LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
             env['SCRAPY_FEED_URI'] = self._get_feed_uri(message, 'jl')
         return env
