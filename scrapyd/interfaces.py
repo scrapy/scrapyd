@@ -17,6 +17,9 @@ class IEggStorage(Interface):
         """Return the list of versions which have eggs stored (for the given
         project) in order (the latest version is the currently used)."""
 
+    def list_projects():
+        """Return the list of projects from the stored eggs """
+
     def delete(project, version=None):
         """Delete the egg stored for the given project and version. If should
         also delete the project if no versions are left"""

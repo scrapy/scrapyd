@@ -152,6 +152,15 @@ Scrapyd includes an interface with a website to provide simple monitoring
 and access to the application's webresources.
 This setting must provide the root class of the twisted web resource.
 
+eggstorage
+------
+
+A class that stores and retrieves eggs for running spiders. 
+The default implementation is FilesystemEggStorage and stores eggs on the file system based on
+``eggs_dir`` configuration.
+
+One can customize the storage by implementing the IEggStorage interface.
+
 node_name
 ---------
 
