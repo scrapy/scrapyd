@@ -19,6 +19,8 @@ Removed
 
 - Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
 - Python 3.3 support (although never officially supported)
+- Python 3.4 support
+- Pypy 2 support
 
 1.2.1
 -----
