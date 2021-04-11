@@ -16,7 +16,7 @@ from .environ import Environment
 from .basicauth import PublicHTMLRealm, StringCredentialsChecker
 
 
-def get_resource(webcls, config, app):
+def create_wrapped_resource(webcls, config, app):
     username = config.get('username', '')
     password = config.get('password', '')
     if ':' in username:
@@ -58,7 +58,7 @@ def application(config):
 
     webpath = config.get('webroot', 'scrapyd.website.Root')
     webcls = load_object(webpath)
-    resource = get_resource(webcls, config, app)
+    resource = create_wrapped_resource(webcls, config, app)
     webservice = TCPServer(http_port, server.Site(resource), interface=bind_address)
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
