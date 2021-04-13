@@ -9,6 +9,11 @@ except ImportError:
 import six
 
 from twisted.trial import unittest
+if six.PY2:
+    import mock
+else:
+    from unittest import mock
+from subprocess import Popen
 
 from scrapy.utils.test import get_pythonpath
 from scrapyd.interfaces import IEggStorage
@@ -102,8 +107,16 @@ class GetSpiderListTest(unittest.TestCase):
         self.add_test_version('mybot3.egg', 'mybot3', 'r1')
         pypath = get_pythonpath_scrapyd()
         # Workaround missing support for context manager in twisted < 15
-        exc = self.assertRaises(RuntimeError,
-                                get_spider_list, 'mybot3', pythonpath=pypath)
+
+        # Add -W ignore to sub-python to prevent warnings & tb mixup in stderr
+        def popen_wrapper(*args, **kwargs):
+            cmd, args = args[0], args[1:]
+            cmd = [cmd[0], '-W', 'ignore'] + cmd[1:]
+            return Popen(cmd, *args, **kwargs)
+
+        with mock.patch('scrapyd.utils.Popen', wraps=popen_wrapper):
+            exc = self.assertRaises(RuntimeError,
+                                    get_spider_list, 'mybot3', pythonpath=pypath)
         tb = str(exc).rstrip()
         tb = tb.decode('unicode_escape') if six.PY2 else tb
         tb_regex = (

@@ -1,29 +1,23 @@
 language: python
 dist: xenial
-matrix:
-    include:
-        - python: 2.7
-          env: TOXENV=py27
-        - python: pypy
-          env: TOXENV=pypy
-        - python: 3.4
-          env: TOXENV=py34
-        - python: 3.5
-          env: TOXENV=py35
-        - python: 3.6
-          env: TOXENV=py36
-        - python: 3.7
-          env: TOXENV=py37
-          sudo: true
+python:
+  - "2.7"
+  - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.9"
 
 before_install:
-    - pip install -U six
+    - pip install -U pip wheel setuptools codecov
 
 install:
-    - pip install -U tox codecov
+    - pip install -rreqs/requirements-latest.txt -rreqs/requirements-tests.txt
 
 script:
-    - tox
+    - coverage erase
+    - coverage run --branch bin/trial scrapyd
+    - coverage report
 
 after_success:
     - codecov
@@ -34,15 +28,3 @@ notifications:
             - "irc.freenode.org#scrapy"
         use_notice: true
         skip_join: true
-
-deploy:
-    provider: pypi
-    distributions: sdist bdist_wheel
-    user: redapple
-    password:
-        secure: IuHONsIRm8w54LkmUlZe0X0dFqW2iAjTyqeRyOyVMvHWIPaiydNpX+xipvRArJnswlnzf7/X3CtZw9ZF9ePznCrvG+3Y1SLHutncRbr6IxSQrcRJm+FTF2I2KNEaOkWqoQjO7xbEehpqo6fttHImCNrCzgZw32hCZqeGbDGPGJs=
-    on:
-        all_branches: true
-        tags: true
-        repo: scrapy/scrapyd
-        condition: "$TOXENV == py27 && $TRAVIS_TAG =~ ^[0-9]+[.][0-9]+[.][0-9]+([ab][0-9]+|rc[0-9]+|dev[0-9]+)?$"

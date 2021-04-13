@@ -16,9 +16,9 @@ class JsonSqliteDictTest(unittest.TestCase):
         test = self.test_dict
         d = self.dict_class()
         d.update(test)
-        self.failUnlessEqual(list(d.items()), list(test.items()))
+        self.assertEqual(list(d.items()), list(test.items()))
         d.clear()
-        self.failIf(d.items())
+        self.assertFalse(d.items())
 
     def test_in(self):
         d = self.dict_class()
@@ -57,14 +57,14 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q = self.queue_class()
 
     def test_empty(self):
-        self.failUnless(self.q.pop() is None)
+        self.assertIs(self.q.pop(), None)
 
     def test_one(self):
         msg = "a message"
         self.q.put(msg)
-        self.failIf("_id" in msg)
-        self.failUnlessEqual(self.q.pop(), msg)
-        self.failUnless(self.q.pop() is None)
+        self.assertNotIn("_id", msg)
+        self.assertEqual(self.q.pop(), msg)
+        self.assertIs(self.q.pop(), None)
 
     def test_multiple(self):
         msg1 = "first message"
@@ -74,9 +74,9 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         out = []
         out.append(self.q.pop())
         out.append(self.q.pop())
-        self.failUnless(msg1 in out)
-        self.failUnless(msg2 in out)
-        self.failUnless(self.q.pop() is None)
+        self.assertIn(msg1, out)
+        self.assertIn(msg2, out)
+        self.assertIs(self.q.pop(), None)
 
     def test_priority(self):
         msg1 = "message 1"
@@ -87,14 +87,14 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q.put(msg2, priority=5.0)
         self.q.put(msg3, priority=3.0)
         self.q.put(msg4, priority=2.0)
-        self.failUnlessEqual(self.q.pop(), msg2)
-        self.failUnlessEqual(self.q.pop(), msg3)
-        self.failUnlessEqual(self.q.pop(), msg4)
-        self.failUnlessEqual(self.q.pop(), msg1)
+        self.assertEqual(self.q.pop(), msg2)
+        self.assertEqual(self.q.pop(), msg3)
+        self.assertEqual(self.q.pop(), msg4)
+        self.assertEqual(self.q.pop(), msg1)
 
     def test_iter_len_clear(self):
-        self.failUnlessEqual(len(self.q), 0)
-        self.failUnlessEqual(list(self.q), [])
+        self.assertEqual(len(self.q), 0)
+        self.assertEqual(list(self.q), [])
         msg1 = "message 1"
         msg2 = "message 2"
         msg3 = "message 3"
@@ -103,16 +103,16 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q.put(msg2, priority=5.0)
         self.q.put(msg3, priority=3.0)
         self.q.put(msg4, priority=2.0)
-        self.failUnlessEqual(len(self.q), 4)
-        self.failUnlessEqual(list(self.q), \
+        self.assertEqual(len(self.q), 4)
+        self.assertEqual(list(self.q), \
             [(msg2, 5.0), (msg3, 3.0), (msg4, 2.0), (msg1, 1.0)])
         self.q.clear()
-        self.failUnlessEqual(len(self.q), 0)
-        self.failUnlessEqual(list(self.q), [])
+        self.assertEqual(len(self.q), 0)
+        self.assertEqual(list(self.q), [])
 
     def test_remove(self):
-        self.failUnlessEqual(len(self.q), 0)
-        self.failUnlessEqual(list(self.q), [])
+        self.assertEqual(len(self.q), 0)
+        self.assertEqual(list(self.q), [])
         msg1 = "good message 1"
         msg2 = "bad message 2"
         msg3 = "good message 3"
@@ -122,9 +122,9 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q.put(msg3)
         self.q.put(msg4)
         self.q.remove(lambda x: x.startswith("bad"))
-        self.failUnlessEqual(list(self.q), [(msg1, 0.0), (msg3, 0.0)])
+        self.assertEqual(list(self.q), [(msg1, 0.0), (msg3, 0.0)])
 
     def test_types(self):
         for x in self.supported_values:
             self.q.put(x)
-            self.failUnlessEqual(self.q.pop(), x)
+            self.assertEqual(self.q.pop(), x)

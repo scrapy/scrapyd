@@ -13,12 +13,15 @@ Added
 - Jobs website shortcut to cancel a job using the cancel.json webservice.
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
+- Python 3.7, 3.8 and 3.9 support
 
 Removed
 ~~~~~~~
 
 - Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
 - Python 3.3 support (although never officially supported)
+- Python 3.4 support
+- Pypy 2 support
 
 1.2.1
 -----

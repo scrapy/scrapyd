@@ -35,7 +35,7 @@ class SpiderSchedulerTest(unittest.TestCase):
 
     def test_schedule(self):
         q1, q2 = self.queues['mybot1'], self.queues['mybot2']
-        self.failIf(q1.count())
+        self.assertFalse(q1.count())
         self.sched.schedule('mybot1', 'myspider1', 2, a='b')
         self.sched.schedule('mybot2', 'myspider2', 1, c='d')
         self.sched.schedule('mybot2', 'myspider3', 10, e='f')
