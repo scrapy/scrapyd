@@ -1,0 +1,127 @@
+# Python CircleCI 2.1 configuration file
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+
+jobs:
+  py37: &test-template
+    docker:
+      - image: circleci/python:3.7
+
+    working_directory: ~/repo
+
+    parameters:
+      is-py27:
+        type: boolean
+        default: false
+
+    steps:
+      - run:
+          name: Upgrade Rust >=1.41.0 for PY36
+          command: |
+            sudo apt-get update && sudo apt-get upgrade && sudo apt-get install rustc
+
+      - checkout
+
+      - when:
+          condition: <<parameters.is-py27>>
+          steps:
+            - run:
+                name: Create virtual env in PY2
+                command: |
+                  virtualenv ./venv
+      - unless:
+          condition: <<parameters.is-py27>>
+          steps:
+            - run:
+                name: Create virtual env in PY3
+                command: |
+                  python3 -m venv venv
+
+      - run:
+          name: Install dependencies
+          command: |
+            # python3 -m venv venv
+            # virtualenv ./venv
+            . venv/bin/activate
+            which python
+            python --version
+            # pip install -r requirements.txt
+            pip install -U pip
+            pip install coverage pytest requests
+
+      - run:
+          name: Install Scrapyd (may via git)
+          command: |
+            . venv/bin/activate
+            # pip install -U git+https://github.com/scrapy/scrapyd.git
+            git status
+            git log -1
+            pwd
+            ls -l
+            # python setup.py install
+            pip install -e .
+
+      - run:
+          name: Launch Scrapyd
+          command: |
+            cd ~
+            printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
+            cat scrapyd.conf
+            nohup ~/repo/venv/bin/scrapyd > ~/scrapyd.log 2>&1 &
+            sleep 5
+            cat ~/scrapyd.log
+            cd -
+
+      - run:
+          name: Run tests
+          command: |
+            ls -l
+            . venv/bin/activate
+            coverage erase
+            coverage run --source=scrapyd -m pytest tests -s -vv -l --disable-warnings
+      - run:
+          name: Generate report
+          command: |
+            . venv/bin/activate
+            coverage report
+            coverage html
+            coverage xml
+            ls -la
+      - store_artifacts:
+          path: htmlcov
+      - store_artifacts:
+          path: coverage.xml
+      - codecov/upload:
+          file: coverage.xml
+
+  py27:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7
+
+  py36:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+
+  py38:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
+
+  py39:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.9
+
+workflows:
+  test:
+    jobs:
+      - py27:
+          is-py27: true
+      - py36
+      - py37
+      - py38
+      - py39
