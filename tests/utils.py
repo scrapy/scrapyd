@@ -46,6 +46,8 @@ def _test_auth_fail(method, url, data=None):
             r = _get(url, auth=auth)
         else:
             r = _post(url, data=data, auth=auth)
+        assert r.status_code == 401
+        assert r.text == 'Unauthorized'
 
 def get(url, auth=None):
     _test_auth_fail('get', url)
