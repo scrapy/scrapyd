@@ -1,4 +1,4 @@
-from .utils import BASE_URL, TRUE_AUTH, get_url, get
+from pytest-tests.utils import BASE_URL, TRUE_AUTH, get_url, get
 
 
 def test_homepage():
