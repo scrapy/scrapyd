@@ -36,7 +36,7 @@ script:
     - cd -
     - pwd
     - ls -la
-    - pytest pytest-tests -s -vv -l --disable-warnings
+    - pytest end_to_end_tests -s -vv -l --disable-warnings
 
 after_success:
     - codecov
