@@ -1,4 +1,4 @@
-from .utils import OK, ERROR, BASE_URL, TRUE_AUTH, get_url, get, post
+from pytest-tests.utils import OK, ERROR, BASE_URL, TRUE_AUTH, get_url, get, post
 
 
 def test_listjobs():
