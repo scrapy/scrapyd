@@ -23,6 +23,7 @@ script:
     - git log -5
     - pwd
     - ls -la
+    - python --version
     #- pip install -e .
     - python setup.py install
     - cd ~
