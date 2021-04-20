@@ -1,1 +1,4 @@
 coverage
+mock; python_version=='2.7'
+pytest
+requests
