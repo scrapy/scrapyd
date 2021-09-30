@@ -76,7 +76,8 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.end_time = None
         self.env = env
         self.logfile = env.get('SCRAPY_LOG_FILE')
-        self.itemsfile = env.get('SCRAPY_FEED_URI')
+        # self.itemsfile = env.get('SCRAPY_FEED_URI')
+        self.itemsfile = env.get('FEEDS')
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
