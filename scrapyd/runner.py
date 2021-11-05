@@ -1,17 +1,17 @@
-import sys
 import os
 import shutil
+import sys
 import tempfile
 from contextlib import contextmanager
 
-from scrapyd import get_application
-from scrapyd.interfaces import IEggStorage
+from scrapyd import Config
+from scrapyd.eggstorage import FilesystemEggStorage
 from scrapyd.eggutils import activate_egg
+
 
 @contextmanager
 def project_environment(project):
-    app = get_application()
-    eggstorage = app.getComponent(IEggStorage)
+    eggstorage = FilesystemEggStorage(Config())
     eggversion = os.environ.get('SCRAPY_EGG_VERSION', None)
     version, eggfile = eggstorage.get(project, eggversion)
     if eggfile:
