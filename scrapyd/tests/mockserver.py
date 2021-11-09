@@ -1,5 +1,7 @@
 import re
 import socket
+import sys
+from os import path
 from pathlib import Path
 from subprocess import Popen, PIPE
 from urllib.parse import urljoin
@@ -9,14 +11,19 @@ def get_ephemeral_port():
     # TODO pass port to scrapyd
     s = socket.socket()
     s.bind(("", 0))
-    return s.getsockname()[1]
+    return str(s.getsockname()[1])
 
 
 class MockScrapyDServer:
     def __enter__(self):
-        cwd = str(Path(__file__).absolute().parent.parent)
-        command = ["twistd", "-y", "txapp.py", "-on"]
-        self.proc = Popen(command, stdout=PIPE, cwd=cwd)
+        this_file_dir = Path(__file__).absolute().parent
+        # Launches ScrapyD application object with ephemeral port
+        command = [
+            sys.executable,
+            path.join(this_file_dir, "start_mock_app.py"),
+            get_ephemeral_port()
+        ]
+        self.proc = Popen(command, stdout=PIPE)
         for x in range(5):
             msg = self.proc.stdout.readline().strip().decode("ascii")
             if addr_line := re.search("available at (.+/)", msg):
