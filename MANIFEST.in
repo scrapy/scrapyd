@@ -6,7 +6,7 @@ include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
 recursive-include scrapyd *.py
 recursive-include docs *
-recursive-include bin * 
+recursive-include bin *
 prune docs/_build
 recursive-include extras *
 recursive-exclude debian *
