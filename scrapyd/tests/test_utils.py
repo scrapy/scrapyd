@@ -125,9 +125,6 @@ class GetSpiderListTest(unittest.TestCase):
         tb = str(exc).rstrip()
         tb = tb.decode('unicode_escape') if six.PY2 else tb
         tb_regex = (
-            r'^Traceback \(most recent call last\):\n'
-            r'(?:  File .*\n(?:    .*\n)?)*'  # Skipped lines
-            r'  File "(?:[^"\\]|\\.)*settings\.py", line 1, in <module>\n'
             r'Exception: This should break the `scrapy list` command$'
         )
         self.assertRegexpMatches(tb, tb_regex)
