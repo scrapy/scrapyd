@@ -8,14 +8,16 @@ from urllib.parse import urljoin
 
 
 def get_ephemeral_port():
-    # TODO pass port to scrapyd
     s = socket.socket()
     s.bind(("", 0))
     return str(s.getsockname()[1])
 
 
 class MockScrapyDServer:
-    def __enter__(self):
+    def __init__(self, authentication=None):
+        self.authentication = authentication
+
+    def __enter__(self, authentication=None):
         this_file_dir = Path(__file__).absolute().parent
         # Launches ScrapyD application object with ephemeral port
         command = [
@@ -23,6 +25,8 @@ class MockScrapyDServer:
             path.join(this_file_dir, "start_mock_app.py"),
             get_ephemeral_port()
         ]
+        if self.authentication is not None:
+            command.append(self.authentication)
         self.proc = Popen(command, stdout=PIPE)
         for x in range(5):
             msg = self.proc.stdout.readline().strip().decode("ascii")
