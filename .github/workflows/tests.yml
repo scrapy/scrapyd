@@ -18,12 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-#
-#    - name: Install system libraries
-#      if: contains(matrix.os, 'ubuntu') && contains(matrix.python-version, 'pypy')
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get install libxml2-dev libxslt-dev
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
