@@ -1,13 +1,14 @@
 import re
 import socket
 import sys
-from os import path
-from pathlib import Path
 from subprocess import Popen, PIPE
 from urllib.parse import urljoin
 
 
 def get_ephemeral_port():
+    # Somehow getting random high port doesn't work on pypy
+    if re.search("PyPy", sys.version):
+        return str(9112)
     s = socket.socket()
     s.bind(("", 0))
     return str(s.getsockname()[1])
@@ -18,7 +19,6 @@ class MockScrapyDServer:
         self.authentication = authentication
 
     def __enter__(self, authentication=None):
-        this_file_dir = Path(__file__).absolute().parent
         # Launches ScrapyD application object with ephemeral port
         command = [
             sys.executable, '-m',

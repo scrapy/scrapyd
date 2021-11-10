@@ -1,7 +1,4 @@
 import sys
-import tempfile
-from configparser import ConfigParser
-from os import path
 
 from twisted.application import app
 from twisted.internet import reactor
@@ -14,10 +11,10 @@ from scrapyd.app import application
 def _get_config(http_port=None, authentication=None):
     scrapyd_config = Config()
     if http_port is None:
-        http_port = 6800
+        http_port = "6800"
 
     section = 'scrapyd'
-    scrapyd_config.cp.set(section, 'http_port', str(http_port))
+    scrapyd_config.cp.set(section, 'http_port', http_port)
 
     if authentication is not None:
         username, password = authentication.split(":")
@@ -28,7 +25,7 @@ def _get_config(http_port=None, authentication=None):
 
 if __name__ == "__main__":
     log.startLogging(sys.stdout)
-    http_port = int(sys.argv[1])
+    http_port = sys.argv[1]
     authentication = sys.argv[2] if len(sys.argv) == 3 else None
     conf = _get_config(http_port=http_port, authentication=authentication)
     application = application(config=conf)

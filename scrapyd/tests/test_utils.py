@@ -15,7 +15,7 @@ from twisted.trial import unittest
 if six.PY2:
     import mock
 else:
-    from unittest import mock, SkipTest
+    from unittest import mock
 from subprocess import Popen
 
 from scrapy.utils.test import get_pythonpath
