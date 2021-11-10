@@ -28,9 +28,10 @@ class MockScrapyDServer:
         if self.authentication is not None:
             command.append(self.authentication)
         self.proc = Popen(command, stdout=PIPE)
-        for x in range(5):
+        for x in range(10):
             msg = self.proc.stdout.readline().strip().decode("ascii")
-            if addr_line := re.search("available at (.+/)", msg):
+            addr_line = re.search("available at (.+/)", msg)
+            if addr_line:
                 self.url = addr_line.group(1)
                 break
 
