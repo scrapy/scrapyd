@@ -2,6 +2,8 @@
 import os
 from pkgutil import get_data
 
+import pytest
+
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -98,11 +100,9 @@ class GetSpiderListTest(unittest.TestCase):
         spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
 
+    @pytest.mark.skipif(os.name == 'nt', reason='get_spider_list() unicode '
+                                                'fails on windows')
     def test_get_spider_list_unicode(self):
-        # TODO fix this test on windows
-        # TODO switch to pytest from trial
-        if os.name == 'nt':
-            raise SkipTest
         # mybotunicode.egg has two spiders, araña1 and araña2
         self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
         spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())

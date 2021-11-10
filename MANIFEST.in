@@ -13,6 +13,5 @@ recursive-exclude debian *
 exclude .bumpversion.cfg
 exclude .coveragerc
 exclude *.buildbot
-include tox.ini
 recursive-include reqs *.txt
 recursive-include scrapyd *.egg
