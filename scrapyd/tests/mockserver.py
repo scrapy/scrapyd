@@ -21,8 +21,8 @@ class MockScrapyDServer:
         this_file_dir = Path(__file__).absolute().parent
         # Launches ScrapyD application object with ephemeral port
         command = [
-            sys.executable,
-            path.join(this_file_dir, "start_mock_app.py"),
+            sys.executable, '-m',
+            "scrapyd.tests.start_mock_app",
             get_ephemeral_port()
         ]
         if self.authentication is not None:
