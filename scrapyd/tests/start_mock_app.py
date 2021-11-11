@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 from twisted.application import app
@@ -20,14 +21,20 @@ def _get_config(http_port=None, authentication=None):
         username, password = authentication.split(":")
         scrapyd_config.cp.set(section, 'username', username)
         scrapyd_config.cp.set(section, 'password', password)
+
     return scrapyd_config
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('http_port', default=6800)
+    parser.add_argument('--auth', default=None)
+    args = parser.parse_args()
     log.startLogging(sys.stdout)
-    http_port = sys.argv[1]
-    authentication = sys.argv[2] if len(sys.argv) == 3 else None
-    conf = _get_config(http_port=http_port, authentication=authentication)
+    conf = _get_config(
+        http_port=args.http_port,
+        authentication=args.auth
+    )
     application = application(config=conf)
     app.startApplication(application, False)
     reactor.run()

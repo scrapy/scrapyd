@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 import pytest
 import requests
@@ -10,6 +11,13 @@ from scrapyd.tests.mockserver import MockScrapyDServer
 def mock_scrapyd():
     with MockScrapyDServer() as server:
         yield server
+
+
+@pytest.fixture
+def quotesbot_egg():
+    eggpath = Path(__file__).absolute().parent / "quotesbot.egg"
+    with open(eggpath, 'rb') as egg:
+        yield egg
 
 
 class TestEndpoint:
@@ -33,3 +41,46 @@ class TestEndpoint:
             res = requests.get(server.url, auth=(username, password))
             assert res.status_code == 200
             assert re.search("To schedule a spider", res.text)
+            res = requests.get(server.url, auth=(username, "trying to hack"))
+            assert res.status_code == 401
+
+    def test_launch_spider_get(self, mock_scrapyd):
+        resp = requests.get(mock_scrapyd.urljoin("schedule.json"))
+        assert resp.status_code == 200
+        # TODO should return status 405 Method Not Allowed not 200
+        assert resp.json()['status'] == 'error'
+
+    def test_spider_list_no_project(self, mock_scrapyd):
+        resp = requests.get(mock_scrapyd.urljoin("listspiders.json"))
+        assert resp.status_code == 200
+        # TODO should return status 400 if no project specified
+        data = resp.json()
+        assert data['status'] == 'error'
+        assert data['message'] == "'project'"
+
+    def test_spider_list_project_no_egg(self, mock_scrapyd):
+        resp = requests.get(mock_scrapyd.urljoin('listprojects.json'))
+        data = resp.json()
+        assert resp.status_code == 200
+        assert data['projects'] == []
+
+    def test_addversion_and_delversion(self, mock_scrapyd, quotesbot_egg):
+        url = mock_scrapyd.urljoin("addversion.json")
+        data = {
+            b"project": b"quotesbot",
+            b"version": b"0.01"
+        }
+        files = {
+            b'egg': quotesbot_egg
+        }
+        resp = requests.post(url, data=data, files=files)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data['spiders'] == 2
+        assert data['status'] == 'ok'
+        assert data['project'] == 'quotesbot'
+        url = mock_scrapyd.urljoin('delversion.json')
+        res = requests.post(url, data={'project': 'quotesbot',
+                                       "version": "0.01"})
+        assert res.status_code == 200
+        assert res.json()['status'] == 'ok'

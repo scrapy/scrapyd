@@ -1,4 +1,6 @@
+import os
 import re
+import shutil
 import socket
 import sys
 from subprocess import Popen, PIPE
@@ -26,7 +28,8 @@ class MockScrapyDServer:
             get_ephemeral_port()
         ]
         if self.authentication is not None:
-            command.append(self.authentication)
+            command.append('--auth=' + self.authentication)
+
         self.proc = Popen(command, stdout=PIPE)
         for x in range(10):
             msg = self.proc.stdout.readline().strip().decode("ascii")
@@ -40,6 +43,8 @@ class MockScrapyDServer:
     def __exit__(self, exc_type, exc_value, traceback):
         self.proc.kill()
         self.proc.communicate()
+        if os.path.isdir("eggs") and os.listdir("eggs") != []:
+            shutil.rmtree("eggs")
 
     def urljoin(self, path):
         return urljoin(self.url, path)
