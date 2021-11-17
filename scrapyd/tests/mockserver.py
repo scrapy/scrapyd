@@ -3,7 +3,7 @@ import re
 import shutil
 import socket
 import sys
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from urllib.parse import urljoin
 
 
@@ -21,7 +21,8 @@ class MockScrapyDServer:
         self.authentication = authentication
 
     def __enter__(self, authentication=None):
-        # Launches ScrapyD application object with ephemeral port
+        """Launch ScrapyD application object with ephemeral port
+        """
         command = [
             sys.executable, '-m',
             "scrapyd.tests.start_mock_app",
@@ -43,6 +44,7 @@ class MockScrapyDServer:
     def __exit__(self, exc_type, exc_value, traceback):
         self.proc.kill()
         self.proc.communicate()
+        # TODO create eggs in temporary directory
         if os.path.isdir("eggs") and os.listdir("eggs") != []:
             shutil.rmtree("eggs")
 

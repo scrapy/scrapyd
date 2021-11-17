@@ -9,16 +9,13 @@ from scrapyd import Config
 from scrapyd.app import application
 
 
-def _get_config(http_port=None, authentication=None):
+def _get_config(args):
     scrapyd_config = Config()
-    if http_port is None:
-        http_port = "6800"
-
     section = 'scrapyd'
-    scrapyd_config.cp.set(section, 'http_port', http_port)
+    scrapyd_config.cp.set(section, 'http_port', args.http_port)
 
-    if authentication is not None:
-        username, password = authentication.split(":")
+    if args.auth is not None:
+        username, password = args.auth.split(":")
         scrapyd_config.cp.set(section, 'username', username)
         scrapyd_config.cp.set(section, 'password', password)
 
@@ -32,8 +29,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     log.startLogging(sys.stdout)
     conf = _get_config(
-        http_port=args.http_port,
-        authentication=args.auth
+        args
     )
     application = application(config=conf)
     app.startApplication(application, False)
