@@ -21,14 +21,6 @@ def quotesbot_egg():
         yield egg
 
 
-@pytest.fixture
-def quotesbot_egg_asyncio():
-    # This egg file contains settings with TWISTED_REACTOR set to asyncio ractor
-    eggpath = Path(__file__).absolute().parent / "quotesbot_asyncio.egg"
-    with open(eggpath, 'rb') as egg:
-        yield egg
-
-
 class TestEndpoint:
     def test_urljoin(self, mock_scrapyd):
         assert mock_scrapyd.urljoin("foo") == mock_scrapyd.url + 'foo'
@@ -116,9 +108,3 @@ class TestEndpoint:
         data = schedule_res.json()
         assert 'jobid' in data
         assert data['status'] == 'ok'
-
-    @pytest.mark.xfail(reason='asyncio reactor not supported yet')
-    def test_failed_settings(self, mock_scrapyd, quotesbot_egg_asyncio):
-        response = self._deploy(mock_scrapyd, quotesbot_egg_asyncio)
-        assert response.status_code == 200
-        assert response.json()['status'] == 'ok'
