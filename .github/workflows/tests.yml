@@ -1,0 +1,53 @@
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  tests:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9, "3.10", pypy-3.7]
+        # It is difficult to install libxml2 and libxslt development packages on Windows.
+        # https://www.lfd.uci.edu/~gohlke/pythonlibs/ distributes a wheel, but the URL changes.
+        exclude:
+          - os: windows-latest
+            python-version: pypy-3.7
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: install requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r reqs/requirements-latest.txt
+        pip install -r reqs/requirements-tests.txt
+
+    - name: Run tests
+      run: |
+        pytest --cov=./ --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ./coverage/reports/
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        path_to_write_report: ./coverage/codecov_report.txt
+        verbose: true
+
+    - name: Check MANIFEST.in
+      run: |
+        pip install -U check-manifest setuptools
+        check-manifest
