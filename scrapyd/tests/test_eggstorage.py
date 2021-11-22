@@ -14,6 +14,7 @@ from scrapyd.eggstorage import FilesystemEggStorage
 class EggStorageTest(unittest.TestCase):
 
     def setUp(self):
+        # TODO test should remove temp directory
         d = self.mktemp()
         config = Config(values={'eggs_dir': d})
         self.eggst = FilesystemEggStorage(config)
