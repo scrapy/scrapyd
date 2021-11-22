@@ -152,6 +152,17 @@ Scrapyd includes an interface with a website to provide simple monitoring
 and access to the application's webresources.
 This setting must provide the root class of the twisted web resource.
 
+jobstorage
+-------
+
+A class that stores finished jobs. There are 2 implementations provided:
+
+* ``scrapyd.jobstorage.MemoryJobStorage`` (default) jobs are stored in memory and lost when the daemon is restarted
+* ``scrapyd.jobstorage.SqliteJobStorage`` jobs are persisted in a Sqlite database in ``dbs_dir``
+
+If another backend is needed, one can implement its own class by implementing the IJobStorage 
+interface.
+
 node_name
 ---------
 

@@ -1,3 +1,4 @@
+from datetime import datetime
 import sqlite3
 import json
 try:
@@ -145,3 +146,45 @@ class JsonSqlitePriorityQueue(object):
 
     def decode(self, text):
         return json.loads(bytes(text).decode('ascii'))
+
+
+class SqliteFinishedJobs(object):
+    """SQLite finished jobs. """
+
+    def __init__(self, database=None, table="finished_jobs"):
+        self.database = database or ':memory:'
+        self.table = table
+        # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
+        self.conn = sqlite3.connect(self.database, check_same_thread=False)
+        q = "create table if not exists %s (id integer primary key, " \
+            "project text, spider text, job text, start_time datetime, end_time datetime)" % table
+        self.conn.execute(q)
+
+    def add(self, job):
+        args = (job.project, job.spider, job.job, job.start_time, job.end_time)
+        q = "insert into %s (project, spider, job, start_time, end_time) values (?,?,?,?,?)" % self.table
+        self.conn.execute(q, args)
+        self.conn.commit()
+
+    def clear(self, finished_to_keep=None):
+        w = ""
+        if finished_to_keep:
+            limit = len(self) - finished_to_keep
+            if limit <= 0:
+                return # nothing to delete
+            w = "where id <= (select max(id) from " \
+                "(select id from %s order by end_time limit %d))" % (self.table, limit)
+        q = "delete from %s %s" % (self.table, w)
+        self.conn.execute(q)
+        self.conn.commit()
+
+    def __len__(self):
+        q = "select count(*) from %s" % self.table
+        return self.conn.execute(q).fetchone()[0]
+
+    def __iter__(self):
+        q = "select project, spider, job, start_time, end_time from %s order by end_time desc" % \
+            self.table
+        return ((j[0],j[1],j[2],
+                datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"), 
+                datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(q))

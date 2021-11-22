@@ -107,3 +107,18 @@ class IEnvironment(Interface):
         `message` is the message received from the IPoller.next() method
         `slot` is the Launcher slot where the process will be running.
         """
+
+class IJobStorage(Interface):
+    """A component that handles storing and retrieving finished jobs. """
+
+    def add(job):
+        """Add a finished job in the storage. """
+
+    def list():
+        """Return a list of the finished jobs. """
+
+    def __len__():
+        """Return a number of the finished jobs. """
+
+    def __iter__():
+        """Iterate over the finished jobs. """  
