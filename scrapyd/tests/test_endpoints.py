@@ -117,7 +117,6 @@ class TestEndpoint:
         assert 'jobid' in data
         assert data['status'] == 'ok'
 
-    @pytest.mark.xfail(reason='asyncio reactor not supported yet')
     def test_failed_settings(self, mock_scrapyd, quotesbot_egg_asyncio):
         response = self._deploy(mock_scrapyd, quotesbot_egg_asyncio)
         assert response.status_code == 200
