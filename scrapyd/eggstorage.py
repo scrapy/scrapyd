@@ -1,6 +1,6 @@
 import re
 from glob import glob
-from os import path, makedirs, remove
+from os import path, makedirs, remove, listdir
 from shutil import copyfileobj, rmtree
 from distutils.version import LooseVersion
 
@@ -35,6 +35,13 @@ class FilesystemEggStorage(object):
         versions = [path.splitext(path.basename(x))[0] \
             for x in glob("%s/*.egg" % eggdir)]
         return sorted(versions, key=LooseVersion)
+
+    def list_projects(self):
+        projects = []
+        if path.exists(self.basedir):
+            projects.extend(d for d in listdir(self.basedir)
+                            if path.isdir('%s/%s' % (self.basedir, d)))
+        return projects
 
     def delete(self, project, version=None):
         if version is None:

@@ -163,6 +163,15 @@ A class that stores finished jobs. There are 2 implementations provided:
 If another backend is needed, one can implement its own class by implementing the IJobStorage 
 interface.
 
+eggstorage
+------
+
+A class that stores and retrieves eggs for running spiders. 
+The default implementation is FilesystemEggStorage and stores eggs on the file system based on
+``eggs_dir`` configuration.
+
+One can customize the storage by implementing the IEggStorage interface.
+
 node_name
 ---------
 
