@@ -38,9 +38,7 @@ class TestWebsite:
     def test_render_home(self, txrequest, scrapyd_site):
         content = scrapyd_site.children[b''].render_GET(txrequest)
         assert b'Available projects' in content
-        headers = txrequest.responseHeaders.getAllRawHeaders()
-        expect_headers = {
-            b'Content-Length': [b'699'],
-            b'Content-Type': [b'text/html; charset=utf-8']
-        }
-        assert dict(headers) == expect_headers
+        headers = dict(txrequest.responseHeaders.getAllRawHeaders())
+        assert headers[b'Content-Type'] == [b'text/html; charset=utf-8']
+        # content-length different between my localhost and build environment
+        assert b'Content-Length' in headers
