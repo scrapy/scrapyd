@@ -13,12 +13,28 @@ Added
 - Jobs website shortcut to cancel a job using the cancel.json webservice.
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
+- Python 3.7, 3.8 and 3.9 support
+- Configuration option for job storage class
+- Configuration option for egg storage class
 
 Removed
 ~~~~~~~
 
 - Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
 - Python 3.3 support (although never officially supported)
+- Python 3.4 support
+- Pypy 2 support
+
+1.2.1
+-----
+*Release date: 2019-06-17*
+
+Fixed
+~~~~~
+- http header types were breaking newer twisted versions
+- DeferredQueue was hiding a pending job when reaching max_proc
+- AddVersion's arguments' string types were breaking the environment in windows
+- Tests: Updated binary eggs to be scrapy-1.x compatible
 
 1.2.0
 -----
