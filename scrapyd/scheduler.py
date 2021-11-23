@@ -10,9 +10,10 @@ class SpiderScheduler(object):
         self.config = config
         self.update_projects()
 
-    def schedule(self, project, spider_name, **spider_args):
+    def schedule(self, project, spider_name, priority=0.0, **spider_args):
         q = self.queues[project]
-        q.add(spider_name, **spider_args)
+        # priority passed as kw for compat w/ custom queue. TODO use pos in 1.4
+        q.add(spider_name, priority=priority, **spider_args)
 
     def list_projects(self):
         return self.queues.keys()

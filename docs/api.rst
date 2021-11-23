@@ -16,6 +16,10 @@ Example request::
 
     curl http://localhost:6800/daemonstatus.json
 
+If basic authentication is enabled::
+
+    curl -u yourusername:yourpassword http://localhost:6800/daemonstatus.json
+
 Example response::
 
     { "status": "ok", "running": "0", "pending": "0", "finished": "0", "node_name": "node-name" }
@@ -63,6 +67,7 @@ Schedule a spider run (also known as a job), returning the job id.
   * ``spider`` (string, required) - the spider name
   * ``setting`` (string, optional) - a Scrapy setting to use when running the spider
   * ``jobid`` (string, optional) - a job id used to identify the job, overrides the default generated UUID
+  * ``priority`` (float, optional) - priority for this project's spider queue — 0 by default
   * ``_version`` (string, optional) - the version of the project to use
   * any other parameter is passed as spider argument
 

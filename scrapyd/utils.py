@@ -10,6 +10,7 @@ from twisted.web import resource
 
 from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.config import Config
+from scrapy.utils.misc import load_object
 
 
 class JsonResource(resource.Resource):
@@ -63,18 +64,14 @@ def get_spider_queues(config):
     return d
 
 def get_project_list(config):
-    """Get list of projects by inspecting the eggs dir and the ones defined in
+    """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
-    eggs_dir = config.get('eggs_dir', 'eggs')
-    if os.path.exists(eggs_dir):
-        projects = os.listdir(eggs_dir)
-    else:
-        projects = []
-    try:
-        projects += [x[0] for x in config.cp.items('settings')]
-    except NoSectionError:
-        pass
+    eggstorage = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstoragecls = load_object(eggstorage)
+    eggstorage = eggstoragecls(config)
+    projects = eggstorage.list_projects()
+    projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects
 
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
