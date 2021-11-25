@@ -54,16 +54,14 @@ class TestEndpoint:
     def test_spider_list_no_project(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin("listspiders.json"))
         assert resp.status_code == 200
-        # TODO scrapyd should return status 400 if no project specified
         data = resp.json()
         assert data['status'] == 'error'
-        assert data['message'] == "'project'"
 
     def test_spider_list_project_no_egg(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin('listprojects.json'))
         data = resp.json()
         assert resp.status_code == 200
-        assert data['projects'] == []
+        assert data['status'] == 'ok'
 
     def test_addversion_and_delversion(self, mock_scrapyd, quotesbot_egg):
         resp = self._deploy(mock_scrapyd, quotesbot_egg)
@@ -89,22 +87,3 @@ class TestEndpoint:
         }
         resp = requests.post(url, data=data, files=files)
         return resp
-
-    def test_addversion_and_schedule(self, mock_scrapyd, quotesbot_egg):
-        deploy_response = self._deploy(mock_scrapyd, quotesbot_egg)
-        assert deploy_response.status_code == 200
-        schedule_url = mock_scrapyd.urljoin('schedule.json')
-        data = {
-            'spider': 'toscrape-css',
-            'project': 'quotesbot',
-            # Spider making request to scrapyD root url
-            # TODO add some mock website later, for now we just want
-            # to make sure spider is launched properly, not important
-            # if it collects any items or not
-            'start_url': mock_scrapyd.url
-        }
-        schedule_res = requests.post(schedule_url, data=data)
-        assert schedule_res.status_code == 200
-        data = schedule_res.json()
-        assert 'jobid' in data
-        assert data['status'] == 'ok'
