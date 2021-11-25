@@ -35,7 +35,7 @@ def create_wrapped_resource(webcls, config, app):
         return resource
 
 
-def application(config):
+def application(config) -> Application:
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)
     bind_address = config.get('bind_address', '127.0.0.1')
