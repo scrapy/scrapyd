@@ -1,23 +1,35 @@
+import functools
 import re
-from copy import copy
 import traceback
 import uuid
+from copy import copy
+from io import BytesIO
 
+from twisted.python import log
 from twisted.web.error import Error
 from twisted.web.http import Request
 
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
-
-from twisted.python import log
-
-from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from .utils import get_spider_list, JsonResource, UtilsCache, \
+    native_stringify_dict
 
 
-def safe_name(name):
-    return re.sub('[^A-Za-z0-9.]+', '-', name)
+def with_safe_project_name(func):
+    @functools.wraps(func)
+    def wrapper(resource, txrequest):
+        project_name = txrequest.args.get(b'project', [None])[0]
+        msg = "'Project' name is required and must be valid name allowed by setup.py"
+        msg += f'Project name "{project_name}" is not valid'
+        if not project_name:
+            raise Error(code=400, message=msg.encode())
+
+        project_name = project_name.decode()
+
+        allowed_name = re.sub('[^A-Za-z0-9.]+', '-', project_name)
+        if project_name != allowed_name:
+            raise Error(code=400, message=msg.encode())
+        return func(resource, txrequest, project_name)
+
+    return wrapper
 
 
 class WsResource(JsonResource):
@@ -31,12 +43,14 @@ class WsResource(JsonResource):
             return JsonResource.render(self, txrequest).encode('utf-8')
         except Exception as e:
             if isinstance(e, Error):
-                txrequest.setResponseCode(e.args[0], e.args[1])
+                txrequest.setResponseCode(e.args[0])
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
-            r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
+            r = {"node_name": self.root.nodename,
+                 "status": "error", "message": str(e)}
             return self.render_object(r, txrequest).encode('utf-8')
+
 
 class DaemonStatus(WsResource):
 
@@ -45,7 +59,8 @@ class DaemonStatus(WsResource):
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
 
-        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
+        return {"node_name": self.root.nodename, "status": "ok",
+                "pending": pending, "running": running, "finished": finished}
 
 
 class Schedule(WsResource):
@@ -61,19 +76,22 @@ class Schedule(WsResource):
         priority = float(args.pop('priority', 0))
         spiders = get_spider_list(project, version=version)
         if not spider in spiders:
-            return {"status": "error", "message": "spider '%s' not found" % spider}
+            return {"status": "error",
+                    "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
         args['_job'] = jobid
-        self.root.scheduler.schedule(project, spider, priority=priority, **args)
+        self.root.scheduler.schedule(
+            project, spider, priority=priority, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
+
 
 class Cancel(WsResource):
 
     def render_POST(self, txrequest):
         args = dict((k, v[0])
                     for k, v in native_stringify_dict(copy(txrequest.args),
-                                    keys_only=False).items())
+                                                      keys_only=False).items())
         project = args['project']
         jobid = args['job']
         signal = args.get('signal', 'TERM')
@@ -87,50 +105,58 @@ class Cancel(WsResource):
             if s.project == project and s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
-        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
+        return {"node_name": self.root.nodename, "status": "ok",
+                "prevstate": prevstate}
+
 
 class AddVersion(WsResource):
 
-    def render_POST(self, txrequest):
+    @with_safe_project_name
+    def render_POST(self, txrequest, project):
         eggf = BytesIO(txrequest.args.pop(b'egg')[0])
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
         version = args['version'][0]
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
-        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
-            "spiders": len(spiders)}
+        return {"node_name": self.root.nodename, "status": "ok",
+                "project": project, "version": version,
+                "spiders": len(spiders)}
+
 
 class ListProjects(WsResource):
 
     def render_GET(self, txrequest):
         projects = list(self.root.scheduler.list_projects())
-        return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
+        return {"node_name": self.root.nodename, "status": "ok",
+                "projects": projects}
+
 
 class ListVersions(WsResource):
-
-    def render_GET(self, txrequest):
-        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
+    @with_safe_project_name
+    def render_GET(self, txrequest, project):
         versions = self.root.eggstorage.list(project)
-        return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
+        return {"node_name": self.root.nodename, "status": "ok",
+                "versions": versions}
+
 
 class ListSpiders(WsResource):
 
-    def render_GET(self, txrequest):
+    @with_safe_project_name
+    def render_GET(self, txrequest, project):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
         version = args.get('_version', [''])[0]
-        spiders = get_spider_list(project, runner=self.root.runner, version=version)
-        return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
+        spiders = get_spider_list(
+            project, runner=self.root.runner, version=version)
+        return {"node_name": self.root.nodename, "status": "ok",
+                "spiders": spiders}
+
 
 class ListJobs(WsResource):
 
-    def render_GET(self, txrequest):
-        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args.get('project', [None])[0]
+    @with_safe_project_name
+    def render_GET(self, txrequest, project):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
         pending = [
@@ -158,14 +184,11 @@ class ListJobs(WsResource):
         return {"node_name": self.root.nodename, "status": "ok",
                 "pending": pending, "running": running, "finished": finished}
 
+
 class DeleteProject(WsResource):
 
-    def render_POST(self, txrequest):
-        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
-        safe_project_name = safe_name(project)
-        if safe_project_name != project:
-            raise Error(400)
+    @with_safe_project_name
+    def render_POST(self, txrequest, project):
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
@@ -174,11 +197,12 @@ class DeleteProject(WsResource):
         self.root.eggstorage.delete(project, version)
         self.root.update_projects()
 
+
 class DeleteVersion(DeleteProject):
 
-    def render_POST(self, txrequest):
+    @with_safe_project_name
+    def render_POST(self, txrequest, project):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
         version = args['version'][0]
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
