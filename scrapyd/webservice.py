@@ -1,6 +1,11 @@
+import re
 from copy import copy
 import traceback
 import uuid
+
+from twisted.web.error import Error
+from twisted.web.http import Request
+
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -10,16 +15,23 @@ from twisted.python import log
 
 from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
 
+
+def safe_name(name):
+    return re.sub('[^A-Za-z0-9.]+', '-', name)
+
+
 class WsResource(JsonResource):
 
     def __init__(self, root):
         JsonResource.__init__(self)
         self.root = root
 
-    def render(self, txrequest):
+    def render(self, txrequest: Request):
         try:
             return JsonResource.render(self, txrequest).encode('utf-8')
         except Exception as e:
+            if isinstance(e, Error):
+                txrequest.setResponseCode(e.args[0], e.args[1])
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
@@ -151,6 +163,9 @@ class DeleteProject(WsResource):
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
+        safe_project_name = safe_name(project)
+        if safe_project_name != project:
+            raise Error(400)
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}

@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pytest
+from twisted.web.error import Error
+
 from scrapyd.interfaces import IEggStorage
 
 
@@ -63,6 +66,16 @@ class TestWebservice:
         assert storage.get('quotesbot')
         no_egg = storage.get('quotesbot')
         assert no_egg[0] is None
+
+    def test_delete_project_bad_project_name(self, txrequest, site_with_egg):
+        endpoint = b'delproject.json'
+        txrequest.args = {
+            b'project': [b'/etc/hosts/'],
+            b'version': [b'0.1']
+        }
+        with pytest.raises(Error) as e:
+            site_with_egg.children[endpoint].render_POST(txrequest)
+            assert e.args[0] == 400
 
     def test_addversion(self, txrequest, site_no_egg):
         endpoint = b'addversion.json'
