@@ -26,6 +26,15 @@ class TestWebservice:
         assert content['versions'] == ['0_1']
         assert content['status'] == 'ok'
 
+    def test_list_projects(self, txrequest, site_with_egg):
+        txrequest.args = {
+            b'project': [b'quotesbot'],
+            b'spider': [b'toscrape-css']
+        }
+        endpoint = b'listprojects.json'
+        content = site_with_egg.children[endpoint].render_GET(txrequest)
+        assert content['projects'] == ['quotesbot']
+
     def test_delete_version(self, txrequest, site_with_egg):
         endpoint = b'delversion.json'
         txrequest.args = {
@@ -86,7 +95,8 @@ class TestWebservice:
         (b'delproject.json', False, 'render_POST'),
         (b'delversion.json', False, 'render_POST'),
         (b'listspiders.json', False, 'render_GET'),
-        (b'listjobs.json', False, 'render_GET')
+        (b'listjobs.json', False, 'render_GET'),
+        (b'listprojects.json', False, 'render_GET')
     ])
     def test_bad_project_names(self, txrequest, site_no_egg,
                                endpoint, attach_egg, method):

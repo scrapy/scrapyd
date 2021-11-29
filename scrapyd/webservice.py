@@ -17,7 +17,7 @@ def with_safe_project_name(func):
     @functools.wraps(func)
     def wrapper(resource, txrequest):
         project_name = txrequest.args.get(b'project', [None])[0]
-        msg = "'Project' name is required and must be valid name allowed by setup.py"
+        msg = "'Project' name is required and must not contain illegal characters. "
         msg += f'Project name "{project_name}" is not valid'
         if not project_name:
             raise Error(code=400, message=msg.encode())
@@ -126,8 +126,8 @@ class AddVersion(WsResource):
 
 
 class ListProjects(WsResource):
-
-    def render_GET(self, txrequest):
+    @with_safe_project_name
+    def render_GET(self, txrequest, project):
         projects = list(self.root.scheduler.list_projects())
         return {"node_name": self.root.nodename, "status": "ok",
                 "projects": projects}
