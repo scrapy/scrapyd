@@ -16,7 +16,7 @@ from .utils import get_spider_list, JsonResource, UtilsCache, \
 def with_safe_project_name(func):
     @functools.wraps(func)
     def wrapper(resource, txrequest):
-        project_name = txrequest.args.get(b'project', [None])[0]
+        project_name = txrequest.args.pop(b'project', [None])[0]
         msg = "'Project' name is required and must not contain illegal characters. "
         msg += f'Project name "{project_name}" is not valid'
         if not project_name:
@@ -65,12 +65,12 @@ class DaemonStatus(WsResource):
 
 class Schedule(WsResource):
 
-    def render_POST(self, txrequest):
+    @with_safe_project_name
+    def render_POST(self, txrequest, project):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         settings = args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
         args = dict((k, v[0]) for k, v in args.items())
-        project = args.pop('project')
         spider = args.pop('spider')
         version = args.get('_version', '')
         priority = float(args.pop('priority', 0))

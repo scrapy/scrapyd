@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from twisted.web.error import Error
@@ -89,6 +90,31 @@ class TestWebservice:
         assert storage.get('quotesbot')
         no_egg = storage.get('quotesbot')
         assert no_egg[0] == '0_1'
+
+    def test_schedule(self, txrequest, site_with_egg):
+        endpoint = b'schedule.json'
+        txrequest.args = {
+            b'project': [b'quotesbot'],
+            b'spider': [b'toscrape-css']
+        }
+
+        content = site_with_egg.children[endpoint].render_POST(txrequest)
+        assert site_with_egg.scheduler.calls == [['quotesbot', 'toscrape-css']]
+        assert content['status'] == 'ok'
+        assert 'jobid' in content
+
+    def test_schedule_bad_request(self, txrequest, site_with_egg):
+        endpoint = b'schedule.json'
+        txrequest.args = {
+            b'project': [b'/etc/host/quotesbot'],
+            b'spider': [b'toscrape-css']
+        }
+
+        with pytest.raises(Error) as e:
+            site_with_egg.children[endpoint].render_POST(txrequest)
+            assert e.args[0] == 400
+
+        assert site_with_egg.scheduler.calls == []
 
     @pytest.mark.parametrize('endpoint,attach_egg,method', [
         (b'addversion.json', True, 'render_POST'),
