@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import Mock
+from unittest import mock
 
 import pytest
 from twisted.web.error import Error
@@ -7,14 +7,27 @@ from twisted.web.error import Error
 from scrapyd.interfaces import IEggStorage
 
 
+def fake_list_spiders(*args, **kwargs):
+    return []
+
+
+def fake_list_spiders_other(*args, **kwarsg):
+    return ['quotesbot', 'toscrape-css']
+
+
 class TestWebservice:
-    def test_list_spiders(self, txrequest, site_with_egg):
+    @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
+    def test_list_spiders(self, txrequest, site_no_egg):
+        # TODO Test with actual egg requires to write better mock runner
+        # scrapyd webservice calls subprocess with command
+        # "python -m scrapyd.runner list", need to write code to mock this
+        # and test it
         txrequest.args = {
             b'project': [b'quotesbot']
         }
         endpoint = b'listspiders.json'
-        content = site_with_egg.children[endpoint].render_GET(txrequest)
-        assert content['spiders'] == ['toscrape-css', 'toscrape-xpath']
+        content = site_no_egg.children[endpoint].render_GET(txrequest)
+        assert content['spiders'] == []
         assert content['status'] == 'ok'
 
     def test_list_versions(self, txrequest, site_with_egg):
@@ -70,6 +83,7 @@ class TestWebservice:
         no_egg = storage.get('quotesbot')
         assert no_egg[0] is None
 
+    @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
     def test_addversion(self, txrequest, site_no_egg):
         endpoint = b'addversion.json'
         txrequest.args = {
@@ -91,6 +105,8 @@ class TestWebservice:
         no_egg = storage.get('quotesbot')
         assert no_egg[0] == '0_1'
 
+    @mock.patch('scrapyd.webservice.get_spider_list',
+                new=fake_list_spiders_other)
     def test_schedule(self, txrequest, site_with_egg):
         endpoint = b'schedule.json'
         txrequest.args = {

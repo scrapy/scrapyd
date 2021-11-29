@@ -47,12 +47,13 @@ def txrequest():
     return Request(http_channel)
 
 
-@pytest.fixture
-def site_no_egg(request):
+def common_app_fixture(request):
     config = Config()
+
     app = application(config)
     project, version = 'quotesbot', '0.1'
     storage = app.getComponent(IEggStorage)
+    app.setComponent(ISpiderScheduler, FakeScheduler(config))
 
     def delete_egg():
         # There is no egg initially but something can place an egg
@@ -60,22 +61,22 @@ def site_no_egg(request):
         delete_eggs(storage, project, version, config)
 
     request.addfinalizer(delete_egg)
-    return Root(config, app)
+    return Root(config, app), storage
+
+
+@pytest.fixture
+def site_no_egg(request):
+    root, storage = common_app_fixture(request)
+    return root
 
 
 @pytest.fixture
 def site_with_egg(request):
-    config = Config()
-    app = application(config)
-    storage = app.getComponent(IEggStorage)
-    app.setComponent(ISpiderScheduler, FakeScheduler(config))
+    root, storage = common_app_fixture(request)
+
     egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
     project, version = 'quotesbot', '0.1'
     with open(egg_path, 'rb') as f:
         storage.put(f, project, version)
 
-    def delete_egg():
-        delete_eggs(storage, project, version, config)
-
-    request.addfinalizer(delete_egg)
-    return Root(config, app)
+    return root
