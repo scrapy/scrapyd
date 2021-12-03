@@ -44,4 +44,4 @@ class EnvironmentTest(unittest.TestCase):
         environ = Environment(config, initenv={})
         env = environ.get_environment(msg, slot)
         self.assertNotIn('SCRAPY_FEED_URI', env)
-        self.assertNotIn('LOG_FILE', env)
+        self.assertNotIn('SCRAPY_LOG_FILE', env)
