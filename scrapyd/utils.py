@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
 import six
@@ -154,3 +155,9 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
         return text.encode(encoding, errors)
     else:
         return text.decode(encoding, errors)
+
+
+def check_disallowed_characters(text):
+    # Anything that is not in this list: A-Za-z0-9.\s_- is banned
+    disallowed_characters_regex = r'[^\"A-Za-z0-9.\s_-]+'
+    return not re.search(disallowed_characters_regex, text)

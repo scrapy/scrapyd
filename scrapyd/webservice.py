@@ -10,23 +10,21 @@ from twisted.web.error import Error
 from twisted.web.http import Request
 
 from .utils import get_spider_list, JsonResource, UtilsCache, \
-    native_stringify_dict
+    native_stringify_dict, check_disallowed_characters
 
 
 def with_safe_project_name(func):
     @functools.wraps(func)
     def wrapper(resource, txrequest):
-        project_name = txrequest.args.pop(b'project', [None])[0]
-        msg = "'Project' name is required and must not contain illegal characters. "
-        msg += f'Project name "{project_name}" is not valid'
+        project_name = txrequest.args.pop(b'project', [b''])[0].decode()
+        msg = "Project name is required and must be a valid string. "
+        msg += f"Project name '{project_name}' is not a valid project name."
+        msg = msg.encode()
         if not project_name:
-            raise Error(code=400, message=msg.encode())
+            raise Error(code=400, message=msg)
 
-        project_name = project_name.decode()
-
-        allowed_name = re.sub('[^A-Za-z0-9.]+', '-', project_name)
-        if project_name != allowed_name:
-            raise Error(code=400, message=msg.encode())
+        if not check_disallowed_characters(project_name):
+            raise Error(code=400, message=msg)
         return func(resource, txrequest, project_name)
 
     return wrapper
