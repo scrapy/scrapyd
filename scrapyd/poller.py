@@ -11,11 +11,11 @@ class QueuePoller(object):
     def __init__(self, config):
         self.config = config
         self.update_projects()
-        self.dq = DeferredQueue(size=1)
+        self.dq = DeferredQueue()
 
     @inlineCallbacks
     def poll(self):
-        if self.dq.pending:
+        if not self.dq.waiting:
             return
         for p, q in iteritems(self.queues):
             c = yield maybeDeferred(q.count)

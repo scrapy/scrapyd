@@ -46,13 +46,14 @@ class Schedule(WsResource):
         project = args.pop('project')
         spider = args.pop('spider')
         version = args.get('_version', '')
+        priority = float(args.pop('priority', 0))
         spiders = get_spider_list(project, version=version)
         if not spider in spiders:
             return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
         args['_job'] = jobid
-        self.root.scheduler.schedule(project, spider, **args)
+        self.root.scheduler.schedule(project, spider, priority=priority, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
 class Cancel(WsResource):
@@ -71,7 +72,7 @@ class Cancel(WsResource):
             prevstate = "pending"
         spiders = self.root.launcher.processes.values()
         for s in spiders:
-            if s.job == jobid:
+            if s.project == project and s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
@@ -79,9 +80,10 @@ class Cancel(WsResource):
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
-        project = txrequest.args[b'project'][0].decode('utf-8')
-        version = txrequest.args[b'version'][0].decode('utf-8')
-        eggf = BytesIO(txrequest.args[b'egg'][0])
+        eggf = BytesIO(txrequest.args.pop(b'egg')[0])
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args['project'][0]
+        version = args['version'][0]
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
@@ -120,13 +122,13 @@ class ListJobs(WsResource):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
         pending = [
-            {"project": project, "spider": x["name"], "id": x["_job"]}
+            {"project": qname, "spider": x["name"], "id": x["_job"]}
             for qname in (queues if project is None else [project])
             for x in queues[qname].list()
         ]
         running = [
             {
-                "project": project,
+                "project": s.project,
                 "spider": s.spider,
                 "id": s.job, "pid": s.pid,
                 "start_time": str(s.start_time),
@@ -134,7 +136,7 @@ class ListJobs(WsResource):
         ]
         finished = [
             {
-                "project": project,
+                "project": s.project,
                 "spider": s.spider, "id": s.job,
                 "start_time": str(s.start_time),
                 "end_time": str(s.end_time)
