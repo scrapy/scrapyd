@@ -5,14 +5,20 @@ import tempfile
 from contextlib import contextmanager
 
 from scrapyd import Config
-from scrapyd.eggstorage import FilesystemEggStorage
+from scrapy.utils.misc import load_object
 from scrapyd.eggutils import activate_egg
 
 
 @contextmanager
 def project_environment(project):
-    eggstorage = FilesystemEggStorage(Config())
     eggversion = os.environ.get('SCRAPY_EGG_VERSION', None)
+    config = Config()
+    eggstorage_path = config.get(
+        'eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage'
+    )
+    eggstorage_cls = load_object(eggstorage_path)
+    eggstorage = eggstorage_cls(config)
+
     version, eggfile = eggstorage.get(project, eggversion)
     if eggfile:
         prefix = '%s-%s-' % (project, version)
