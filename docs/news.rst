@@ -14,6 +14,8 @@ Added
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
 - Python 3.7, 3.8 and 3.9 support
+- Configuration option for job storage class
+- Configuration option for egg storage class
 
 Removed
 ~~~~~~~
