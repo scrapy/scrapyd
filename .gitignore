@@ -7,6 +7,6 @@ docs/_build
 venv
 dist
 build
+.vscode
+/dbs/
 .idea
-scrapyd
-
