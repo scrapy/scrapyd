@@ -20,7 +20,7 @@ class Launcher(Service):
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
         self.app = app
-        
+
 
     def startService(self):
         for slot in range(self.max_proc):
@@ -76,7 +76,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.end_time = None
         self.env = env
         self.logfile = env.get('LOG_FILE')
-        self.itemsfile = env.get('SCRAPY_FEED_URI')
+        self.itemsfile = env.get('FEED_URI')
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):

@@ -28,13 +28,13 @@ class Environment(object):
         env['SPIDER'] = message['_spider']
         env['JOB'] = message['_job']
         if '_version' in message:
-            env['SCRAPY_EGG_VERSION'] = message['_version']
+            env['EGG_VERSION'] = message['_version']
         if project in self.settings:
             env['SCRAPY_SETTINGS_MODULE'] = self.settings[project]
         if self.logs_dir:
             env['LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
-            env['SCRAPY_FEED_URI'] = self._get_feed_uri(message, 'jl')
+            env['FEED_URI'] = self._get_feed_uri(message, 'jl')
         return env
 
     def _get_feed_uri(self, message, ext):

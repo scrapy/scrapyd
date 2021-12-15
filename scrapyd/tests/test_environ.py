@@ -30,9 +30,9 @@ class EnvironmentTest(unittest.TestCase):
         self.assertEqual(env['SPIDER'], 'myspider')
         self.assertEqual(env['JOB'], 'ID')
         self.assert_(env['LOG_FILE'].endswith(os.path.join('mybot', 'myspider', 'ID.log')))
-        if env.get('SCRAPY_FEED_URI'):  # Not compulsory
-            self.assert_(env['SCRAPY_FEED_URI'].startswith('file://{}'.format(os.getcwd())))
-            self.assert_(env['SCRAPY_FEED_URI'].endswith(os.path.join('mybot', 'myspider', 'ID.jl')))
+        if env.get('FEED_URI'):  # Not compulsory
+            self.assert_(env['FEED_URI'].startswith('file://{}'.format(os.getcwd())))
+            self.assert_(env['FEED_URI'].endswith(os.path.join('mybot', 'myspider', 'ID.jl')))
         self.assertNotIn('SCRAPY_SETTINGS_MODULE', env)
 
     def test_get_environment_with_no_items_dir(self):
@@ -43,5 +43,5 @@ class EnvironmentTest(unittest.TestCase):
         slot = 3
         environ = Environment(config, initenv={})
         env = environ.get_environment(msg, slot)
-        self.assertNotIn('SCRAPY_FEED_URI', env)
-        self.assertNotIn('SCRAPY_LOG_FILE', env)
+        self.assertNotIn('FEED_URI', env)
+        self.assertNotIn('LOG_FILE', env)

@@ -12,7 +12,7 @@ from scrapyd.eggutils import activate_egg
 def project_environment(project):
     app = get_application()
     eggstorage = app.getComponent(IEggStorage)
-    eggversion = os.environ.get('SCRAPY_EGG_VERSION', None)
+    eggversion = os.environ.get('EGG_VERSION', None)
     version, eggfile = eggstorage.get(project, eggversion)
     if eggfile:
         prefix = '%s-%s-' % (project, version)
