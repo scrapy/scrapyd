@@ -1,10 +1,10 @@
-boto3==1.14.39
-datadog==0.38.0
+boto3==1.20.24
+datadog==0.43.0
 demjson==2.2.4
-fontTools==4.13.0
-mysqlclient==2.0.1
-psycopg2-binary==2.8.5
-itemloaders==1.0.2
+fontTools==4.28.3
+mysqlclient==2.1.0
+psycopg2-binary==2.9.2
+itemloaders==1.0.4
 git+https://github.com/cazana/scrapyd.git
-Scrapy==2.3.0
+Scrapy==2.5.1
 scrapy-proxies==0.4
