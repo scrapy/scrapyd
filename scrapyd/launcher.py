@@ -40,10 +40,8 @@ class Launcher(Service):
         args += get_crawl_args(msg)
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
-        args += ['--logfile={}'.format(env['LOG_FILE'])]
         env = native_stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
