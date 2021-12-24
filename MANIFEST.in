@@ -10,7 +10,6 @@ recursive-include bin *
 prune docs/_build
 recursive-include extras *
 recursive-exclude debian *
-exclude .bumpversion.cfg
 exclude .coveragerc
 exclude *.buildbot
 recursive-include reqs *.txt
