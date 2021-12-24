@@ -20,7 +20,7 @@ from subprocess import Popen
 
 from scrapy.utils.test import get_pythonpath
 from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache
+from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache, check_disallowed_characters
 from scrapyd import get_application
 
 def get_pythonpath_scrapyd():
@@ -128,3 +128,17 @@ class GetSpiderListTest(unittest.TestCase):
             r'Exception: This should break the `scrapy list` command$'
         )
         self.assertRegexpMatches(tb, tb_regex)
+
+
+@pytest.mark.parametrize('project_name, allowed', [
+    ('/hello/world', False),
+    ('@hello/world', False),
+    ('hello world', True),
+    ('hello_world', True),
+    ('hello-world', True),
+    ('C:\\hello\\world', False),
+    ("chrząścz", False),
+    ('"hello world"', True)
+])
+def test_disallowed_chars(project_name, allowed):
+    assert check_disallowed_characters(project_name) == allowed

@@ -118,3 +118,44 @@ class TestWebservice:
         assert site_with_egg.scheduler.calls == [['quotesbot', 'toscrape-css']]
         assert content['status'] == 'ok'
         assert 'jobid' in content
+
+    def test_schedule_bad_request(self, txrequest, site_with_egg):
+        endpoint = b'schedule.json'
+        txrequest.args = {
+            b'project': [b'/etc/host/quotesbot'],
+            b'spider': [b'toscrape-css']
+        }
+
+        with pytest.raises(Error) as e:
+            site_with_egg.children[endpoint].render_POST(txrequest)
+            assert e.args[0] == 400
+
+        assert site_with_egg.scheduler.calls == []
+
+    @pytest.mark.parametrize('endpoint,attach_egg,method', [
+        (b'addversion.json', True, 'render_POST'),
+        (b'delproject.json', False, 'render_POST'),
+        (b'delversion.json', False, 'render_POST'),
+        (b'listspiders.json', False, 'render_GET'),
+        (b'listjobs.json', False, 'render_GET'),
+        (b'listprojects.json', False, 'render_GET')
+    ])
+    def test_bad_project_names(self, txrequest, site_no_egg,
+                               endpoint, attach_egg, method):
+        txrequest.args = {
+            b'project': [b'/home/pawel/hosts'],
+            b'version': [b'0.1'],
+        }
+        egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
+        if attach_egg:
+            with open(egg_path, 'rb') as f:
+                txrequest.args[b'egg'] = [f.read()]
+
+        with pytest.raises(Error) as e:
+            resource = site_no_egg.children[endpoint]
+            getattr(resource, method)(txrequest)
+            assert e.args[0] == 400
+
+        storage = site_no_egg.app.getComponent(IEggStorage)
+        egg = storage.get('quotesbot')
+        assert egg[0] is None

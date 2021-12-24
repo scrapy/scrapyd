@@ -61,15 +61,16 @@ class TestEndpoint:
 
     def test_spider_list_no_project(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin("listspiders.json"))
-        assert resp.status_code == 200
+        assert resp.status_code == 400
         data = resp.json()
         assert data['status'] == 'error'
+        assert re.search('is required', data['message'])
 
     def test_spider_list_project_no_egg(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin('listprojects.json'))
         data = resp.json()
-        assert resp.status_code == 200
-        assert data['status'] == 'ok'
+        assert resp.status_code == 400
+        assert data['status'] == 'error'
 
     def test_addversion_and_delversion(self, mock_scrapyd, quotesbot_egg):
         resp = self._deploy(mock_scrapyd, quotesbot_egg)
