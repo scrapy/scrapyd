@@ -1,7 +1,7 @@
+from configparser import ConfigParser, NoSectionError, NoOptionError
 import glob
 import io
 from pkgutil import get_data
-from six.moves.configparser import SafeConfigParser, NoSectionError, NoOptionError
 from os.path import expanduser
 
 from scrapy.utils.conf import closest_scrapy_cfg
@@ -16,17 +16,17 @@ class Config(object):
         if values is None:
             sources = self._getsources()
             default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
-            self.cp = SafeConfigParser()
-            self.cp.readfp(io.StringIO(default_config))
+            self.cp = ConfigParser()
+            self.cp.read_string(default_config)
             sources.extend(extra_sources)
             for fname in sources:
                 try:
                     with io.open(fname) as fp:
-                        self.cp.readfp(fp)
+                        self.cp.read_file(fp)
                 except (IOError, OSError):
                     pass
         else:
-            self.cp = SafeConfigParser(values)
+            self.cp = ConfigParser(values)
             self.cp.add_section(self.SECTION)
 
     def _getsources(self):
