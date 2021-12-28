@@ -5,32 +5,35 @@ Release notes
 
 1.3.0
 -----
+*Release date: ?*
 
 Added
 ~~~~~
 
+- support for HTTP authentication in scrapyd server
 - Jobs website shortcut to cancel a job using the cancel.json webservice.
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
 - Python 3.7, 3.8 and 3.9, 3.10 support
-- scrapyd can now run with asyncioreactor, changes in runner
-
 - Configuration option for job storage class
 - Configuration option for egg storage class
-- support for HTTP authentication in scrapyd server
-- replaced deprecated SafeConfigParser with ConfigParser
-- much improved test coverage
 - improved HTTP headers in webservice
+- improved test coverage
 
 Removed
 ~~~~~~~
 
 - Python 2 support
-- Python 
+- Python 3.6 support
 - Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
 - Python 3.3 support (although never officially supported)
 - Python 3.4 support
 - Pypy 2 support
+
+Fixed
+~~~~~
+- ScrapyD now respects Scrapy TWISTED_REACTOR setting
+- replaced deprecated SafeConfigParser with ConfigParser
 
 1.2.1
 -----
