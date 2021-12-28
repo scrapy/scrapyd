@@ -14,7 +14,7 @@ Added
 - Jobs website shortcut to cancel a job using the cancel.json webservice.
 - Make project argument to listjobs.json optional,
   so that we can easily query for all jobs.
-- Python 3.7, 3.8 and 3.9, 3.10 support
+- Python 3.7, 3.8, 3.9, 3.10 support
 - Configuration option for job storage class
 - Configuration option for egg storage class
 - improved HTTP headers in webservice
@@ -24,11 +24,11 @@ Removed
 ~~~~~~~
 
 - Python 2 support
-- Doc for ubunut installs removed. Scrapinghub no longer maintains ubuntu repo.
 - Python 3.3 support (although never officially supported)
 - Python 3.4 support
 - Python 3.5 support
 - Pypy 2 support
+- Doc for ubuntu installs, Zyte no longer maintains ubuntu repo.
 
 Fixed
 ~~~~~
