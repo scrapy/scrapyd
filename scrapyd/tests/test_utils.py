@@ -127,4 +127,4 @@ class GetSpiderListTest(unittest.TestCase):
         tb_regex = (
             r'Exception: This should break the `scrapy list` command$'
         )
-        self.assertRegexpMatches(tb, tb_regex)
+        self.assertRegex(tb, tb_regex)
