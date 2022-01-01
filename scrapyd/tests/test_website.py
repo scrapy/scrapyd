@@ -32,7 +32,11 @@ class TestWebsite:
         }
         headers = txrequest.responseHeaders.getAllRawHeaders()
         assert dict(headers) == expect_headers
-        initial = '<html xmlns:t="http://twistedmatrix.com/ns/twisted.web.template/0.1">'
+        initial = '''<html>
+
+<head>
+    <title>Scrapyd</title>
+</head>'''
         assert content.decode().startswith(initial)
 
     def test_render_home(self, txrequest, scrapyd_site):
