@@ -28,7 +28,7 @@ class TestWebsite:
         content = scrapyd_site.children[b'jobs'].render_GET(txrequest)
         expect_headers = {
             b'Content-Type': [b'text/html; charset=utf-8'],
-            b'Content-Length': [b'643']
+            b'Content-Length': [b'1548']
         }
         headers = txrequest.responseHeaders.getAllRawHeaders()
         assert dict(headers) == expect_headers
