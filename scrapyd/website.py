@@ -76,4 +76,7 @@ class BaseView(resource.Resource):
 
     def render_GET(self, txrequest):
         # rendering view , a deffered result
-        return flattenString(txrequest,self.view).result
+        txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
+        response = flattenString(txrequest,self.view).result
+        txrequest.setHeader('Content-Length', str(len(str(response).encode('utf8'))))
+        return response

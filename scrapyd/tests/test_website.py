@@ -25,7 +25,7 @@ def scrapyd_site():
 
 class TestWebsite:
     def test_render_jobs(self, txrequest, scrapyd_site):
-        content = scrapyd_site.children[b'jobs'].render(txrequest)
+        content = scrapyd_site.children[b'jobs'].render_GET(txrequest)
         expect_headers = {
             b'Content-Type': [b'text/html; charset=utf-8'],
             b'Content-Length': [b'643']
