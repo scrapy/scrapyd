@@ -151,6 +151,8 @@ A twisted web resource that represents the interface to scrapyd.
 Scrapyd includes an interface with a website to provide simple monitoring
 and access to the application's webresources.
 This setting must provide the root class of the twisted web resource.
+you can add or change views in config file, `views` section.
+views are `twisted.web.template` Elements
 
 jobstorage
 -------

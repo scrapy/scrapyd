@@ -35,8 +35,7 @@ class TestWebsite:
         initial = '''<html>
 
 <head>
-    <title>Scrapyd</title>
-</head>'''
+    <title>Scrapyd</title>'''
         assert content.decode().startswith(initial)
 
     def test_render_home(self, txrequest, scrapyd_site):

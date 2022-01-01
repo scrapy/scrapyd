@@ -78,5 +78,6 @@ class BaseView(resource.Resource):
         # rendering view , a deffered result
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
         response = flattenString(txrequest,self.view).result
+        # reponse is deffered should get cnverted to string in order to calculate lenght 
         txrequest.setHeader('Content-Length', str(len(str(response).encode('utf8'))))
         return response
