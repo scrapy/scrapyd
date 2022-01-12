@@ -5,7 +5,7 @@ Release notes
 
 1.3.0
 -----
-*Release date: 2021-01-12*
+*Release date: 2022-01-12*
 
 Added
 ~~~~~
