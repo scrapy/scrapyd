@@ -27,13 +27,12 @@ setup_args = {
     'zip_safe': False,
     'classifiers': [
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',
@@ -47,7 +46,7 @@ setup_args = {
 if using_setuptools:
     setup_args['install_requires'] = [
         'Twisted>=8.0',
-        'Scrapy>=1.0',
+        'Scrapy>=2.0',
         'six',
         'enum-compat',
     ]
