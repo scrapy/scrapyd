@@ -13,7 +13,7 @@ def print_version():
 
 
 def main():
-    if len(argv) > 1 and argv[-1] in ['-v', '--version']:
+    if len(argv) > 1 and set(argv[1:]) & set(['-v', '--version']):
         print_version()
         return
     argv[1:1] = ['-n', '-y', join(dirname(scrapyd.__file__), 'txapp.py')]
