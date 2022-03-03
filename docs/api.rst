@@ -85,7 +85,9 @@ Example request passing a spider argument (``arg1``) and a setting
     $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider -d setting=DOWNLOAD_DELAY=2 -d arg1=val1
 
 .. note:: Spiders scheduled with scrapyd should allow for an arbitrary number of keyword arguments
-          as scrapyd sends internally generated spider arguments to the spider being scheduled
+          as scrapyd sends internally generated spider arguments to the spider being scheduled. When
+          a parameter is entered multiple times, only the first parameter value is sent to the spider
+          all the other values are silently ignored (this applies to all parameters except ``setting``).
 
 .. _cancel.json:
 
