@@ -20,7 +20,7 @@ from subprocess import Popen
 
 from scrapy.utils.test import get_pythonpath
 from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache
+from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache, sorted_versions
 from scrapyd import get_application
 
 def get_pythonpath_scrapyd():
@@ -128,3 +128,12 @@ class GetSpiderListTest(unittest.TestCase):
             r'Exception: This should break the `scrapy list` command$'
         )
         self.assertRegex(tb, tb_regex)
+
+
+@pytest.mark.parametrize("versions,expected", [
+    (['zzz', 'b', 'ddd', 'a', 'x'], ['a', 'b', 'ddd', 'x', 'zzz']),
+    (["10", "1", "9"], ["1", "9", "10"]),
+    (["2.11", "2.01", "2.9"], ["2.01", "2.9", "2.11"])
+])
+def test_sorted_versions(versions, expected):
+    assert sorted_versions(versions) == expected

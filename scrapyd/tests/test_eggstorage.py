@@ -1,14 +1,13 @@
 from io import BytesIO
-from zope.interface import implementer
+from unittest import mock
 
-from twisted.trial import unittest
-
-from zope.interface.verify import verifyObject
-
-from scrapyd.interfaces import IEggStorage
 from scrapyd.app import application
 from scrapyd.config import Config
 from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.interfaces import IEggStorage
+from twisted.trial import unittest
+from zope.interface import implementer
+from zope.interface.verify import verifyObject
 
 
 @implementer(IEggStorage)
@@ -52,6 +51,16 @@ class EggStorageTest(unittest.TestCase):
 
     def test_interface(self):
         verifyObject(IEggStorage, self.eggst)
+
+    @mock.patch('scrapyd.eggstorage.glob', new=lambda x: ['ddd', 'abc', 'bcaa'])
+    def test_list_hashes(self):
+        versions = self.eggst.list('any')
+        assert versions == ['abc', 'bcaa', 'ddd']
+
+    @mock.patch('scrapyd.eggstorage.glob', new=lambda x: ['9', '2', '200', '3', '4'])
+    def test_list_semantic_versions(self):
+        versions = self.eggst.list('any')
+        assert versions == ['2', '3', '4', '9', '200']
 
     def test_put_get_list_delete(self):
         self.eggst.put(BytesIO(b"egg01"), 'mybot', '01')

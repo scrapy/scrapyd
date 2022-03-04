@@ -47,7 +47,8 @@ if using_setuptools:
     setup_args['install_requires'] = [
         'Twisted>=17.9',
         'Scrapy>=1.2.0',
-        'six'
+        'six',
+        'packaging'
     ]
     setup_args['entry_points'] = {'console_scripts': [
         'scrapyd = scrapyd.scripts.scrapyd_run:main'

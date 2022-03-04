@@ -1,10 +1,10 @@
 import sys
+from packaging.version import Version, InvalidVersion
 import os
 from .sqlite import JsonSqliteDict
 from subprocess import Popen, PIPE
 import six
 from six import iteritems
-from six.moves.configparser import NoSectionError
 import json
 from twisted.web import resource
 
@@ -25,10 +25,13 @@ class JsonResource(resource.Resource):
         r = self.json_encoder.encode(obj) + "\n"
         txrequest.setHeader('Content-Type', 'application/json')
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
-        txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
+        txrequest.setHeader('Access-Control-Allow-Methods',
+                            'GET, POST, PATCH, PUT, DELETE')
+        txrequest.setHeader('Access-Control-Allow-Headers',
+                            ' X-Requested-With')
         txrequest.setHeader('Content-Length', str(len(r)))
         return r
+
 
 class UtilsCache:
     # array of project name that need to be invalided
@@ -52,6 +55,7 @@ class UtilsCache:
     def __setitem__(self, key, value):
         self.cache_manager[key] = value
 
+
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
     dbsdir = config.get('dbs_dir', 'dbs')
@@ -63,16 +67,19 @@ def get_spider_queues(config):
         d[project] = SqliteSpiderQueue(dbpath)
     return d
 
+
 def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
-    eggstorage = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstorage = config.get(
+        'eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
     eggstoragecls = load_object(eggstorage)
     eggstorage = eggstoragecls(config)
     projects = eggstorage.list_projects()
     projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects
+
 
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     """Return a (new) dict with unicode keys (and values when "keys_only" is
@@ -84,13 +91,15 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
         k = _to_native_str(k, encoding)
         if not keys_only:
             if isinstance(v, dict):
-                v = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
+                v = native_stringify_dict(
+                    v, encoding=encoding, keys_only=keys_only)
             elif isinstance(v, list):
                 v = [_to_native_str(e, encoding) for e in v]
             else:
                 v = _to_native_str(v, encoding)
         d[k] = v
     return d
+
 
 def get_crawl_args(message):
     """Return the command-line arguments to use for the scrapy crawl process
@@ -107,6 +116,7 @@ def get_crawl_args(message):
         args += ['-s']
         args += ['%s=%s' % (k, v)]
     return args
+
 
 def get_spider_list(project, runner=None, pythonpath=None, version=''):
     """Return the spider list from the given project, using the given runner"""
@@ -134,7 +144,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         raise RuntimeError(msg.encode('unicode_escape') if six.PY2 else msg)
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
-    tmp = out.decode('utf-8').splitlines();
+    tmp = out.decode('utf-8').splitlines()
     try:
         project_cache = get_spider_list.cache[project]
         project_cache[version] = tmp
@@ -154,3 +164,10 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
         return text.encode(encoding, errors)
     else:
         return text.decode(encoding, errors)
+
+
+def sorted_versions(versions):
+    try:
+        return sorted(versions, key=Version)
+    except InvalidVersion:
+        return sorted(versions)
