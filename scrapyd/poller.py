@@ -1,9 +1,9 @@
 from zope.interface import implementer
 from six import iteritems
 from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred, returnValue
-
 from .utils import get_spider_queues
 from .interfaces import IPoller
+
 
 @implementer(IPoller)
 class QueuePoller(object):

@@ -9,9 +9,10 @@ from twisted.python import log
 from scrapyd.utils import get_crawl_args, native_stringify_dict
 from scrapyd import __version__
 from .interfaces import IPoller, IEnvironment, IJobStorage
+from .orchestrator_client.api_interfaces.JobApi import JobApi
+
 
 class Launcher(Service):
-
     name = 'launcher'
 
     def __init__(self, config, app):
@@ -20,7 +21,6 @@ class Launcher(Service):
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
         self.app = app
-        
 
     def startService(self):
         for slot in range(self.max_proc):
@@ -42,13 +42,14 @@ class Launcher(Service):
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
         pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+                                   msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
 
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)
+
         process.end_time = datetime.now()
         self.finished.add(process)
         self._wait_for_project(slot)
@@ -62,6 +63,7 @@ class Launcher(Service):
                 cpus = 1
             max_proc = cpus * config.getint('max_proc_per_cpu', 4)
         return max_proc
+
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
@@ -77,6 +79,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.logfile = env.get('SCRAPY_LOG_FILE')
         self.itemsfile = env.get('SCRAPY_FEED_URI')
         self.deferred = defer.Deferred()
+        self.job_api = JobApi()
 
     def outReceived(self, data):
         log.msg(data.rstrip(), system="Launcher,%d/stdout" % self.pid)
@@ -86,14 +89,26 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
     def connectionMade(self):
         self.pid = self.transport.pid
+        try:
+            self.job_api.update(self.job, start_time=self.start_time, state="RUNNING")
+        except Exception as e:
+            log(str(e))
         self.log("Process started: ")
 
     def processEnded(self, status):
-        if isinstance(status.value, error.ProcessDone):
-            self.log("Process finished: ")
-        else:
-            self.log("Process died: exitstatus=%r " % status.value.exitCode)
-        self.deferred.callback(self)
+        """
+            Add update job state and mark it as finished or crashed, depending on it s final state
+        """
+        try:
+            if isinstance(status.value, error.ProcessDone):
+                self.log("Process finished: ")
+                self.job_api.update(self.job, state="FINISHED", end_time=datetime.now())
+            else:
+                self.log("Process died: exitstatus=%r " % status.value.exitCode)
+                self.job_api.update(self.job, state="CRASHED", end_time=datetime.now())
+            self.deferred.callback(self)
+        except Exception as e:
+            log.msg(str(e))
 
     def log(self, action):
         fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r log=%(log)r items=%(items)r'

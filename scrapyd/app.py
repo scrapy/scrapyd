@@ -1,6 +1,5 @@
 import sys
 
-from scrapy.utils.misc import load_object
 from twisted.application.service import Application
 from twisted.application.internet import TimerService, TCPServer
 from twisted.web import server
@@ -15,6 +14,7 @@ from .scheduler import SpiderScheduler
 from .poller import QueuePoller
 from .environ import Environment
 from .basicauth import PublicHTMLRealm, StringCredentialsChecker
+from .utils import establish_link_with_orchestrator
 
 
 def create_wrapped_resource(webcls, config, app):
@@ -73,5 +73,11 @@ def application(config):
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)
+
+    """
+        Scrapyd link to the orchestrator
+    """
+
+    establish_link_with_orchestrator(config)
 
     return app

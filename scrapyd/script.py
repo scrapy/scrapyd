@@ -15,7 +15,7 @@ from scrapyd import get_application
 from scrapyd.config import Config
 
 def _get_config():
-    datadir = os.path.join(project_data_dir(), 'scrapyd')
+    datadir = os.path.join(project_data_dir(), '')
     conf = {
         'eggs_dir': os.path.join(datadir, 'eggs'),
         'logs_dir': os.path.join(datadir, 'logs'),

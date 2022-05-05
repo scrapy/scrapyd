@@ -186,5 +186,5 @@ class SqliteFinishedJobs(object):
         q = "select project, spider, job, start_time, end_time from %s order by end_time desc" % \
             self.table
         return ((j[0],j[1],j[2],
-                datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"), 
+                datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"),
                 datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(q))
