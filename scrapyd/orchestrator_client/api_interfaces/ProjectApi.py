@@ -98,7 +98,7 @@ class ProjectApi:
 
             raise ex
 
-    def get_all_by_instance_id(self, instance=INSTANCE_ID):
+    def get_all_by_instance_id(self, instance):
         try:
             response = requests.request(
                 'GET',
