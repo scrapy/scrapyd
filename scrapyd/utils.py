@@ -264,8 +264,7 @@ def establish_link_with_orchestrator(config):
             scrapyd_instance = scrapyd_instance_api.get(instance_id)
             if scrapyd_instance == {}:
                 register_scrapyd_instance(config, scrapyd_instance_api)
-            else:
-                syncronize_orchestrator(config)
+            syncronize_orchestrator(config)
         except OrchestratorExceptionBase as e:
             log.msg(str(e))
 
