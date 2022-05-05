@@ -176,7 +176,7 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
         return text.decode(encoding, errors)
 
 
-def syncronize_orchestrator(config):
+def syncronize_orchestrator(config, scrapy_instance_id):
     project_list = get_project_list(config)
 
     project_api = ProjectApi()
@@ -185,7 +185,7 @@ def syncronize_orchestrator(config):
     """
         Verifying that all the project on the instance are persisted in orchestrator's database
     """
-    orchestrator_projects = project_api.get_all_by_instance_id(config.get('instance_id', None))
+    orchestrator_projects = project_api.get_all_by_instance_id(scrapy_instance_id)
     orchestrator_projects_name = [project_orch['name'] for project_orch in orchestrator_projects]
     if set(orchestrator_projects_name) != set(project_list):
         """
@@ -233,7 +233,7 @@ def register_scrapyd_instance(config, scrapyd_instance_api):
                                                 config.get('orchestrator_user', None),
                                                 config.get('orchestrator_password', None))
     config.set('instance_id', str(scrapyd_instance['id']))
-
+    return scrapyd_instance['id']
 
 def establish_link_with_orchestrator(config):
     """
@@ -251,11 +251,11 @@ def establish_link_with_orchestrator(config):
             config.set('orchestrator_user', config.get('username', None))
             config.set('orchestrator_password', config.get('password', None))
         try:
-            register_scrapyd_instance(config, scrapyd_instance_api)
+            scrapy_instance_id = register_scrapyd_instance(config, scrapyd_instance_api)
             """
                 Now we need to add existing projects & spiders to the orchestrator's database
             """
-            syncronize_orchestrator(config)
+            syncronize_orchestrator(config, scrapy_instance_id)
 
         except OrchestratorExceptionBase as e:
             log.msg(str(e))
@@ -263,8 +263,8 @@ def establish_link_with_orchestrator(config):
         try:
             scrapyd_instance = scrapyd_instance_api.get(instance_id)
             if scrapyd_instance == {}:
-                register_scrapyd_instance(config, scrapyd_instance_api)
-            syncronize_orchestrator(config)
+                scrapy_instance_id = register_scrapyd_instance(config, scrapyd_instance_api)
+            syncronize_orchestrator(config, scrapyd_instance['id'] if scrapyd_instance != {} else scrapy_instance_id)
         except OrchestratorExceptionBase as e:
             log.msg(str(e))
 
