@@ -1,8 +1,6 @@
 from scrapyd.config import Config
 
-config = Config()
-
-ORCHESTRATOR_URL = config.get('orchestrator_url')
-INSTANCE_ID = config.get('instance_id')
-USER = config.get('orchestrator_user')
-PASSWORD = config.get('orchestrator_password')
+ORCHESTRATOR_URL = Config().get('orchestrator_url')
+INSTANCE_ID = Config().get('instance_id')
+USER = Config().get('orchestrator_user')
+PASSWORD = Config().get('orchestrator_password')

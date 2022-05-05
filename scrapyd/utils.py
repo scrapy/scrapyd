@@ -232,6 +232,7 @@ def register_scrapyd_instance(config, scrapyd_instance_api):
     scrapyd_instance = scrapyd_instance_api.add(get_ip(), config.get('http_port', None),
                                                 config.get('orchestrator_user', None),
                                                 config.get('orchestrator_password', None))
+    log.msg(f"Registered scrapyd instance {str(scrapyd_instance)}")
     config.set('instance_id', str(scrapyd_instance['id']))
     return scrapyd_instance['id']
 
@@ -255,6 +256,8 @@ def establish_link_with_orchestrator(config):
             """
                 Now we need to add existing projects & spiders to the orchestrator's database
             """
+            log.msg(f"Scrapyd instance id {str(scrapy_instance_id)}")
+
             syncronize_orchestrator(config, scrapy_instance_id)
 
         except OrchestratorExceptionBase as e:
@@ -264,6 +267,8 @@ def establish_link_with_orchestrator(config):
             scrapyd_instance = scrapyd_instance_api.get(instance_id)
             if scrapyd_instance == {}:
                 scrapy_instance_id = register_scrapyd_instance(config, scrapyd_instance_api)
+            log.msg(f"Scrapyd instance id {str(scrapyd_instance['id'] if scrapyd_instance != {} else scrapy_instance_id)}")
+
             syncronize_orchestrator(config, scrapyd_instance['id'] if scrapyd_instance != {} else scrapy_instance_id)
         except OrchestratorExceptionBase as e:
             log.msg(str(e))
