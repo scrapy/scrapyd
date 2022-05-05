@@ -185,7 +185,7 @@ def syncronize_orchestrator(config):
     """
         Verifying that all the project on the instance are persisted in orchestrator's database
     """
-    orchestrator_projects = project_api.get_all_by_instance_id()
+    orchestrator_projects = project_api.get_all_by_instance_id(config.get('instance_id', None))
     orchestrator_projects_name = [project_orch['name'] for project_orch in orchestrator_projects]
     if set(orchestrator_projects_name) != set(project_list):
         """
