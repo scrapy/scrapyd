@@ -2,8 +2,9 @@ import requests
 import json
 import logging
 from scrapyd.orchestrator_client.utils import USER, PASSWORD, ORCHESTRATOR_URL
-from scrapyd.orchestrator_client.exception import OrchestratorConnectionException, OrchestratorSetupException, \
-    OrchestratorExceptionBase
+from scrapyd.orchestrator_client.exception.OrchestratorConnectionException import OrchestratorConnectionException
+from scrapyd.orchestrator_client.exception.OrchestratorSetupException import OrchestratorSetupException
+from scrapyd.orchestrator_client.exception.OrchestratorExceptionBase import OrchestratorExceptionBase
 
 
 class UserApi:
