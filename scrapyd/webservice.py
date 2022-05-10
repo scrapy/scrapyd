@@ -79,7 +79,7 @@ class Schedule(WsResource):
 
         log.msg(f"Scheduled job with id {str(args['_job'])} for project {str(project)} running on spider {str(spider)}")
         self.root.scheduler.schedule(project, spider, priority=priority, **args)
-        return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
+        return {"node_name": self.root.nodename, "status": "ok", "jobid": args['_job']}
 
 
 class Cancel(WsResource):
