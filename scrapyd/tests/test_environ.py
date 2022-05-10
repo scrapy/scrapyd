@@ -26,9 +26,9 @@ class EnvironmentTest(unittest.TestCase):
         slot = 3
         env = self.environ.get_environment(msg, slot)
         self.assertEqual(env['SCRAPY_PROJECT'], 'mybot')
-        self.assertEqual(env['SCRAPY_SLOT'], '3')
-        self.assertEqual(env['SCRAPY_SPIDER'], 'myspider')
-        self.assertEqual(env['SCRAPY_JOB'], 'ID')
+        self.assertEqual(env['SCRAPYD_SLOT'], '3')
+        self.assertEqual(env['SCRAPYD_SPIDER'], 'myspider')
+        self.assertEqual(env['SCRAPYD_JOB'], 'ID')
         self.assert_(env['SCRAPY_LOG_FILE'].endswith(os.path.join('mybot', 'myspider', 'ID.log')))
         if env.get('SCRAPY_FEED_URI'):  # Not compulsory
             self.assert_(env['SCRAPY_FEED_URI'].startswith('file://{}'.format(os.getcwd())))

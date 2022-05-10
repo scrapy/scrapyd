@@ -3,6 +3,19 @@
 Release notes
 =============
 
+Unreleased
+----------
+
+Changed
+~~~~~~~
+
+-  Rename environment variables to avoid spurious Scrapy deprecation warnings:
+
+   - ``SCRAPY_EGG_VERSION`` to ``SCRAPYD_EGG_VERSION``
+   - ``SCRAPY_JOB`` to ``SCRAPYD_JOB``
+   - ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
+   - ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
+
 1.3.0
 -----
 *Release date: 2022-01-12*

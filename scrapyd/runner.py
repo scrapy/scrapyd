@@ -11,7 +11,7 @@ from scrapyd.eggutils import activate_egg
 
 @contextmanager
 def project_environment(project):
-    eggversion = os.environ.get('SCRAPY_EGG_VERSION', None)
+    eggversion = os.environ.get('SCRAPYD_EGG_VERSION', None)
     config = Config()
     eggstorage_path = config.get(
         'eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage'
