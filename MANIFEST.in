@@ -7,5 +7,4 @@ include scrapyd/default_scrapyd.conf
 recursive-include scrapyd *.py
 recursive-include docs *
 prune docs/_build
-exclude .coveragerc
 recursive-include scrapyd *.egg

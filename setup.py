@@ -19,6 +19,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/x-rst',
     include_package_data=True,
+    # The scrapyd command requires the txapp.py to be decompressed. #49
     zip_safe=False,
     install_requires=[
         'Twisted>=17.9',
