@@ -1,31 +1,41 @@
-import sys
+import os.path
+from setuptools import setup
 
-try:
-    from setuptools import setup
-    using_setuptools = True
-except ImportError:
-    from distutils.core import setup
-    using_setuptools = False
+with open('README.rst') as f:
+    long_description = f.read()
 
-from os.path import join, dirname
-
-with open(join(dirname(__file__), 'scrapyd/VERSION')) as f:
+with open(os.path.join(os.path.dirname(__file__), 'scrapyd', 'VERSION')) as f:
     version = f.read().strip()
 
-setup_args = {
-    'name': 'scrapyd',
-    'version': version,
-    'url': 'https://github.com/scrapy/scrapyd',
-    'description': 'A service for running Scrapy spiders, with an HTTP API',
-    'long_description': open('README.rst').read(),
-    'author': 'Scrapy developers',
-    'maintainer': 'Scrapy developers',
-    'maintainer_email': 'info@scrapy.org',
-    'license': 'BSD',
-    'packages': ['scrapyd'],
-    'include_package_data': True,
-    'zip_safe': False,
-    'classifiers': [
+setup(
+    name='scrapyd',
+    version=version,
+    author='Scrapy developers',
+    author_email='info@scrapy.org',
+    url='https://github.com/scrapy/scrapyd',
+    description='A service for running Scrapy spiders, with an HTTP API',
+    license='BSD',
+    packages=['scrapyd'],
+    long_description=long_description,
+    long_description_content_type='text/x-rst',
+    include_package_data=True,
+    # The scrapyd command requires the txapp.py to be decompressed. #49
+    zip_safe=False,
+    install_requires=[
+        'Twisted>=17.9',
+        'Scrapy>=2.0.0',
+        'six'
+    ],
+    extras_require={
+        'test': [
+            'pytest',
+            'pytest-cov',
+            'requests',
+        ]
+    },
+    classifiers=[
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
@@ -33,26 +43,14 @@ setup_args = {
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Environment :: No Input/Output (Daemon)',
         'Topic :: Internet :: WWW/HTTP',
     ],
-}
-
-
-if using_setuptools:
-    setup_args['install_requires'] = [
-        'Twisted>=17.9',
-        'Scrapy>=2.0.0',
-        'six'
-    ]
-    setup_args['entry_points'] = {'console_scripts': [
-        'scrapyd = scrapyd.scripts.scrapyd_run:main'
-    ]}
-else:
-    setup_args['scripts'] = ['scrapyd/scripts/scrapyd_run.py']
-
-setup(**setup_args)
+    entry_points={
+        'console_scripts': [
+            'scrapyd = scrapyd.scripts.scrapyd_run:main'
+        ]
+    }
+)

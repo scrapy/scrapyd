@@ -1,2 +1,0 @@
-Scrapy>=2.0
-twisted
