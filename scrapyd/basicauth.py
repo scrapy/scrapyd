@@ -1,9 +1,9 @@
-from zope.interface import implementer
-from twisted.cred.portal import IRealm
-from twisted.web.resource import IResource
-from twisted.internet import defer
-from twisted.cred import error, credentials
+from twisted.cred import credentials, error
 from twisted.cred.checkers import ICredentialsChecker
+from twisted.cred.portal import IRealm
+from twisted.internet import defer
+from twisted.web.resource import IResource
+from zope.interface import implementer
 
 
 @implementer(IRealm)

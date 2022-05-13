@@ -1,12 +1,12 @@
 import os
 
 from twisted.trial import unittest
-
 from zope.interface.verify import verifyObject
 
-from scrapyd.interfaces import IEnvironment
 from scrapyd.config import Config
 from scrapyd.environ import Environment
+from scrapyd.interfaces import IEnvironment
+
 
 class EnvironmentTest(unittest.TestCase):
 

@@ -1,6 +1,7 @@
-from copy import copy
 import traceback
 import uuid
+from copy import copy
+
 try:
     from cStringIO import StringIO as BytesIO
 except ImportError:
@@ -8,7 +9,8 @@ except ImportError:
 
 from twisted.python import log
 
-from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from .utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+
 
 class WsResource(JsonResource):
 

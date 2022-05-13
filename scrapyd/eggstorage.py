@@ -1,12 +1,13 @@
 import re
-from glob import glob
-from os import path, makedirs, remove, listdir
-from shutil import copyfileobj, rmtree
 from distutils.version import LooseVersion
+from glob import glob
+from os import listdir, makedirs, path, remove
+from shutil import copyfileobj, rmtree
 
 from zope.interface import implementer
 
 from .interfaces import IEggStorage
+
 
 @implementer(IEggStorage)
 class FilesystemEggStorage(object):

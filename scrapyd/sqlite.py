@@ -1,12 +1,13 @@
-from datetime import datetime
-import sqlite3
 import json
+import sqlite3
+from datetime import datetime
+
 try:
     from collections.abc import MutableMapping
 except ImportError:
     from collections import MutableMapping
-import six
 
+import six
 
 from ._deprecate import deprecate_class
 

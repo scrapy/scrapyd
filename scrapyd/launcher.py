@@ -2,13 +2,15 @@ import sys
 from datetime import datetime
 from multiprocessing import cpu_count
 
-from twisted.internet import reactor, defer, protocol, error
 from twisted.application.service import Service
+from twisted.internet import defer, error, protocol, reactor
 from twisted.python import log
 
-from scrapyd.utils import get_crawl_args, native_stringify_dict
 from scrapyd import __version__
-from .interfaces import IPoller, IEnvironment, IJobStorage
+from scrapyd.utils import get_crawl_args, native_stringify_dict
+
+from .interfaces import IEnvironment, IJobStorage, IPoller
+
 
 class Launcher(Service):
 

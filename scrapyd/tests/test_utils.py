@@ -10,18 +10,21 @@ except ImportError:
     from io import BytesIO
 
 import six
-
 from twisted.trial import unittest
+
 if six.PY2:
     import mock
 else:
     from unittest import mock
+
 from subprocess import Popen
 
 from scrapy.utils.test import get_pythonpath
-from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache
+
 from scrapyd import get_application
+from scrapyd.interfaces import IEggStorage
+from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list
+
 
 def get_pythonpath_scrapyd():
     scrapyd_path = __import__('scrapyd').__path__[0]

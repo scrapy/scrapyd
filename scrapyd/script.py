@@ -1,18 +1,18 @@
 """This module can be used to execute Scrapyd from a Scrapy command"""
 
-import sys
 import os
+import sys
+
 from cStringIO import StringIO
-
-from twisted.python import log
-from twisted.internet import reactor
-from twisted.application import app
-
-from scrapy.utils.project import project_data_dir
 from scrapy.exceptions import NotConfigured
+from scrapy.utils.project import project_data_dir
+from twisted.application import app
+from twisted.internet import reactor
+from twisted.python import log
 
 from scrapyd import get_application
 from scrapyd.config import Config
+
 
 def _get_config():
     datadir = os.path.join(project_data_dir(), 'scrapyd')

@@ -1,14 +1,13 @@
 from io import BytesIO
-from zope.interface import implementer
 
 from twisted.trial import unittest
-
+from zope.interface import implementer
 from zope.interface.verify import verifyObject
 
-from scrapyd.interfaces import IEggStorage
 from scrapyd.app import application
 from scrapyd.config import Config
 from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.interfaces import IEggStorage
 
 
 @implementer(IEggStorage)

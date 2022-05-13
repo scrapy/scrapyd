@@ -4,8 +4,9 @@ import sys
 import tempfile
 from contextlib import contextmanager
 
-from scrapyd import Config
 from scrapy.utils.misc import load_object
+
+from scrapyd import Config
 from scrapyd.eggutils import activate_egg
 
 
