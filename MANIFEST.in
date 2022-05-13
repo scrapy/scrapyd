@@ -9,8 +9,6 @@ recursive-include docs *
 recursive-include bin *
 prune docs/_build
 recursive-include extras *
-recursive-exclude debian *
 exclude .coveragerc
-exclude *.buildbot
 recursive-include reqs *.txt
 recursive-include scrapyd *.egg

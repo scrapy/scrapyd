@@ -3,6 +3,14 @@
 Release notes
 =============
 
+Unreleased
+----------
+
+Removed
+~~~~~~~
+
+- Files for Debian packaging
+
 1.3.0
 -----
 *Release date: 2022-01-12*
