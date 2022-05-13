@@ -9,7 +9,8 @@ Unreleased
 Removed
 ~~~~~~~
 
-- Files for Debian packaging
+- Unmaintained files (Debian packaging)
+- Unused code (``scrapyd/script.py``)
 
 1.3.0
 -----
