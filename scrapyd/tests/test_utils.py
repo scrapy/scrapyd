@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
+from io import BytesIO
 from pkgutil import get_data
 
 import pytest
-
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
-
 import six
 from twisted.trial import unittest
 

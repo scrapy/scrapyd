@@ -6,7 +6,7 @@ from shutil import copyfileobj, rmtree
 
 from zope.interface import implementer
 
-from .interfaces import IEggStorage
+from scrapyd.interfaces import IEggStorage
 
 
 @implementer(IEggStorage)

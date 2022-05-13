@@ -6,7 +6,7 @@ from six.moves.urllib.parse import urlparse
 from twisted.application.service import IServiceCollection
 from twisted.web import resource, static
 
-from .interfaces import IEggStorage, IPoller, ISpiderScheduler
+from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
 
 
 class Root(resource.Resource):

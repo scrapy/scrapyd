@@ -1,7 +1,7 @@
 from zope.interface import implementer
 
-from .interfaces import ISpiderScheduler
-from .utils import get_spider_queues
+from scrapyd.interfaces import ISpiderScheduler
+from scrapyd.utils import get_spider_queues
 
 
 @implementer(ISpiderScheduler)
