@@ -7,3 +7,4 @@ recursive-include docs Makefile
 recursive-include scrapyd *.py
 recursive-include scrapyd *.egg
 exclude .pre-commit-config.yaml
+exclude .readthedocs.yaml
