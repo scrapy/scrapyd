@@ -35,7 +35,12 @@ setup(
             'pytest',
             'pytest-cov',
             'requests',
-        ]
+        ],
+        'docs': [
+            'furo',
+            'sphinx',
+            'sphinx-autobuild',
+        ],
     },
     classifiers=[
         'License :: OSI Approved :: BSD License',
