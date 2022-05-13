@@ -23,7 +23,7 @@ from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list
 
 def get_pythonpath_scrapyd():
     scrapyd_path = __import__('scrapyd').__path__[0]
-    return os.path.dirname(scrapyd_path) + os.pathsep + get_pythonpath() + os.pathsep + os.environ.get('PYTHONPATH', '')
+    return os.path.join(os.path.dirname(scrapyd_path), get_pythonpath(), os.environ.get('PYTHONPATH', ''))
 
 
 class UtilsTest(unittest.TestCase):
@@ -41,6 +41,7 @@ class UtilsTest(unittest.TestCase):
         cargs = get_crawl_args(msg)
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1', '-s', 'ONE=two'])
         assert all(isinstance(x, str) for x in cargs), cargs
+
 
 class GetSpiderListTest(unittest.TestCase):
     def setUp(self):

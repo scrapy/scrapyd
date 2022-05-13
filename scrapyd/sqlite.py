@@ -7,10 +7,6 @@ try:
 except ImportError:
     from collections import MutableMapping
 
-import six
-
-from scrapyd._deprecate import deprecate_class
-
 
 class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
@@ -109,7 +105,7 @@ class JsonSqlitePriorityQueue(object):
         id, msg = idmsg
         q = "delete from %s where id=?" % self.table
         c = self.conn.execute(q, (id,))
-        if not c.rowcount: # record vanished, so let's try again
+        if not c.rowcount:  # record vanished, so let's try again
             self.conn.rollback()
             return self.pop()
         self.conn.commit()
@@ -122,7 +118,7 @@ class JsonSqlitePriorityQueue(object):
             if func(self.decode(msg)):
                 q = "delete from %s where id=?" % self.table
                 c = self.conn.execute(q, (id,))
-                if not c.rowcount: # record vanished, so let's try again
+                if not c.rowcount:  # record vanished, so let's try again
                     self.conn.rollback()
                     return self.remove(func)
                 n += 1
@@ -172,7 +168,7 @@ class SqliteFinishedJobs(object):
         if finished_to_keep:
             limit = len(self) - finished_to_keep
             if limit <= 0:
-                return # nothing to delete
+                return  # nothing to delete
             w = "where id <= (select max(id) from " \
                 "(select id from %s order by end_time limit %d))" % (self.table, limit)
         q = "delete from %s %s" % (self.table, w)
@@ -186,6 +182,6 @@ class SqliteFinishedJobs(object):
     def __iter__(self):
         q = "select project, spider, job, start_time, end_time from %s order by end_time desc" % \
             self.table
-        return ((j[0],j[1],j[2],
-                datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"), 
+        return ((j[0], j[1], j[2],
+                datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"),
                 datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(q))

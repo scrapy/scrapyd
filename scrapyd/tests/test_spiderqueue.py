@@ -22,7 +22,6 @@ class SpiderQueueTest(unittest.TestCase):
         self.msg = self.args.copy()
         self.msg['name'] = self.name
 
-
     def test_interface(self):
         verifyObject(ISpiderQueue, self.q)
 
@@ -44,14 +43,14 @@ class SpiderQueueTest(unittest.TestCase):
 
     @inlineCallbacks
     def test_list(self):
-        l = yield maybeDeferred(self.q.list)
-        self.assertEqual(l, [])
+        actual = yield maybeDeferred(self.q.list)
+        self.assertEqual(actual, [])
 
         yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
         yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
-        l = yield maybeDeferred(self.q.list)
-        self.assertEqual(l, [self.msg, self.msg])
+        actual = yield maybeDeferred(self.q.list)
+        self.assertEqual(actual, [self.msg, self.msg])
 
     @inlineCallbacks
     def test_clear(self):
