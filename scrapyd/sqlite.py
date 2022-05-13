@@ -7,10 +7,6 @@ try:
 except ImportError:
     from collections import MutableMapping
 
-import six
-
-from scrapyd._deprecate import deprecate_class
-
 
 class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""

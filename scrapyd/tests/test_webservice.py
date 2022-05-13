@@ -1,9 +1,6 @@
 from pathlib import Path
 from unittest import mock
 
-import pytest
-from twisted.web.error import Error
-
 from scrapyd.interfaces import IEggStorage
 
 

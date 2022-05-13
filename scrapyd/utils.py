@@ -6,7 +6,6 @@ from subprocess import PIPE, Popen
 import six
 from scrapy.utils.misc import load_object
 from six import iteritems
-from six.moves.configparser import NoSectionError
 from twisted.web import resource
 
 from scrapyd.config import Config
