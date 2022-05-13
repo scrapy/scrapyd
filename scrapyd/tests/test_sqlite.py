@@ -102,8 +102,8 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q.put(msg3, priority=3.0)
         self.q.put(msg4, priority=2.0)
         self.assertEqual(len(self.q), 4)
-        self.assertEqual(list(self.q), \
-            [(msg2, 5.0), (msg3, 3.0), (msg4, 2.0), (msg1, 1.0)])
+        self.assertEqual(list(self.q),
+                         [(msg2, 5.0), (msg3, 3.0), (msg4, 2.0), (msg1, 1.0)])
         self.q.clear()
         self.assertEqual(len(self.q), 0)
         self.assertEqual(list(self.q), [])
@@ -149,7 +149,7 @@ class SqliteFinishedJobsTest(unittest.TestCase):
         self.assertEqual(len(self.q), 2)
 
     def test__iter__(self):
-        l = [j for j in self.q]
-        self.assertEqual((l[0][0], l[0][1]), ('p3', 's3'))
-        self.assertEqual((l[1][0], l[1][1]), ('p2', 's2'))
-        self.assertEqual((l[2][0], l[2][1]), ('p1', 's1'))
+        actual = [j for j in self.q]
+        self.assertEqual((actual[0][0], actual[0][1]), ('p3', 's3'))
+        self.assertEqual((actual[1][0], actual[1][1]), ('p2', 's2'))
+        self.assertEqual((actual[2][0], actual[2][1]), ('p1', 's1'))

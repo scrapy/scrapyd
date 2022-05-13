@@ -42,4 +42,3 @@ class SpiderSchedulerTest(unittest.TestCase):
         self.assertEqual(q1.pop(), {'name': 'myspider1', 'a': 'b'})
         self.assertEqual(q2.pop(), {'name': 'myspider3', 'e': 'f'})
         self.assertEqual(q2.pop(), {'name': 'myspider2', 'c': 'd'})
-

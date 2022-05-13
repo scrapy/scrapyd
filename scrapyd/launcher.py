@@ -21,7 +21,6 @@ class Launcher(Service):
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
         self.app = app
-        
 
     def startService(self):
         for slot in range(self.max_proc):
@@ -42,8 +41,8 @@ class Launcher(Service):
         e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+        pp = ScrapyProcessProtocol(slot, project, msg['_spider'],
+                                   msg['_job'], env)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -63,6 +62,7 @@ class Launcher(Service):
                 cpus = 1
             max_proc = cpus * config.getint('max_proc_per_cpu', 4)
         return max_proc
+
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 

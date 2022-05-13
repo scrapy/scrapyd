@@ -26,10 +26,10 @@ class MemoryJobStorageTest(unittest.TestCase):
         self.assertEqual(len(self.jobst.list()), 2)
 
     def test_iter(self):
-        l = [j for j in self.jobst]
-        self.assertEqual(l[0], j2)
-        self.assertEqual(l[1], j3)
-        self.assertEqual(len(l), 2)
+        actual = [j for j in self.jobst]
+        self.assertEqual(actual[0], j2)
+        self.assertEqual(actual[1], j3)
+        self.assertEqual(len(actual), 2)
 
     def test_len(self):
         self.assertEqual(len(self.jobst), 2)
@@ -56,5 +56,5 @@ class SqliteJobsStorageTest(unittest.TestCase):
         self.jobst.add(self.j1)
         self.jobst.add(self.j2)
         self.jobst.add(self.j3)
-        l = [j for j in self.jobst]
-        self.assertEqual(len(l), 2)
+        actual = [j for j in self.jobst]
+        self.assertEqual(len(actual), 2)
