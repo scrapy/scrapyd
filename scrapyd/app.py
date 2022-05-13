@@ -8,11 +8,11 @@ from twisted.python import log
 from twisted.web import server
 from twisted.web.guard import BasicCredentialFactory, HTTPAuthSessionWrapper
 
-from .basicauth import PublicHTMLRealm, StringCredentialsChecker
-from .environ import Environment
-from .interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
-from .poller import QueuePoller
-from .scheduler import SpiderScheduler
+from scrapyd.basicauth import PublicHTMLRealm, StringCredentialsChecker
+from scrapyd.environ import Environment
+from scrapyd.interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
+from scrapyd.poller import QueuePoller
+from scrapyd.scheduler import SpiderScheduler
 
 
 def create_wrapped_resource(webcls, config, app):

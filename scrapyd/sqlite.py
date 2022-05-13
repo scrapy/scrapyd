@@ -9,7 +9,7 @@ except ImportError:
 
 import six
 
-from ._deprecate import deprecate_class
+from scrapyd._deprecate import deprecate_class
 
 
 class JsonSqliteDict(MutableMapping):

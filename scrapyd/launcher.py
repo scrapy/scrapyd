@@ -7,9 +7,8 @@ from twisted.internet import defer, error, protocol, reactor
 from twisted.python import log
 
 from scrapyd import __version__
+from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
 from scrapyd.utils import get_crawl_args, native_stringify_dict
-
-from .interfaces import IEnvironment, IJobStorage, IPoller
 
 
 class Launcher(Service):

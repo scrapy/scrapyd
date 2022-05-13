@@ -11,8 +11,7 @@ from twisted.web import resource
 
 from scrapyd.config import Config
 from scrapyd.spiderqueue import SqliteSpiderQueue
-
-from .sqlite import JsonSqliteDict
+from scrapyd.sqlite import JsonSqliteDict
 
 
 class JsonResource(resource.Resource):

@@ -5,7 +5,7 @@ from io import BytesIO
 
 from twisted.python import log
 
-from .utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
 
 
 class WsResource(JsonResource):
