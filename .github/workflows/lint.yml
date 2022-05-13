@@ -11,3 +11,5 @@ jobs:
           python-version: 3.8
       - run: pip install --upgrade pre-commit
       - run: pre-commit run --all-files
+      - run: pip install --upgrade check-manifest setuptools
+      - run: check-manifest
