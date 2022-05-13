@@ -1,6 +1,7 @@
 import sys
 import unittest
 
+
 class SettingsSafeModulesTest(unittest.TestCase):
 
     # these modules must not load scrapy.conf

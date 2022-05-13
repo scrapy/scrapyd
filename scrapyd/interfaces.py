@@ -1,5 +1,6 @@
 from zope.interface import Interface
 
+
 class IEggStorage(Interface):
     """A component that handles storing and retrieving eggs"""
 

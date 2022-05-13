@@ -1,4 +1,5 @@
 import os.path
+
 from setuptools import setup
 
 with open('README.rst') as f:

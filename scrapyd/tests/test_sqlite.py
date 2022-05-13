@@ -3,8 +3,9 @@ from datetime import datetime
 from decimal import Decimal
 
 from scrapy.http import Request
+
 from scrapyd.jobstorage import Job
-from scrapyd.sqlite import JsonSqlitePriorityQueue, JsonSqliteDict, SqliteFinishedJobs
+from scrapyd.sqlite import JsonSqliteDict, JsonSqlitePriorityQueue, SqliteFinishedJobs
 
 
 class JsonSqliteDictTest(unittest.TestCase):

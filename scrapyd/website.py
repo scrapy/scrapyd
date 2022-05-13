@@ -1,12 +1,12 @@
-from datetime import datetime, timedelta
 import socket
+from datetime import datetime, timedelta
 
 from scrapy.utils.misc import load_object
 from six.moves.urllib.parse import urlparse
-from twisted.web import resource, static
 from twisted.application.service import IServiceCollection
+from twisted.web import resource, static
 
-from .interfaces import IPoller, IEggStorage, ISpiderScheduler
+from .interfaces import IEggStorage, IPoller, ISpiderScheduler
 
 
 class Root(resource.Resource):

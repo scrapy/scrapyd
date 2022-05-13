@@ -1,10 +1,10 @@
 from twisted.internet.defer import inlineCallbacks, maybeDeferred
 from twisted.trial import unittest
-
 from zope.interface.verify import verifyObject
 
-from scrapyd.interfaces import ISpiderQueue
 from scrapyd import spiderqueue
+from scrapyd.interfaces import ISpiderQueue
+
 
 class SpiderQueueTest(unittest.TestCase):
     """This test case also supports queues with deferred methods.

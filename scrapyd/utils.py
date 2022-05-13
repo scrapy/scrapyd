@@ -1,16 +1,18 @@
-import sys
+import json
 import os
-from .sqlite import JsonSqliteDict
-from subprocess import Popen, PIPE
+import sys
+from subprocess import PIPE, Popen
+
 import six
+from scrapy.utils.misc import load_object
 from six import iteritems
 from six.moves.configparser import NoSectionError
-import json
 from twisted.web import resource
 
-from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.config import Config
-from scrapy.utils.misc import load_object
+from scrapyd.spiderqueue import SqliteSpiderQueue
+
+from .sqlite import JsonSqliteDict
 
 
 class JsonResource(resource.Resource):
