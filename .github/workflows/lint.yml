@@ -9,5 +9,5 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: 3.8
-      - run: pip install --upgrade isort
-      - run: isort --line-width 119 .
+      - run: pip install --upgrade pre-commit
+      - run: pre-commit run --all-files
