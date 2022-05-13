@@ -8,5 +8,4 @@ recursive-include scrapyd *.py
 recursive-include docs *
 prune docs/_build
 exclude .coveragerc
-recursive-include reqs *.txt
 recursive-include scrapyd *.egg
