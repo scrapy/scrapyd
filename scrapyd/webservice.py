@@ -1,11 +1,7 @@
 import traceback
 import uuid
 from copy import copy
-
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from io import BytesIO
 
 from twisted.python import log
 

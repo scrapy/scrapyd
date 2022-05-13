@@ -23,9 +23,12 @@ setup(
     # The scrapyd command requires the txapp.py to be decompressed. #49
     zip_safe=False,
     install_requires=[
-        'Twisted>=17.9',
-        'Scrapy>=2.0.0',
-        'six'
+        'twisted>=17.9',
+        'scrapy>=2.0.0',
+        'setuptools',
+        'six',
+        'w3lib',
+        'zope.interface',
     ],
     extras_require={
         'test': [
