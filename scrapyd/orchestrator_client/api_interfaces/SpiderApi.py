@@ -5,7 +5,7 @@ from scrapyd.orchestrator_client.exception.OrchestratorEntityNotFoundException i
     OrchestratorEntityNotFoundException
 import requests
 import json
-from scrapyd.orchestrator_client.utils import ORCHESTRATOR_URL
+from scrapyd.orchestrator_client.utils import ORCHESTRATOR_URL, INSTANCE_ID
 import logging
 
 
@@ -57,11 +57,11 @@ class SpiderApi:
 
             raise ex
 
-    def get_all_spiders_by_project_name(self, project_name):
+    def get_all_spiders_by_project_name(self, project_name, instance_id=INSTANCE_ID):
         try:
             response = requests.request(
                 'GET',
-                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_spiders_by_proj_name?name={project_name}",
+                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_spiders_by_proj_name?name={project_name}&instance_id={instance_id}",
                 headers=self.authorization_api.get_headers()
             )
             if response.status_code == 200:
@@ -80,7 +80,7 @@ class SpiderApi:
                 """
                 self.logger.debug("GET OBJ BY NAME UNAUTHORIZED: retrying")
                 self.authorization_api.refresh()
-                return self.get_all_spiders_by_project_name(project_name)
+                return self.get_all_spiders_by_project_name(project_name, instance_id)
 
             elif response.status_code == 500 or response.status_code == 400:
 
@@ -98,11 +98,11 @@ class SpiderApi:
 
             raise ex
 
-    def get_by_name(self, name):
+    def get_by_name(self, name, instance_id=INSTANCE_ID):
         try:
             response = requests.request(
                 'GET',
-                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_by_name?name={name}",
+                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_by_name?name={name}&instance_id={instance_id}",
                 headers=self.authorization_api.get_headers()
             )
             if response.status_code == 200:
@@ -121,7 +121,7 @@ class SpiderApi:
                 """
                 self.logger.debug("GET OBJ BY NAME UNAUTHORIZED: retrying")
                 self.authorization_api.refresh()
-                return self.get_by_name(name)
+                return self.get_by_name(name, instance_id)
 
             elif response.status_code == 500 or response.status_code == 400:
 

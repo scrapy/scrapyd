@@ -57,11 +57,11 @@ class ProjectApi:
 
             raise ex
 
-    def get_by_name(self, name):
+    def get_by_name(self, name, instance_id=INSTANCE_ID):
         try:
             response = requests.request(
                 'GET',
-                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_by_name?name={name}",
+                url=f"{ORCHESTRATOR_URL}/{self.__endpoint_path}/get_by_name?name={name}&instance_id={instance_id}",
                 headers=self.authorization_api.get_headers()
             )
             if response.status_code == 200:
@@ -80,7 +80,7 @@ class ProjectApi:
                 """
                 self.logger.debug("GET OBJ BY NAME UNAUTHORIZED: retrying")
                 self.authorization_api.refresh()
-                return self.get_by_name(name)
+                return self.get_by_name(name,instance_id)
 
             elif response.status_code == 500 or response.status_code == 400:
 
