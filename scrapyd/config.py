@@ -5,7 +5,7 @@ from os.path import expanduser
 from twisted.python import log
 import sys
 from scrapy.utils.conf import closest_scrapy_cfg
-
+from pkgutil import get_data
 
 # sys.path.append()
 
