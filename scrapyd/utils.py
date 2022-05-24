@@ -1,3 +1,17 @@
+import sys
+import os
+
+from scrapyd.orchestrator_client.api_interfaces.UserApi import UserApi
+from scrapyd.orchestrator_client.api_interfaces.ProjectApi import ProjectApi
+from scrapyd.orchestrator_client.api_interfaces.SpiderApi import SpiderApi
+from scrapyd.orchestrator_client.api_interfaces.ScrapydInstanceApi import ScrapydInstanceApi
+from scrapyd.orchestrator_client.exception.OrchestratorExceptionBase import OrchestratorExceptionBase
+
+from scrapyd.sqlite import JsonSqliteDict
+from subprocess import Popen, PIPE
+import six
+from six import iteritems
+import socket
 import json
 import os
 import sys
@@ -7,14 +21,14 @@ import six
 from scrapy.utils.misc import load_object
 from six import iteritems
 from twisted.web import resource
+from twisted.python import log
 
 from scrapyd.config import Config
-from scrapyd.spiderqueue import SqliteSpiderQueue
-from scrapyd.sqlite import JsonSqliteDict
+from scrapy.utils.misc import load_object
+import requests
 
 
 class JsonResource(resource.Resource):
-
     json_encoder = json.JSONEncoder()
 
     def render(self, txrequest):
@@ -76,6 +90,13 @@ def get_project_list(config):
     projects = eggstorage.list_projects()
     projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects
+
+
+def get_latest_project_versions(config, project):
+    eggstorage = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstoragecls = load_object(eggstorage)
+    eggstorage = eggstoragecls(config)
+    return max(eggstorage.list(project))
 
 
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
@@ -160,3 +181,113 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
         return text.encode(encoding, errors)
     else:
         return text.decode(encoding, errors)
+
+
+def syncronize_orchestrator(config, scrapy_instance_id):
+    project_list = get_project_list(config)
+
+    project_api = ProjectApi()
+    spider_api = SpiderApi()
+
+    """
+        Verifying that all the project on the instance are persisted in orchestrator's database
+    """
+    orchestrator_projects = project_api.get_all_by_instance_id(scrapy_instance_id)
+    orchestrator_projects_name = [project_orch['name'] for project_orch in orchestrator_projects]
+    if set(orchestrator_projects_name) != set(project_list):
+        """
+            This means we have differences between local data and orchestrator's data regarding projects
+        """
+        for project in orchestrator_projects:
+            if project['name'] not in project_list:
+                project_api.delete(project['id'])
+            else:
+                proj_version = get_latest_project_versions(config, project['name'])
+                if project['version'] != proj_version:
+                    project_api.update(project['name'], version=proj_version)
+        for project in project_list:
+            if project not in orchestrator_projects_name:
+                project_api.add(project, get_latest_project_versions(config, project))
+
+    """
+        Updating spider from each project
+    """
+    for project in project_list:
+        project_spiders = get_spider_list(project)
+        available_spiders = spider_api.get_all_spiders_by_project_name(project)
+        if set(available_spiders) != set(project_spiders):
+            """
+                This means we have differences between local data and orchestrator's data regarding spiders
+            """
+            for spider in available_spiders:
+                if spider not in project_spiders:
+                    spider_obj = spider_api.get_by_name(spider)
+                    spider_api.delete(spider_obj['id'])
+            for spider in project_spiders:
+                if spider not in available_spiders:
+                    project_obj = project_api.get_by_name(project)
+                    spider_api.add(project_obj['id'], spider)
+
+
+def register_scrapyd_instance(config, scrapyd_instance_api):
+    """
+                    If the scrapyd instance does not have an id assigned yet, it means this is the first run.
+                    We proceed by registering a new user for this scrapyd instance, then we register the instance itself
+                """
+    authorization_api = UserApi.get_instance()
+    authorization_api.register(config.get('orchestrator_user', None), config.get('orchestrator_password', None))
+    scrapyd_instance = scrapyd_instance_api.add(get_ip(), config.get('http_port', None),
+                                                config.get('orchestrator_user', None),
+                                                config.get('orchestrator_password', None))
+    log.msg(f"Registered scrapyd instance {str(scrapyd_instance)}")
+    config.set('instance_id', str(scrapyd_instance['id']))
+    return scrapyd_instance['id']
+
+def establish_link_with_orchestrator(config):
+    """
+        Function for establishing the connection and data persistence with the orchestrator
+    """
+    scrapyd_instance_api = ScrapydInstanceApi()
+    orchestrator_url = config.get('orchestrator_url', None)
+    if orchestrator_url == '':
+        return
+    instance_id = config.get('instance_id', None)
+    if instance_id == '':
+        orchestrator_user = config.get('orchestrator_user', None)
+        orchestrator_password = config.get('orchestrator_password', None)
+        if orchestrator_user == '' or orchestrator_password == '':
+            config.set('orchestrator_user', config.get('username', None))
+            config.set('orchestrator_password', config.get('password', None))
+        try:
+            scrapy_instance_id = register_scrapyd_instance(config, scrapyd_instance_api)
+            """
+                Now we need to add existing projects & spiders to the orchestrator's database
+            """
+            log.msg(f"Scrapyd instance id {str(scrapy_instance_id)}")
+
+            syncronize_orchestrator(config, scrapy_instance_id)
+
+        except OrchestratorExceptionBase as e:
+            log.msg(str(e))
+    else:
+        try:
+            scrapyd_instance = scrapyd_instance_api.get(instance_id)
+            if scrapyd_instance == {}:
+                scrapy_instance_id = register_scrapyd_instance(config, scrapyd_instance_api)
+            log.msg(f"Scrapyd instance id {str(scrapyd_instance['id'] if scrapyd_instance != {} else scrapy_instance_id)}")
+
+            syncronize_orchestrator(config, scrapyd_instance['id'] if scrapyd_instance != {} else scrapy_instance_id)
+        except OrchestratorExceptionBase as e:
+            log.msg(str(e))
+
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        IP = requests.get('https://api.ipify.org').text
+    except Exception:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP

@@ -2,10 +2,12 @@ import glob
 import io
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from os.path import expanduser
-from pkgutil import get_data
-
+from twisted.python import log
+import sys
 from scrapy.utils.conf import closest_scrapy_cfg
 
+
+# sys.path.append()
 
 class Config(object):
     """A ConfigParser wrapper to support defaults when calling instance
@@ -23,6 +25,7 @@ class Config(object):
             for fname in sources:
                 try:
                     with io.open(fname) as fp:
+                        self.cfg_path = fname
                         self.cp.read_file(fp)
                 except (IOError, OSError):
                     pass
@@ -31,7 +34,7 @@ class Config(object):
             self.cp.add_section(self.SECTION)
 
     def _getsources(self):
-        sources = ['/etc/scrapyd/scrapyd.conf', r'c:\scrapyd\scrapyd.conf']
+        sources = ['/etc/scrapyd/scrapyd.conf', r'd:\scrapyd\scrapyd.conf']
         sources += sorted(glob.glob('/etc/scrapyd/conf.d/*'))
         sources += ['scrapyd.conf']
         sources += [expanduser('~/.scrapyd.conf')]
@@ -50,6 +53,12 @@ class Config(object):
 
     def get(self, option, default=None):
         return self._getany(self.cp.get, option, default)
+
+    def set(self, option, value, section='scrapyd'):
+        self.cp.set(section, option, value)
+        f = open(self.cfg_path, 'w')
+        self.cp.write(f)
+        f.close()
 
     def getint(self, option, default=None):
         return self._getany(self.cp.getint, option, default)

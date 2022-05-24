@@ -2,10 +2,9 @@ import os
 from datetime import datetime
 
 from zope.interface import implementer
-
 from scrapyd.interfaces import IJobStorage
 from scrapyd.sqlite import SqliteFinishedJobs
-
+from scrapyd.orchestrator_client.api_interfaces.JobApi import JobApi
 
 class Job(object):
     def __init__(self, project, spider, job=None, start_time=None, end_time=None):
@@ -51,6 +50,9 @@ class SqliteJobStorage(object):
 
     def add(self, job):
         self.jstorage.add(job)
+        """
+        TODO: Add job to orchestrator db
+        """
         self.jstorage.clear(self.finished_to_keep)
 
     def list(self):

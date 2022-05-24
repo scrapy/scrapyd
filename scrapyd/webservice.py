@@ -1,11 +1,19 @@
+import json
+from copy import copy
 import traceback
 import uuid
-from copy import copy
-from io import BytesIO
+
+try:
+    from cStringIO import StringIO as BytesIO
+except ImportError:
+    from io import BytesIO
 
 from twisted.python import log
 
-from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+from scrapyd.utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from scrapyd.orchestrator_client.api_interfaces.ProjectApi import ProjectApi
+from scrapyd.orchestrator_client.api_interfaces.SpiderApi import SpiderApi
+from scrapyd.orchestrator_client.api_interfaces.JobApi import JobApi
 
 
 class WsResource(JsonResource):
@@ -57,9 +65,27 @@ class Schedule(WsResource):
             return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
-        args['_job'] = jobid
+
+        """
+            Adding job to orchestrator
+        """
+        try:
+            project_api = ProjectApi()
+            spider_api = SpiderApi()
+            job_api = JobApi()
+            project_obj = project_api.get_by_name(project)
+            spider_obj = spider_api.get_by_name(spider)
+
+            job_obj = job_api.add(project_obj['id'], spider_obj['id'], json.dumps(settings))
+            args['_job'] = str(job_obj['id'])
+
+        except Exception as e:
+            log(str(e))
+
+        log.msg(f"Scheduled job with id {str(args['_job'])} for project {str(project)} running on spider {str(spider)}")
         self.root.scheduler.schedule(project, spider, priority=priority, **args)
-        return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
+        return {"node_name": self.root.nodename, "status": "ok", "jobid": args['_job']}
+
 
 
 class Cancel(WsResource):
@@ -81,6 +107,15 @@ class Cancel(WsResource):
             if s.project == project and s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
+
+        """
+            UPDATE JOB STATE IN ORCHESTRATOR
+        """
+        try:
+            job_api = JobApi()
+            job_api.update(jobid, state="CANCELED")
+        except Exception as e:
+            log.msg(str(e))
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
 
@@ -93,9 +128,37 @@ class AddVersion(WsResource):
         version = args['version'][0]
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
+        """
+        Add new project / update project in orchestrator's database
+        """
+        log.msg(f"Added project {str(project)} with version {str(version)} and spiders {str(spiders)}")
+
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
-        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version,
+
+        try:
+            project_api = ProjectApi()
+            spider_api = SpiderApi()
+            find_proj = project_api.get_by_name(project)
+            if find_proj == {}:
+                orch_project = project_api.add(project, version)
+                for spider in spiders:
+                    spider_api.add(orch_project['id'], spider)
+            else:
+                project_api.update(project, version=version)
+                available_spiders = spider_api.get_all_spiders_by_project_name(project)
+                if set(available_spiders) != set(spiders):
+                    for spider in available_spiders:
+                        if spider not in spiders:
+                            spider_obj = spider_api.get_by_name(spider)
+                            spider_api.delete(spider_obj['id'])
+                    for spider in spiders:
+                        if spider not in available_spiders:
+                            spider_api.add(find_proj['id'], spider)
+        except Exception as e:
+            log.msg(str(e))
+
+        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
                 "spiders": len(spiders)}
 
 
@@ -163,6 +226,16 @@ class DeleteProject(WsResource):
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
+        """
+        DELETE PROJECT FROM ORCHESTRATOR'S DATABASE
+        """
+        try:
+            project_api = ProjectApi()
+            project_obj = project_api.get_by_name(project)
+            project_api.delete(project_obj['id'])
+        except Exception as e:
+            log.msg(str(e))
+
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
@@ -178,6 +251,9 @@ class DeleteVersion(DeleteProject):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
         version = args['version'][0]
+        """
+                DELETE PROJECT VERSION FROM ORCHESTRATOR'S DATABASE
+        """
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}

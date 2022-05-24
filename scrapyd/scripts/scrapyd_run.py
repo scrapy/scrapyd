@@ -7,9 +7,9 @@ from twisted.scripts.twistd import run
 
 import scrapyd
 
-
 def main():
     argv[1:1] = ['-n', '-y', join(dirname(scrapyd.__file__), 'txapp.py')]
+
     run()
 
 
