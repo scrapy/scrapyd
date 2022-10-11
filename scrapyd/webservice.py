@@ -7,14 +7,16 @@ except ImportError:
     from io import BytesIO
 
 from twisted.python import log
+from twisted.logger import Logger
 
 from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
 
-class WsResource(JsonResource):
 
+class WsResource(JsonResource):
     def __init__(self, root):
         JsonResource.__init__(self)
         self.root = root
+        self.logger = Logger()
 
     def render(self, txrequest):
         try:
@@ -26,18 +28,24 @@ class WsResource(JsonResource):
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest).encode('utf-8')
 
-class DaemonStatus(WsResource):
+    def project_version_exists(self, request_name: str, project: str) -> bool:
+        project_versions = self.root.eggstorage.list(project)
+        if not project_versions:
+            self.logger.info(f"Can not process yet '{request_name}' request for '{project}' project. "
+                             f"Waiting for the egg to come first.")
+            return False
+        return True
 
+
+class DaemonStatus(WsResource):
     def render_GET(self, txrequest):
         pending = sum(q.count() for q in self.root.poller.queues.values())
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
-
         return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
 
 
 class Schedule(WsResource):
-
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         settings = args.pop('setting', [])
@@ -56,8 +64,8 @@ class Schedule(WsResource):
         self.root.scheduler.schedule(project, spider, priority=priority, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
-class Cancel(WsResource):
 
+class Cancel(WsResource):
     def render_POST(self, txrequest):
         args = dict((k, v[0])
                     for k, v in native_stringify_dict(copy(txrequest.args),
@@ -77,8 +85,8 @@ class Cancel(WsResource):
                 prevstate = "running"
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
-class AddVersion(WsResource):
 
+class AddVersion(WsResource):
     def render_POST(self, txrequest):
         eggf = BytesIO(txrequest.args.pop(b'egg')[0])
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
@@ -91,34 +99,38 @@ class AddVersion(WsResource):
         return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
             "spiders": len(spiders)}
 
-class ListProjects(WsResource):
 
+class ListProjects(WsResource):
     def render_GET(self, txrequest):
         projects = list(self.root.scheduler.list_projects())
         return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
 
-class ListVersions(WsResource):
 
+class ListVersions(WsResource):
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
         versions = self.root.eggstorage.list(project)
         return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
-class ListSpiders(WsResource):
 
+class ListSpiders(WsResource):
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
+        if not self.project_version_exists('listspiders', project):
+            return {"node_name": self.root.nodename, "status": "ok", "spiders": []}
         version = args.get('_version', [''])[0]
         spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
-class ListJobs(WsResource):
 
+class ListJobs(WsResource):
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args.get('project', [None])[0]
+        if not self.project_version_exists('listjobs', project):
+            return {"node_name": self.root.nodename, "status": "ok", "pending": [], "running": [], "finished": []}
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
         pending = [
@@ -146,8 +158,8 @@ class ListJobs(WsResource):
         return {"node_name": self.root.nodename, "status": "ok",
                 "pending": pending, "running": running, "finished": finished}
 
-class DeleteProject(WsResource):
 
+class DeleteProject(WsResource):
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
@@ -159,8 +171,8 @@ class DeleteProject(WsResource):
         self.root.eggstorage.delete(project, version)
         self.root.update_projects()
 
-class DeleteVersion(DeleteProject):
 
+class DeleteVersion(DeleteProject):
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
