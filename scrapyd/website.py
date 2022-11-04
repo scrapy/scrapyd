@@ -1,8 +1,8 @@
 import socket
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 from scrapy.utils.misc import load_object
-from six.moves.urllib.parse import urlparse
 from twisted.application.service import IServiceCollection
 from twisted.web import resource, static
 
