@@ -55,7 +55,6 @@ setup(
         'Environment :: No Input/Output (Daemon)',
         'Topic :: Internet :: WWW/HTTP',
     ],
-    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'scrapyd = scrapyd.scripts.scrapyd_run:main'
