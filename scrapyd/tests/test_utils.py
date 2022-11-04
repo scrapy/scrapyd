@@ -2,19 +2,12 @@
 import os
 from io import BytesIO
 from pkgutil import get_data
+from subprocess import Popen
+from unittest import mock
 
 import pytest
-import six
-from twisted.trial import unittest
-
-if six.PY2:
-    import mock
-else:
-    from unittest import mock
-
-from subprocess import Popen
-
 from scrapy.utils.test import get_pythonpath
+from twisted.trial import unittest
 
 from scrapyd import get_application
 from scrapyd.interfaces import IEggStorage
@@ -122,7 +115,6 @@ class GetSpiderListTest(unittest.TestCase):
             exc = self.assertRaises(RuntimeError,
                                     get_spider_list, 'mybot3', pythonpath=pypath)
         tb = str(exc).rstrip()
-        tb = tb.decode('unicode_escape') if six.PY2 else tb
         tb_regex = (
             r'Exception: This should break the `scrapy list` command$'
         )

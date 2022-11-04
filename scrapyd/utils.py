@@ -3,9 +3,7 @@ import os
 import sys
 from subprocess import PIPE, Popen
 
-import six
 from scrapy.utils.misc import load_object
-from six import iteritems
 from twisted.web import resource
 
 from scrapyd.config import Config
@@ -84,7 +82,7 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     dict or a list of tuples, like any dict constructor supports.
     """
     d = {}
-    for k, v in iteritems(dict(dct_or_tuples)):
+    for k, v in dct_or_tuples.items():
         k = _to_native_str(k, encoding)
         if not keys_only:
             if isinstance(v, dict):
@@ -137,7 +135,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     if proc.returncode:
         msg = err or out or ''
         msg = msg.decode('utf8')
-        raise RuntimeError(msg.encode('unicode_escape') if six.PY2 else msg)
+        raise RuntimeError(msg)
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
     tmp = out.decode('utf-8').splitlines()
@@ -153,10 +151,8 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
 def _to_native_str(text, encoding='utf-8', errors='strict'):
     if isinstance(text, str):
         return text
-    if not isinstance(text, (bytes, six.text_type)):
+    if not isinstance(text, (bytes, str)):
         raise TypeError('_to_native_str must receive a bytes, str or unicode '
                         'object, got %s' % type(text).__name__)
-    if six.PY2:
-        return text.encode(encoding, errors)
-    else:
-        return text.decode(encoding, errors)
+
+    return text.decode(encoding, errors)

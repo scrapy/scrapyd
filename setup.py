@@ -26,7 +26,6 @@ setup(
         'twisted>=17.9',
         'scrapy>=2.0.0',
         'setuptools',
-        'six',
         'w3lib',
         'zope.interface',
     ],
