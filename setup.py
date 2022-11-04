@@ -46,7 +46,6 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -56,6 +55,7 @@ setup(
         'Environment :: No Input/Output (Daemon)',
         'Topic :: Internet :: WWW/HTTP',
     ],
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'scrapyd = scrapyd.scripts.scrapyd_run:main'
