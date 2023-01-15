@@ -5,6 +5,7 @@ from io import BytesIO
 
 from twisted.python import log
 
+from scrapyd.jobstorage import job_items_url, job_logs_url
 from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
 
 
@@ -150,7 +151,9 @@ class ListJobs(WsResource):
                 "project": s.project,
                 "spider": s.spider, "id": s.job,
                 "start_time": str(s.start_time),
-                "end_time": str(s.end_time)
+                "end_time": str(s.end_time),
+                "logs_url": job_logs_url(s),
+                "items_url": job_items_url(s),
             } for s in self.root.launcher.finished
             if project is None or s.project == project
         ]
