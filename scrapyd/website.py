@@ -17,15 +17,15 @@ class Root(resource.Resource):
         self.runner = config.get('runner')
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
-        local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
+        self.local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
         self.app = app
         self.nodename = config.get('node_name', socket.gethostname())
-        self.putChild(b'', Home(self, local_items))
+        self.putChild(b'', Home(self, self.local_items))
         if logsdir:
             self.putChild(b'logs', static.File(logsdir.encode('ascii', 'ignore'), 'text/plain'))
-        if local_items:
+        if self.local_items:
             self.putChild(b'items', static.File(itemsdir, 'text/plain'))
-        self.putChild(b'jobs', Jobs(self, local_items))
+        self.putChild(b'jobs', Jobs(self, self.local_items))
         services = config.items('services', ())
         for servName, servClsName in services:
             servCls = load_object(servClsName)

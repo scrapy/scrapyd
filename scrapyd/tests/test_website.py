@@ -3,10 +3,9 @@ class TestWebsite:
         content = site_no_egg.children[b'jobs'].render(txrequest)
         expect_headers = {
             b'Content-Type': [b'text/html; charset=utf-8'],
-            b'Content-Length': [b'643']
         }
         headers = txrequest.responseHeaders.getAllRawHeaders()
-        assert dict(headers) == expect_headers
+        assert expect_headers.items() <= dict(headers).items()
         initial = (
             '<html><head><title>Scrapyd</title><style type="text/css">'
             '#jobs>thead td {text-align: center; font-weight'
@@ -20,3 +19,5 @@ class TestWebsite:
         assert headers[b'Content-Type'] == [b'text/html; charset=utf-8']
         # content-length different between my localhost and build environment
         assert b'Content-Length' in headers
+        if site_no_egg.local_items:
+            assert b'Items' in content
