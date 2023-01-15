@@ -46,6 +46,12 @@ class TestWebservice:
         content = site_with_egg.children[endpoint].render_GET(txrequest)
         assert content['projects'] == ['quotesbot']
 
+    def test_list_jobs(self, txrequest, site_with_egg):
+        txrequest.args = {}
+        endpoint = b'listjobs.json'
+        content = site_with_egg.children[endpoint].render_GET(txrequest)
+        assert set(('node_name', 'status', 'pending', 'running', 'finished')) == set(content.keys())
+
     def test_delete_version(self, txrequest, site_with_egg):
         endpoint = b'delversion.json'
         txrequest.args = {
