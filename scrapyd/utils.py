@@ -3,6 +3,7 @@ import os
 import sys
 from subprocess import PIPE, Popen
 
+from packaging.version import InvalidVersion, Version
 from scrapy.utils.misc import load_object
 from twisted.web import resource
 
@@ -156,3 +157,10 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
                         'object, got %s' % type(text).__name__)
 
     return text.decode(encoding, errors)
+
+
+def sorted_versions(versions):
+    try:
+        return sorted(versions, key=Version)
+    except InvalidVersion:
+        return sorted(versions)

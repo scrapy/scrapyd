@@ -24,11 +24,11 @@ class JsonSqliteDictTest(unittest.TestCase):
     def test_in(self):
         d = self.dict_class()
 
-        self.assertFalse('test' in d)
+        self.assertNotIn('test', d)
 
         d['test'] = 123
 
-        self.assertTrue('test' in d)
+        self.assertIn('test', d)
 
     def test_keyerror(self):
         d = self.dict_class()

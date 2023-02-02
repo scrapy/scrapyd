@@ -11,7 +11,7 @@ from twisted.trial import unittest
 
 from scrapyd import get_application
 from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list
+from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list, sorted_versions
 
 
 def get_pythonpath_scrapyd():
@@ -30,14 +30,14 @@ class UtilsTest(unittest.TestCase):
         cargs = get_crawl_args(msg)
 
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1'])
-        assert all(isinstance(x, str) for x in cargs), cargs
+        self.assertTrue(all(isinstance(x, str) for x in cargs), cargs)
 
     def test_get_crawl_args_with_settings(self):
         msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': u'val1', 'settings': {'ONE': 'two'}}
         cargs = get_crawl_args(msg)
 
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1', '-s', 'ONE=two'])
-        assert all(isinstance(x, str) for x in cargs), cargs
+        self.assertTrue(all(isinstance(x, str) for x in cargs), cargs)
 
 
 class GetSpiderListTest(unittest.TestCase):
@@ -119,3 +119,12 @@ class GetSpiderListTest(unittest.TestCase):
         with mock.patch('scrapyd.utils.Popen', wraps=popen_wrapper):
             exc = self.assertRaises(RuntimeError, get_spider_list, 'mybot3', pythonpath=pypath)
         self.assertRegex(str(exc).rstrip(), r'Exception: This should break the `scrapy list` command$')
+
+
+@pytest.mark.parametrize("versions,expected", [
+    (['zzz', 'b', 'ddd', 'a', 'x'], ['a', 'b', 'ddd', 'x', 'zzz']),
+    (["10", "1", "9"], ["1", "9", "10"]),
+    (["2.11", "2.01", "2.9"], ["2.01", "2.9", "2.11"])
+])
+def test_sorted_versions(versions, expected):
+    assert sorted_versions(versions) == expected

@@ -45,13 +45,13 @@ Example response::
 
     {"status": "ok", "spiders": 3}
 
-.. note:: Scrapyd uses the `distutils LooseVersion`_ to interpret the version numbers you provide.
+.. note:: Scrapyd uses the `packaging Version`_ to interpret the version numbers you provide.
 
 The latest version for a project will be used by default whenever necessary.
 
 schedule.json_ and listspiders.json_ allow you to explicitly set the desired project version.
 
-.. _distutils LooseVersion: http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html
+.. _packaging Version: https://packaging.pypa.io/en/stable/version.html
 
 .. _scrapyd-schedule:
 
