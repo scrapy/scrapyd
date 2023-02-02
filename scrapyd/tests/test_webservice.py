@@ -58,15 +58,18 @@ class TestWebservice:
         txrequest.args = {}
         endpoint = b'listjobs.json'
         content = site_with_egg.children[endpoint].render_GET(txrequest)
-        assert {'node_name', 'status', 'pending', 'running', 'finished'} == set(content)
+
+        assert set(content) == {'node_name', 'status', 'pending', 'running', 'finished'}
 
     @mock.patch('scrapyd.jobstorage.MemoryJobStorage.__iter__', new=fake_list_jobs)
     def test_list_jobs_finished(self, txrequest, site_with_egg):
         txrequest.args = {}
         endpoint = b'listjobs.json'
         content = site_with_egg.children[endpoint].render_GET(txrequest)
-        assert {'project', 'spider', 'id', 'start_time', 'end_time', 'logs_url', 'items_url'} == \
-            set(content['finished'][0])
+
+        assert set(content['finished'][0]) == {
+            'project', 'spider', 'id', 'start_time', 'end_time', 'logs_url', 'items_url'
+        }
 
     def test_delete_version(self, txrequest, site_with_egg):
         endpoint = b'delversion.json'

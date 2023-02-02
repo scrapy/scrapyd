@@ -9,7 +9,8 @@ Unreleased
 Added
 ~~~~~
 
-- Python 3.1 support.
+- Add ``item_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
+- Python 3.11 support.
 
 Removed
 ~~~~~~~
@@ -20,9 +21,9 @@ Removed
 Fixed
 ~~~~~
 
-- Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``.
-- Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag.
-- Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice.
+- Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
+- Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag. (@niuguy)
+- Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice. (@Lucioric2000)
 
 1.3.0 (2022-01-12)
 ------------------
