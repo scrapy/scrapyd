@@ -1,39 +1,34 @@
-import io
 import pkgutil
 import sys
 
-from twisted.trial import unittest
+import pytest
 
 from scrapyd.scripts.scrapyd_run import main
 
 __version__ = pkgutil.get_data(__package__, '../VERSION').decode('ascii').strip()
 
 
-class ScriptsTest(unittest.TestCase):
+def test_print_version(capsys, monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['scrapyd', 'junk', '--version', 'junk'])
+    main()
 
-    def test_print_version(self):
-        sys.argv.append('--version')
-        capturedOutput = io.StringIO()
-        sys.stdout = capturedOutput
-        main()
-        sys.stdout = sys.__stdout__
-        self.assertEqual(capturedOutput.getvalue(), f"Scrapyd {__version__}\n")
+    assert capsys.readouterr().out == f"Scrapyd {__version__}\n"
 
-    def test_print_v(self):
-        sys.argv.append('-v')
-        capturedOutput = io.StringIO()
-        sys.stdout = capturedOutput
-        main()
-        sys.stdout = sys.__stdout__
-        self.assertEqual(capturedOutput.getvalue(), f"Scrapyd {__version__}\n")
 
-    def test_twisted_options(self):
-        """
-        Test that the twisted options are correctly parsed.
-        """
-        sys.argv.append('--help')
-        capturedOutput = io.StringIO()
-        sys.stdout = capturedOutput
+def test_print_v(capsys, monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['scrapyd', 'junk', '-v', 'junk'])
+    main()
+
+    assert capsys.readouterr().out == f"Scrapyd {__version__}\n"
+
+
+def test_twisted_options(capsys, monkeypatch):
+    """
+    Test that the twisted options are correctly parsed.
+    """
+    monkeypatch.setattr(sys, 'argv', ['scrapyd', '--help'])
+
+    with pytest.raises(SystemExit):
         main()
-        sys.stdout = sys.__stdout__
-        self.assertIn('twistd', capturedOutput.getvalue())
+
+    assert 'twistd' in capsys.readouterr().out

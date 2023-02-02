@@ -6,15 +6,21 @@ Release notes
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- Python 3.1 support.
+
 Removed
 ~~~~~~~
 
-- Unmaintained files (Debian packaging)
-- Unused code (``scrapyd/script.py``)
+- Python 3.6 support.
+- Unmaintained files (Debian packaging) and unused code (``scrapyd/script.py``).
 
 Fixed
 ~~~~~
 
+- Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag.
 - Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice.
 
 1.3.0 (2022-01-12)
