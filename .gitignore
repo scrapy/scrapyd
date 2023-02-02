@@ -17,3 +17,5 @@ venv
 /dbs
 /htmlcov
 /scrapyd.tests.test_*
+/scrapyd.conf
+/twistd.pid
