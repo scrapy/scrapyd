@@ -23,6 +23,7 @@ setup(
     # The scrapyd command requires the txapp.py to be decompressed. #49
     zip_safe=False,
     install_requires=[
+        'packaging',
         'twisted>=17.9',
         'scrapy>=2.0.0',
         'setuptools',

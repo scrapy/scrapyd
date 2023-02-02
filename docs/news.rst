@@ -20,6 +20,7 @@ Removed
 Fixed
 ~~~~~
 
+- Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``.
 - Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag.
 - Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice.
 
