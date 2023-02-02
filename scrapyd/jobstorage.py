@@ -1,9 +1,10 @@
 import os
 from datetime import datetime
+
 from zope.interface import implementer
 
-from .interfaces import IJobStorage
-from .sqlite import SqliteFinishedJobs
+from scrapyd.interfaces import IJobStorage
+from scrapyd.sqlite import SqliteFinishedJobs
 
 
 class Job(object):
@@ -53,7 +54,7 @@ class SqliteJobStorage(object):
         self.jstorage.clear(self.finished_to_keep)
 
     def list(self):
-        return [j for j in self.__iter__()]
+        return list(self.__iter__())
 
     def __len__(self):
         return len(self.jstorage)

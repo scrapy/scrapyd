@@ -1,20 +1,18 @@
 import sys
 
 from scrapy.utils.misc import load_object
+from twisted.application.internet import TCPServer, TimerService
 from twisted.application.service import Application
-from twisted.application.internet import TimerService, TCPServer
-from twisted.web import server
-from twisted.python import log
 from twisted.cred.portal import Portal
-from twisted.web.guard import HTTPAuthSessionWrapper, BasicCredentialFactory
+from twisted.python import log
+from twisted.web import server
+from twisted.web.guard import BasicCredentialFactory, HTTPAuthSessionWrapper
 
-from scrapy.utils.misc import load_object
-
-from .interfaces import IEggStorage, IJobStorage, IPoller, ISpiderScheduler, IEnvironment
-from .scheduler import SpiderScheduler
-from .poller import QueuePoller
-from .environ import Environment
-from .basicauth import PublicHTMLRealm, StringCredentialsChecker
+from scrapyd.basicauth import PublicHTMLRealm, StringCredentialsChecker
+from scrapyd.environ import Environment
+from scrapyd.interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
+from scrapyd.poller import QueuePoller
+from scrapyd.scheduler import SpiderScheduler
 
 
 def create_wrapped_resource(webcls, config, app):

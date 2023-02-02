@@ -1,12 +1,19 @@
+# Build
+/*.egg-info
+/dist
 *.pyc
-_trial_temp
-docs/_build
-*egg-info
-.tox
-.coverage
+
+# Development
 venv
-dist
-build
 .vscode
-/dbs/
 .idea
+
+# Docs
+/docs/_build
+
+# Tests
+/.coverage
+/_trial_temp
+/dbs
+/htmlcov
+/scrapyd.tests.test_*

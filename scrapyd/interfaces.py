@@ -1,5 +1,6 @@
 from zope.interface import Interface
 
+
 class IEggStorage(Interface):
     """A component that handles storing and retrieving eggs"""
 
@@ -111,6 +112,7 @@ class IEnvironment(Interface):
         `slot` is the Launcher slot where the process will be running.
         """
 
+
 class IJobStorage(Interface):
     """A component that handles storing and retrieving finished jobs. """
 
@@ -124,4 +126,4 @@ class IJobStorage(Interface):
         """Return a number of the finished jobs. """
 
     def __iter__():
-        """Iterate over the finished jobs. """  
+        """Iterate over the finished jobs. """

@@ -1,9 +1,6 @@
 from pathlib import Path
 from unittest import mock
 
-import pytest
-from twisted.web.error import Error
-
 from scrapyd.interfaces import IEggStorage
 
 
@@ -27,6 +24,7 @@ class TestWebservice:
         }
         endpoint = b'listspiders.json'
         content = site_no_egg.children[endpoint].render_GET(txrequest)
+
         assert content['spiders'] == []
         assert content['status'] == 'ok'
 
@@ -37,6 +35,7 @@ class TestWebservice:
         }
         endpoint = b'listversions.json'
         content = site_with_egg.children[endpoint].render_GET(txrequest)
+
         assert content['versions'] == ['0_1']
         assert content['status'] == 'ok'
 
@@ -47,6 +46,7 @@ class TestWebservice:
         }
         endpoint = b'listprojects.json'
         content = site_with_egg.children[endpoint].render_GET(txrequest)
+
         assert content['projects'] == ['quotesbot']
 
     def test_delete_version(self, txrequest, site_with_egg):
@@ -58,12 +58,13 @@ class TestWebservice:
 
         storage = site_with_egg.app.getComponent(IEggStorage)
         egg = storage.get('quotesbot')
-        assert egg[0] is not None
         content = site_with_egg.children[endpoint].render_POST(txrequest)
+        no_egg = storage.get('quotesbot')
+
+        assert egg[0] is not None
         assert content['status'] == 'ok'
         assert 'node_name' in content
         assert storage.get('quotesbot')
-        no_egg = storage.get('quotesbot')
         assert no_egg[0] is None
 
     def test_delete_project(self, txrequest, site_with_egg):
@@ -74,13 +75,13 @@ class TestWebservice:
 
         storage = site_with_egg.app.getComponent(IEggStorage)
         egg = storage.get('quotesbot')
-        assert egg[0] is not None
-
         content = site_with_egg.children[endpoint].render_POST(txrequest)
+        no_egg = storage.get('quotesbot')
+
+        assert egg[0] is not None
         assert content['status'] == 'ok'
         assert 'node_name' in content
         assert storage.get('quotesbot')
-        no_egg = storage.get('quotesbot')
         assert no_egg[0] is None
 
     @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
@@ -96,13 +97,13 @@ class TestWebservice:
 
         storage = site_no_egg.app.getComponent(IEggStorage)
         egg = storage.get('quotesbot')
-        assert egg[0] is None
-
         content = site_no_egg.children[endpoint].render_POST(txrequest)
+        no_egg = storage.get('quotesbot')
+
+        assert egg[0] is None
         assert content['status'] == 'ok'
         assert 'node_name' in content
         assert storage.get('quotesbot')
-        no_egg = storage.get('quotesbot')
         assert no_egg[0] == '0_1'
 
     @mock.patch('scrapyd.webservice.get_spider_list',
@@ -115,6 +116,7 @@ class TestWebservice:
         }
 
         content = site_with_egg.children[endpoint].render_POST(txrequest)
+
         assert site_with_egg.scheduler.calls == [['quotesbot', 'toscrape-css']]
         assert content['status'] == 'ok'
         assert 'jobid' in content

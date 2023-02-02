@@ -1,10 +1,11 @@
-from configparser import ConfigParser, NoSectionError, NoOptionError
 import glob
 import io
-from pkgutil import get_data
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os.path import expanduser
+from pkgutil import get_data
 
 from scrapy.utils.conf import closest_scrapy_cfg
+
 
 class Config(object):
     """A ConfigParser wrapper to support defaults when calling instance

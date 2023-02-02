@@ -1,12 +1,13 @@
 import re
-from glob import glob
-from os import path, makedirs, remove, listdir
-from shutil import copyfileobj, rmtree
 from distutils.version import LooseVersion
+from glob import glob
+from os import listdir, makedirs, path, remove
+from shutil import copyfileobj, rmtree
 
 from zope.interface import implementer
 
-from .interfaces import IEggStorage
+from scrapyd.interfaces import IEggStorage
+
 
 @implementer(IEggStorage)
 class FilesystemEggStorage(object):
@@ -32,8 +33,8 @@ class FilesystemEggStorage(object):
 
     def list(self, project):
         eggdir = path.join(self.basedir, project)
-        versions = [path.splitext(path.basename(x))[0] \
-            for x in glob("%s/*.egg" % eggdir)]
+        versions = [path.splitext(path.basename(x))[0]
+                    for x in glob("%s/*.egg" % eggdir)]
         return sorted(versions, key=LooseVersion)
 
     def list_projects(self):
@@ -48,7 +49,7 @@ class FilesystemEggStorage(object):
             rmtree(path.join(self.basedir, project))
         else:
             remove(self._eggpath(project, version))
-            if not self.list(project): # remove project if no versions left
+            if not self.list(project):  # remove project if no versions left
                 self.delete(project)
 
     def _eggpath(self, project, version):

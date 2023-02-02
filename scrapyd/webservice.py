@@ -1,14 +1,12 @@
-from copy import copy
 import traceback
 import uuid
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from copy import copy
+from io import BytesIO
 
 from twisted.python import log
 
-from .utils import get_spider_list, JsonResource, UtilsCache, native_stringify_dict
+from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+
 
 class WsResource(JsonResource):
 
@@ -26,6 +24,7 @@ class WsResource(JsonResource):
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest).encode('utf-8')
 
+
 class DaemonStatus(WsResource):
 
     def render_GET(self, txrequest):
@@ -33,7 +32,13 @@ class DaemonStatus(WsResource):
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
 
-        return {"node_name": self.root.nodename, "status":"ok", "pending": pending, "running": running, "finished": finished}
+        return {
+            "node_name": self.root.nodename,
+            "status": "ok",
+            "pending": pending,
+            "running": running,
+            "finished": finished,
+        }
 
 
 class Schedule(WsResource):
@@ -42,13 +47,13 @@ class Schedule(WsResource):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         settings = args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
-        args = dict((k, v[0]) for k, v in args.items())
+        args = {k: v[0] for k, v in args.items()}
         project = args.pop('project')
         spider = args.pop('spider')
         version = args.get('_version', '')
         priority = float(args.pop('priority', 0))
         spiders = get_spider_list(project, version=version)
-        if not spider in spiders:
+        if spider not in spiders:
             return {"status": "error", "message": "spider '%s' not found" % spider}
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
@@ -56,12 +61,11 @@ class Schedule(WsResource):
         self.root.scheduler.schedule(project, spider, priority=priority, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
+
 class Cancel(WsResource):
 
     def render_POST(self, txrequest):
-        args = dict((k, v[0])
-                    for k, v in native_stringify_dict(copy(txrequest.args),
-                                    keys_only=False).items())
+        args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
         project = args['project']
         jobid = args['job']
         signal = args.get('signal', 'TERM')
@@ -77,6 +81,7 @@ class Cancel(WsResource):
                 prevstate = "running"
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
+
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
@@ -88,14 +93,16 @@ class AddVersion(WsResource):
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
-        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version, \
-            "spiders": len(spiders)}
+        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version,
+                "spiders": len(spiders)}
+
 
 class ListProjects(WsResource):
 
     def render_GET(self, txrequest):
         projects = list(self.root.scheduler.list_projects())
         return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
+
 
 class ListVersions(WsResource):
 
@@ -105,6 +112,7 @@ class ListVersions(WsResource):
         versions = self.root.eggstorage.list(project)
         return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
+
 class ListSpiders(WsResource):
 
     def render_GET(self, txrequest):
@@ -113,6 +121,7 @@ class ListSpiders(WsResource):
         version = args.get('_version', [''])[0]
         spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
+
 
 class ListJobs(WsResource):
 
@@ -146,6 +155,7 @@ class ListJobs(WsResource):
         return {"node_name": self.root.nodename, "status": "ok",
                 "pending": pending, "running": running, "finished": finished}
 
+
 class DeleteProject(WsResource):
 
     def render_POST(self, txrequest):
@@ -158,6 +168,7 @@ class DeleteProject(WsResource):
     def _delete_version(self, project, version=None):
         self.root.eggstorage.delete(project, version)
         self.root.update_projects()
+
 
 class DeleteVersion(DeleteProject):
 

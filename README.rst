@@ -18,7 +18,7 @@ http://scrapyd.readthedocs.org/
 .. |Coverage Status| image:: https://codecov.io/gh/scrapy/scrapyd/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/scrapy/scrapyd
 .. |Python Version| image:: https://img.shields.io/pypi/pyversions/scrapyd.svg
-   :target: https://pypi.org/project/scrapydt/
+   :target: https://pypi.org/project/scrapyd/
 .. |Pypi Downloads| image:: https://img.shields.io/pypi/dm/scrapyd.svg
    :target: https://pypi.python.org/pypi/scrapyd/
 .. _Scrapy: https://github.com/scrapy/scrapy

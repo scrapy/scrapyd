@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-from twisted.scripts.twistd import run
-from os.path import join, dirname
+from os.path import dirname, join
 from sys import argv
+
+from twisted.scripts.twistd import run
+
 import scrapyd
 import pkgutil
 

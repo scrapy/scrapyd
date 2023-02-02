@@ -4,8 +4,9 @@ import sys
 import tempfile
 from contextlib import contextmanager
 
-from scrapyd import Config
 from scrapy.utils.misc import load_object
+
+from scrapyd import Config
 from scrapyd.eggutils import activate_egg
 
 
@@ -36,11 +37,13 @@ def project_environment(project):
         if eggpath:
             os.remove(eggpath)
 
+
 def main():
     project = os.environ['SCRAPY_PROJECT']
     with project_environment(project):
         from scrapy.cmdline import execute
         execute()
+
 
 if __name__ == '__main__':
     main()

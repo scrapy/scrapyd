@@ -1,14 +1,13 @@
 from io import BytesIO
-from zope.interface import implementer
 
 from twisted.trial import unittest
-
+from zope.interface import implementer
 from zope.interface.verify import verifyObject
 
-from scrapyd.interfaces import IEggStorage
 from scrapyd.app import application
 from scrapyd.config import Config
 from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.interfaces import IEggStorage
 
 
 @implementer(IEggStorage)
@@ -39,8 +38,9 @@ class TestConfigureEggStorage(unittest.TestCase):
         config.cp.set('scrapyd', 'eggstorage', eggstore)
         app = application(config)
         app_eggstorage = app.getComponent(IEggStorage)
+
         assert isinstance(app_eggstorage, SomeFakeEggStorage)
-        app_eggstorage.list_projects() == ['hello_world']
+        assert app_eggstorage.list_projects() == ['hello_world']
 
 
 class EggStorageTest(unittest.TestCase):
