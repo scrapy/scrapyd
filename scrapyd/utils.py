@@ -3,6 +3,7 @@ import os
 import sys
 from subprocess import PIPE, Popen
 
+from packaging.version import InvalidVersion, Version
 from scrapy.utils.misc import load_object
 from twisted.web import resource
 
@@ -129,7 +130,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         env['PYTHONPATH'] = pythonpath
     if version:
         env['SCRAPY_EGG_VERSION'] = version
-    pargs = [sys.executable, '-m', runner, 'list']
+    pargs = [sys.executable, '-m', runner, 'list', "--set=LOG_STDOUT=0"]
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
     if proc.returncode:
@@ -156,3 +157,10 @@ def _to_native_str(text, encoding='utf-8', errors='strict'):
                         'object, got %s' % type(text).__name__)
 
     return text.decode(encoding, errors)
+
+
+def sorted_versions(versions):
+    try:
+        return sorted(versions, key=Version)
+    except InvalidVersion:
+        return sorted(versions)

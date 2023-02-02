@@ -7,5 +7,6 @@ recursive-include docs *.txt
 recursive-include docs Makefile
 recursive-include scrapyd *.py
 recursive-include scrapyd *.egg
+recursive-include integration_tests *.py
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yaml

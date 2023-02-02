@@ -48,7 +48,7 @@ class Schedule(WsResource):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         settings = args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
-        args = dict((k, v[0]) for k, v in args.items())
+        args = {k: v[0] for k, v in args.items()}
         project = args.pop('project')
         spider = args.pop('spider')
         version = args.get('_version', '')
@@ -66,9 +66,7 @@ class Schedule(WsResource):
 class Cancel(WsResource):
 
     def render_POST(self, txrequest):
-        args = dict((k, v[0])
-                    for k, v in native_stringify_dict(copy(txrequest.args),
-                                                      keys_only=False).items())
+        args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
         project = args['project']
         jobid = args['job']
         signal = args.get('signal', 'TERM')

@@ -36,17 +36,21 @@ class QueuePollerTest(unittest.TestCase):
 
         d1 = self.poller.next()
         d2 = self.poller.next()
+
         self.assertIsInstance(d1, Deferred)
         self.assertFalse(hasattr(d1, 'result'))
 
         # poll once
         self.poller.poll()
+
         self.assertTrue(hasattr(d1, 'result'))
         self.assertTrue(getattr(d1, 'called', False))
 
         # which project got run: project1 or project2?
         self.assertTrue(d1.result.get('_project'))
+
         prj = d1.result['_project']
+
         self.assertEqual(d1.result['_spider'], cfg.pop(prj))
 
         self.queues[prj].pop()
@@ -55,4 +59,5 @@ class QueuePollerTest(unittest.TestCase):
         # check that the other project's spider got to run
         self.poller.poll()
         prj, spd = cfg.popitem()
+
         self.assertEqual(d2.result, {'_project': prj, '_spider': spd})

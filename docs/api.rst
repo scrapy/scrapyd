@@ -45,13 +45,13 @@ Example response::
 
     {"status": "ok", "spiders": 3}
 
-.. note:: Scrapyd uses the `distutils LooseVersion`_ to interpret the version numbers you provide.
+.. note:: Scrapyd uses the `packaging Version`_ to interpret the version numbers you provide.
 
 The latest version for a project will be used by default whenever necessary.
 
 schedule.json_ and listspiders.json_ allow you to explicitly set the desired project version.
 
-.. _distutils LooseVersion: http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html
+.. _packaging Version: https://packaging.pypa.io/en/stable/version.html
 
 .. _scrapyd-schedule:
 
@@ -84,8 +84,15 @@ Example request passing a spider argument (``arg1``) and a setting
 
     $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider -d setting=DOWNLOAD_DELAY=2 -d arg1=val1
 
-.. note:: Spiders scheduled with scrapyd should allow for an arbitrary number of keyword arguments
-          as scrapyd sends internally generated spider arguments to the spider being scheduled
+.. note::
+
+    Spiders scheduled with Scrapyd should allow for an arbitrary number of keyword arguments,
+    as Scrapyd sends internally-generated spider arguments to the spider being scheduled.
+
+.. note::
+
+    When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first
+    value is sent to the spider.
 
 .. _cancel.json:
 

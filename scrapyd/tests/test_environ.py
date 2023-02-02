@@ -25,6 +25,7 @@ class EnvironmentTest(unittest.TestCase):
         msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
         slot = 3
         env = self.environ.get_environment(msg, slot)
+
         self.assertEqual(env['SCRAPY_PROJECT'], 'mybot')
         self.assertEqual(env['SCRAPY_SLOT'], '3')
         self.assertEqual(env['SCRAPY_SPIDER'], 'myspider')
@@ -43,5 +44,6 @@ class EnvironmentTest(unittest.TestCase):
         slot = 3
         environ = Environment(config, initenv={})
         env = environ.get_environment(msg, slot)
+
         self.assertNotIn('SCRAPY_FEED_URI', env)
         self.assertNotIn('SCRAPY_LOG_FILE', env)
