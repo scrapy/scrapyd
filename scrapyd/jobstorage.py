@@ -54,7 +54,7 @@ class SqliteJobStorage(object):
         self.jstorage.clear(self.finished_to_keep)
 
     def list(self):
-        return [j for j in self.__iter__()]
+        return list(self.__iter__())
 
     def __len__(self):
         return len(self.jstorage)

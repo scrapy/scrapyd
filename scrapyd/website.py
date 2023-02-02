@@ -187,39 +187,44 @@ class Jobs(resource.Resource):
 
     def prep_tab_pending(self):
         return '\n'.join(
-            self.prep_row(dict(
-                Project=project, Spider=m['name'], Job=m['_job'],
-                Cancel=self.cancel_button(project=project, jobid=m['_job'])
-            ))
+            self.prep_row({
+                "Project": project,
+                "Spider": m['name'],
+                "Job": m['_job'],
+                "Cancel": self.cancel_button(project=project, jobid=m['_job']),
+            })
             for project, queue in self.root.poller.queues.items()
             for m in queue.list()
         )
 
     def prep_tab_running(self):
         return '\n'.join(
-            self.prep_row(dict(
-                Project=p.project, Spider=p.spider,
-                Job=p.job, PID=p.pid,
-                Start=microsec_trunc(p.start_time),
-                Runtime=microsec_trunc(datetime.now() - p.start_time),
-                Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
-                Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
-                Cancel=self.cancel_button(project=p.project, jobid=p.job)
-            ))
+            self.prep_row({
+                "Project": p.project,
+                "Spider": p.spider,
+                "Job": p.job,
+                "PID": p.pid,
+                "Start": microsec_trunc(p.start_time),
+                "Runtime": microsec_trunc(datetime.now() - p.start_time),
+                "Log": '<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
+                "Items": '<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
+                "Cancel": self.cancel_button(project=p.project, jobid=p.job),
+            })
             for p in self.root.launcher.processes.values()
         )
 
     def prep_tab_finished(self):
         return '\n'.join(
-            self.prep_row(dict(
-                Project=p.project, Spider=p.spider,
-                Job=p.job,
-                Start=microsec_trunc(p.start_time),
-                Runtime=microsec_trunc(p.end_time - p.start_time),
-                Finish=microsec_trunc(p.end_time),
-                Log='<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
-                Items='<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
-            ))
+            self.prep_row({
+                "Project": p.project,
+                "Spider": p.spider,
+                "Job": p.job,
+                "Start": microsec_trunc(p.start_time),
+                "Runtime": microsec_trunc(p.end_time - p.start_time),
+                "Finish": microsec_trunc(p.end_time),
+                "Log": '<a href="/logs/%s/%s/%s.log">Log</a>' % (p.project, p.spider, p.job),
+                "Items": '<a href="/items/%s/%s/%s.jl">Items</a>' % (p.project, p.spider, p.job),
+            })
             for p in self.root.launcher.finished
         )
 

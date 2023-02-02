@@ -38,8 +38,9 @@ class TestConfigureEggStorage(unittest.TestCase):
         config.cp.set('scrapyd', 'eggstorage', eggstore)
         app = application(config)
         app_eggstorage = app.getComponent(IEggStorage)
+
         assert isinstance(app_eggstorage, SomeFakeEggStorage)
-        app_eggstorage.list_projects() == ['hello_world']
+        assert app_eggstorage.list_projects() == ['hello_world']
 
 
 class EggStorageTest(unittest.TestCase):
