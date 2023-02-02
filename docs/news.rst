@@ -12,37 +12,37 @@ Removed
 - Unmaintained files (Debian packaging)
 - Unused code (``scrapyd/script.py``)
 
-1.3.0
------
-*Release date: 2022-01-12*
+Fixed
+~~~~~
+
+- Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice.
+
+1.3.0 (2022-01-12)
+------------------
 
 Added
 ~~~~~
 
-- support for HTTP authentication in scrapyd server
-- Jobs website shortcut to cancel a job using the cancel.json webservice.
-- Make project argument to listjobs.json optional,
-  so that we can easily query for all jobs.
-- Python 3.7, 3.8, 3.9, 3.10 support
-- Configuration option for job storage class
-- Configuration option for egg storage class
-- improved HTTP headers in webservice
-- improved test coverage
+- Add support for HTTP authentication.
+- Improve HTTP headers across webservices.
+- Add shortcut to jobs page to cancel a job using the cancel.json webservice.
+- Make ``project`` argument to listjobs.json optional, to easily query for all jobs.
+- Add configuration options for job storage class and egg storage class.
+- Improve test coverage.
+- Python 3.7, 3.8, 3.9, 3.10 support.
 
 Removed
 ~~~~~~~
 
-- Python 2 support
-- Python 3.3 support (although never officially supported)
-- Python 3.4 support
-- Python 3.5 support
-- Pypy 2 support
-- Doc for ubuntu installs, Zyte no longer maintains ubuntu repo.
+- Python 2, 3.3, 3.4, 3.5 support.
+- PyPy 2 support.
+- Documentation for Ubuntu installs (Zyte no longer maintains the Ubuntu package).
 
 Fixed
 ~~~~~
-- ScrapyD now respects Scrapy TWISTED_REACTOR setting
-- replaced deprecated SafeConfigParser with ConfigParser
+
+- Respect Scrapy's ``TWISTED_REACTOR`` setting.
+- Replace deprecated ``SafeConfigParser`` with ``ConfigParser``.
 
 1.2.1
 -----
@@ -55,9 +55,8 @@ Fixed
 - AddVersion's arguments' string types were breaking the environment in windows
 - Tests: Updated binary eggs to be scrapy-1.x compatible
 
-1.2.0
------
-*Release date: 2017-04-12*
+1.2.0 (2017-04-12)
+------------------
 
 The highlight of this release is the long-awaited Python 3 support.
 
@@ -105,9 +104,8 @@ Fixed
 
 - Poller race condition for concurrently accessed queues
 
-1.1.1
------
-*Release date: 2016-11-03*
+1.1.1 (2016-11-03)
+------------------
 
 Removed
 ~~~~~~~
@@ -135,9 +133,8 @@ Added
 - Note the spider queue's ``priority`` argument in the scheduler's doc.
 
 
-1.1.0
------
-*Release date: 2015-06-29*
+1.1.0 (2015-06-29)
+------------------
 
 Features & Enhancements
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,9 +179,8 @@ Documentation
 - Point website module's links to readthedocs (215c700)
 - Remove reference to 'scrapy server' command (f599b60)
 
-1.0.2
------
-*Release date: 2016-03-28*
+1.0.2 (2016-03-28)
+------------------
 
 setup script
 ~~~~~~~~~~~~
@@ -198,13 +194,12 @@ documentation
 - Updated broken links, references to wrong versions and scrapy
 - Warn that scrapyd 1.0 felling out of support
 
-1.0.1
------
-*Release date: 2013-09-02*
+1.0.1 (2013-09-02)
+------------------
+
 *Trivial update*
 
-1.0.0
------
-*Release date: 2013-09-02*
+1.0.0 (2013-09-02)
+------------------
 
 First standalone release (it was previously shipped with Scrapy until Scrapy 0.16).
