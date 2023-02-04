@@ -2,6 +2,11 @@ from pathlib import Path
 from unittest import mock
 
 from scrapyd.interfaces import IEggStorage
+from scrapyd.jobstorage import Job
+
+
+def fake_list_jobs(*args, **kwargs):
+    yield Job('proj1', 'spider-a', 'id1234')
 
 
 def fake_list_spiders(*args, **kwargs):
@@ -48,6 +53,23 @@ class TestWebservice:
         content = site_with_egg.children[endpoint].render_GET(txrequest)
 
         assert content['projects'] == ['quotesbot']
+
+    def test_list_jobs(self, txrequest, site_with_egg):
+        txrequest.args = {}
+        endpoint = b'listjobs.json'
+        content = site_with_egg.children[endpoint].render_GET(txrequest)
+
+        assert set(content) == {'node_name', 'status', 'pending', 'running', 'finished'}
+
+    @mock.patch('scrapyd.jobstorage.MemoryJobStorage.__iter__', new=fake_list_jobs)
+    def test_list_jobs_finished(self, txrequest, site_with_egg):
+        txrequest.args = {}
+        endpoint = b'listjobs.json'
+        content = site_with_egg.children[endpoint].render_GET(txrequest)
+
+        assert set(content['finished'][0]) == {
+            'project', 'spider', 'id', 'start_time', 'end_time', 'log_url', 'items_url'
+        }
 
     def test_delete_version(self, txrequest, site_with_egg):
         endpoint = b'delversion.json'

@@ -7,6 +7,14 @@ from scrapyd.interfaces import IJobStorage
 from scrapyd.sqlite import SqliteFinishedJobs
 
 
+def job_log_url(job):
+    return f"/logs/{job.project}/{job.spider}/{job.job}.log"
+
+
+def job_items_url(job):
+    return f"/items/{job.project}/{job.spider}/{job.job}.jl"
+
+
 class Job(object):
     def __init__(self, project, spider, job=None, start_time=None, end_time=None):
         self.project = project

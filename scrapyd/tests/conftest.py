@@ -47,9 +47,15 @@ def txrequest():
     return Request(http_channel)
 
 
-def common_app_fixture(request):
-    config = Config()
+@pytest.fixture(params=[None, ('scrapyd', 'items_dir', 'items')], ids=["default", "default_with_local_items"])
+def fxt_config(request):
+    conf = Config()
+    if request.param:
+        conf.cp.set(*request.param)
+    return conf
 
+
+def common_app_fixture(request, config):
     app = application(config)
     project, version = 'quotesbot', '0.1'
     storage = app.getComponent(IEggStorage)
@@ -65,14 +71,14 @@ def common_app_fixture(request):
 
 
 @pytest.fixture
-def site_no_egg(request):
-    root, storage = common_app_fixture(request)
+def site_no_egg(request, fxt_config):
+    root, storage = common_app_fixture(request, fxt_config)
     return root
 
 
 @pytest.fixture
-def site_with_egg(request):
-    root, storage = common_app_fixture(request)
+def site_with_egg(request, fxt_config):
+    root, storage = common_app_fixture(request, fxt_config)
 
     egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
     project, version = 'quotesbot', '0.1'
