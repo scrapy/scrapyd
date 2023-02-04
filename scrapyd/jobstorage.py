@@ -7,7 +7,7 @@ from scrapyd.interfaces import IJobStorage
 from scrapyd.sqlite import SqliteFinishedJobs
 
 
-def job_logs_url(job):
+def job_log_url(job):
     return f"/logs/{job.project}/{job.spider}/{job.job}.log"
 
 

@@ -68,7 +68,7 @@ class TestWebservice:
         content = site_with_egg.children[endpoint].render_GET(txrequest)
 
         assert set(content['finished'][0]) == {
-            'project', 'spider', 'id', 'start_time', 'end_time', 'logs_url', 'items_url'
+            'project', 'spider', 'id', 'start_time', 'end_time', 'log_url', 'items_url'
         }
 
     def test_delete_version(self, txrequest, site_with_egg):

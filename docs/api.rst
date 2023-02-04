@@ -213,7 +213,7 @@ Example response::
                 "project": "myproject", "spider": "spider3",
                 "start_time": "2012-09-12 10:14:03.594664",
                 "end_time": "2012-09-12 10:24:03.594664",
-                "logs_url": "/logs/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.log",
+                "log_url": "/logs/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.log",
                 "items_url": "/items/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.jl"
             }
         ]

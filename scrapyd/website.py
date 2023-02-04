@@ -7,7 +7,7 @@ from twisted.application.service import IServiceCollection
 from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
-from scrapyd.jobstorage import job_items_url, job_logs_url
+from scrapyd.jobstorage import job_items_url, job_log_url
 
 
 class Root(resource.Resource):
@@ -207,7 +207,7 @@ class Jobs(resource.Resource):
                 "PID": p.pid,
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(datetime.now() - p.start_time),
-                "Log": f'<a href="{job_logs_url(p)}">Log</a>',
+                "Log": f'<a href="{job_log_url(p)}">Log</a>',
                 "Items": f'<a href="{job_items_url(p)}">Items</a>',
                 "Cancel": self.cancel_button(project=p.project, jobid=p.job),
             })
@@ -223,7 +223,7 @@ class Jobs(resource.Resource):
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(p.end_time - p.start_time),
                 "Finish": microsec_trunc(p.end_time),
-                "Log": f'<a href="{job_logs_url(p)}">Log</a>',
+                "Log": f'<a href="{job_log_url(p)}">Log</a>',
                 "Items": f'<a href="{job_items_url(p)}">Items</a>',
             })
             for p in self.root.launcher.finished
