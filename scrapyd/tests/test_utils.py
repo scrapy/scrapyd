@@ -63,6 +63,12 @@ class GetSpiderListTest(unittest.TestCase):
         eggfile = BytesIO(get_data("scrapyd.tests", file))
         eggstorage.put(eggfile, project, version)
 
+    def test_get_spider_list_log_stdout(self):
+        self.add_test_version('logstdout.egg', 'logstdout', 'logstdout')
+        spiders = get_spider_list('logstdout', pythonpath=get_pythonpath_scrapyd())
+        # If LOG_STDOUT were respected, the output would be [].
+        self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
+
     def test_get_spider_list(self):
         # mybot.egg has two spiders, spider1 and spider2
         self.add_test_version('mybot.egg', 'mybot', 'r1')
