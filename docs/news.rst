@@ -15,6 +15,7 @@ Added
 Removed
 ~~~~~~~
 
+- Scrapy 1.x support.
 - Python 3.6 support.
 - Unmaintained files (Debian packaging) and unused code (``scrapyd/script.py``).
 
@@ -32,9 +33,9 @@ Added
 ~~~~~
 
 - Add support for HTTP authentication.
+- Make ``project`` argument to listjobs.json optional, to easily query for all jobs.
 - Improve HTTP headers across webservices.
 - Add shortcut to jobs page to cancel a job using the cancel.json webservice.
-- Make ``project`` argument to listjobs.json optional, to easily query for all jobs.
 - Add configuration options for job storage class and egg storage class.
 - Improve test coverage.
 - Python 3.7, 3.8, 3.9, 3.10 support.
@@ -52,94 +53,92 @@ Fixed
 - Respect Scrapy's ``TWISTED_REACTOR`` setting.
 - Replace deprecated ``SafeConfigParser`` with ``ConfigParser``.
 
-1.2.1
------
-*Release date: 2019-06-17*
+1.2.1 (2019-06-17)
+------------------
 
 Fixed
 ~~~~~
-- http header types were breaking newer twisted versions
-- DeferredQueue was hiding a pending job when reaching max_proc
-- AddVersion's arguments' string types were breaking the environment in windows
-- Tests: Updated binary eggs to be scrapy-1.x compatible
+
+- Fix HTTP header types for newer Twisted versions.
+- ``DeferredQueue`` no longer hides a pending job when reaching ``max_proc``.
+- ``AddVersion``'s arguments' string types no longer break Windows environments.
+- test: Update binary eggs to be compatible with Scrapy 1.x.
+
+Removed
+~~~~~~~
+
+- Remove deprecated SQLite utilities.
 
 1.2.0 (2017-04-12)
 ------------------
 
-The highlight of this release is the long-awaited Python 3 support.
-
-The new scrapy requirement is version 1.0 or higher.
-Python 2.6 is no longer supported by scrapyd.
-
-Some unused sqlite utilities are now deprecated
-and will be removed from a later scrapyd release.
-Instantiating them or subclassing from them
-will trigger a deprecation warning.
-These are located under ``scrapyd.sqlite``:
-
-- SqliteDict
-- SqlitePickleDict
-- SqlitePriorityQueue
-- PickleSqlitePriorityQueue
-
 Added
 ~~~~~
 
-- Include run's PID in listjobs webservice.
-- Include full tracebacks from scrapy when failing to get spider list.
-  This will lead to more noisy webservice output
-  but will make debugging deployment problems much easier.
-- Include start/finish time in daemon's joblist page
-- Twisted 16 compatibility
-- Python 3 compatibility
-- Make console script executable
-- Project version argument in the schedule webservice
-- Configuration option for website root class
-- Optional jobid argument to schedule webservice
-- Contribution documentation
-- Daemon status webservice
+- Webservice
+
+  - Add daemonstatus.json webservice.
+  - Add project version argument to the schedule.json webservice.
+  - Add jobid argument to the schedule.json webservice.
+  - Add the run's PID to the response of the listjobs.json webservice.
+  - Include full tracebacks from Scrapy when failing to get spider list.
+    This makes debugging deployment problems easier, but webservice output noisier.
+
+- Website
+
+  - Add ``webroot`` configuration option for website root class.
+  - Add start and finish times to jobs page.
+
+- Make console script executable.
+- Add contributing documentation.
+- Twisted 16 support.
+- Python 3 support.
+
+Changed
+~~~~~~~
+
+- Change ``bind_address`` default to 127.0.0.1, instead of 0.0.0.0, to listen only for connections from localhost.
 
 Removed
 ~~~~~~~
 
-- scrapyd's bind_address now defaults to 127.0.0.1 instead of 0.0.0.0
-  to listen only for connection from the local host
-- scrapy < 1.0 compatibility
-- python < 2.7 compatibility
+- Deprecate unused SQLite utilities in the ``scrapyd.sqlite`` module.
+
+  - ``SqliteDict``
+  - ``SqlitePickleDict``
+  - ``SqlitePriorityQueue``
+  - ``PickleSqlitePriorityQueue``
+
+- Scrapy 0.x support.
+- Python 2.6 support.
 
 Fixed
 ~~~~~
 
-- Poller race condition for concurrently accessed queues
+- Poller race condition for concurrently accessed queues.
 
 1.1.1 (2016-11-03)
 ------------------
 
+Added
+~~~~~
+
+- Document and include missing configuration options in ``default_scrapyd.conf``.
+- Document the spider queue's ``priority`` argument.
+- Enable some missing tests for the SQLite queues.
+
 Removed
 ~~~~~~~
 
-- Disabled bdist_wheel command in setup to define dynamic requirements
-  despite of pip-7 wheel caching bug.
+- Disable bdist_wheel command in setup to define dynamic requirements, despite pip-7 wheel caching bug.
 
 Fixed
 ~~~~~
 
-- Use correct type adapter for sqlite3 blobs.
-  In some systems, a wrong type adapter leads to incorrect buffer reads/writes.
-- FEED_URI was always overridden by scrapyd
-- Specified maximum versions for requirements that became incompatible.
-- Marked package as zip-unsafe because twistd requires a plain ``txapp.py``
-- Don't install zipped scrapy in py26 CI env
-  because its setup doesn't include the ``scrapy/VERSION`` file.
-
-Added
-~~~~~
-
-- Enabled some missing tests for the sqlite queues.
-- Enabled CI tests for python2.6 because it was supported by the 1.1 release.
-- Document missing config options and include in default_scrapyd.conf
-- Note the spider queue's ``priority`` argument in the scheduler's doc.
-
+- Use correct type adapter for sqlite3 blobs. In some systems, a wrong type adapter leads to incorrect buffer reads/writes.
+- ``FEED_URI`` was always overridden by Scrapyd.
+- Specify maximum versions for requirements that became incompatible.
+- Mark package as zip-unsafe because Twistd requires a plain ``txapp.py``.
 
 1.1.0 (2015-06-29)
 ------------------
