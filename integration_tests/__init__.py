@@ -9,7 +9,7 @@ def req(method, path, auth=None, **kwargs):
     for badauth in (None, ("baduser", "badpass")):
         response = getattr(requests, method)(url, auth=badauth, **kwargs)
 
-        assert response.status_code == 401
+        assert response.status_code == 401, response.status_code
         assert response.text == "Unauthorized"
 
     response = getattr(requests, method)(url, auth=("hello12345", "67890world"), **kwargs)

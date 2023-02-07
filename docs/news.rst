@@ -10,7 +10,24 @@ Added
 ~~~~~
 
 - Add ``item_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
+- Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
+
+Changed
+~~~~~~~
+
+- Rename environment variables to avoid spurious Scrapy deprecation warnings.
+
+  - ``SCRAPY_EGG_VERSION`` to ``SCRAPYD_EGG_VERSION``
+  - ``SCRAPY_FEED_URI`` to ``SCRAPYD_FEED_URI``
+  - ``SCRAPY_JOB`` to ``SCRAPYD_JOB``
+  - ``SCRAPY_LOG_FILE`` to ``SCRAPYD_LOG_FILE``
+  - ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
+  - ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
+
+  .. attention::
+
+    These are undocumented and unused, and may be removed in future versions. If you use these environment variables, please `report your use in an issue <https://github.com/scrapy/scrapyd/issues>`__.
 
 Removed
 ~~~~~~~
