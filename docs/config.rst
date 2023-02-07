@@ -94,7 +94,7 @@ The directory where the Scrapy items will be stored.
 This option is disabled by default
 because you are expected to use a database or a feed exporter.
 Setting it to non-empty results in storing scraped item feeds
-to the specified directory by overriding the scrapy setting ``FEED_URI``.
+to the specified directory by overriding the scrapy setting ``FEEDS``.
 
 .. _jobs_to_keep:
 

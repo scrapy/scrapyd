@@ -34,11 +34,13 @@ class Launcher(Service):
         poller.next().addCallback(self._spawn_process, slot)
 
     def _spawn_process(self, message, slot):
+        e = self.app.getComponent(IEnvironment)
+        message.setdefault('settings', {})
+        message['settings'].update(e.get_settings(message))
         msg = native_stringify_dict(message, keys_only=False)
         project = msg['_project']
         args = [sys.executable, '-m', self.runner, 'crawl']
         args += get_crawl_args(msg)
-        e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
         pp = ScrapyProcessProtocol(slot, project, msg['_spider'],
@@ -75,8 +77,8 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.start_time = datetime.now()
         self.end_time = None
         self.env = env
-        self.logfile = env.get('SCRAPY_LOG_FILE')
-        self.itemsfile = env.get('SCRAPY_FEED_URI')
+        self.logfile = env.get('SCRAPYD_LOG_FILE')
+        self.itemsfile = env.get('SCRAPYD_FEED_URI')
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
