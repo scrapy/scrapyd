@@ -3,8 +3,8 @@
 Release notes
 =============
 
-Unreleased
-----------
+1.4.0 (2023-02-07)
+------------------
 
 Added
 ~~~~~
@@ -12,6 +12,7 @@ Added
 - Add ``item_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
 - Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
+- Python 3.12 support. Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
 
 Changed
 ~~~~~~~
@@ -39,9 +40,8 @@ Removed
 Fixed
 ~~~~~
 
-- Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
 - Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag. (@niuguy)
-- Override Scrapy's ``LOG_STDOUT`` to ``False`` to suppress logging output for listspiders.json webservice. (@Lucioric2000)
+- Override Scrapy's ``LOG_STDOUT`` setting to ``False`` to suppress logging output for listspiders.json webservice. (@Lucioric2000)
 
 1.3.0 (2022-01-12)
 ------------------
