@@ -19,3 +19,6 @@ venv
 /scrapyd.tests.test_*
 /scrapyd.conf
 /twistd.pid
+/eggs
+/items
+/logs
