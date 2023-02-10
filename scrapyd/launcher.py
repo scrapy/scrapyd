@@ -96,6 +96,6 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.deferred.callback(self)
 
     def log(self, action):
-        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r env=%(env)r args=%(args)r'
+        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r args=%(args)r'
         log.msg(format=fmt, action=action, project=self.project, spider=self.spider,
-                job=self.job, pid=self.pid, env=self.env, args=self.args)
+                job=self.job, pid=self.pid, args=self.args)
