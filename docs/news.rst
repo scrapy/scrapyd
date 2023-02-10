@@ -3,6 +3,14 @@
 Release notes
 =============
 
+1.4.1 (2023-02-10)
+------------------
+
+Fixed
+~~~~~
+
+- Encode the ``FEEDS`` command-line argument as JSON.
+
 1.4.0 (2023-02-07)
 ------------------
 

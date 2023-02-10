@@ -1,3 +1,4 @@
+import json
 import os
 from urllib.parse import urlparse, urlunparse
 
@@ -26,7 +27,7 @@ class Environment(object):
         if self.logs_dir:
             settings['LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
         if self.items_dir:
-            settings['FEEDS'] = {self._get_feed_uri(message, 'jl'): {'format': 'jsonlines'}}
+            settings['FEEDS'] = json.dumps({self._get_feed_uri(message, 'jl'): {'format': 'jsonlines'}})
         return settings
 
     def get_environment(self, message, slot):
