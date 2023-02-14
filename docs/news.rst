@@ -17,7 +17,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``item_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
+- Add ``items_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
 - Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
 - Python 3.12 support. Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
@@ -168,63 +168,41 @@ Fixed
 1.1.0 (2015-06-29)
 ------------------
 
-Features & Enhancements
-~~~~~~~~~~~~~~~~~~~~~~~
+Added
+~~~~~
 
-- Outsource scrapyd-deploy command to scrapyd-client (c1358dc, c9d66ca..191353e)
-  **If you rely on this command, install the scrapyd-client package from pypi.**
-- Look for a ``~/.scrapyd.conf`` file in the users home (1fce99b)
-- Adding the nodename to identify the process that is working on the job (fac3a5c..4aebe1c)
-- Allow remote items store (e261591..35a21db)
-- Debian sysvinit script (a54193a, ff457a9)
-- Add 'start_time' field in webservice for running jobs (6712af9, acd460b)
-- Check if a spider exists before schedule it (with sqlite cache) (#8, 288afef..a185ff2)
+- Add ``node_name`` (hostname) to webservice responses. (:commit:`fac3a5c`, :commit:`4aebe1c`)
+- Add ``start_time`` to the response from the listjobs.json webservice. (:commit:`6712af9`, :commit:`acd460b`)
 
-Bugfixes
-~~~~~~~~
+Changed
+~~~~~~~
 
-- F̶i̶x̶ ̶s̶c̶r̶a̶p̶y̶d̶-̶d̶e̶p̶l̶o̶y̶ ̶-̶-̶l̶i̶s̶t̶-̶p̶r̶o̶j̶e̶c̶t̶s̶ ̶(̶9̶4̶2̶a̶1̶b̶2̶)̶ → moved to scrapyd-client
-- Sanitize version names when creating egg paths (8023720)
-- Copy txweb/JsonResource from scrapy which no longer provides it (99ea920)
-- Use w3lib to generate correct feed uris (9a88ea5)
-- Fix GIT versioning for projects without annotated tags (e91dcf4 #34)
-- Correcting HTML tags in scrapyd website monitor (da5664f, 26089cd)
-- Fix FEED_URI path on windows (4f0060a)
+- Move scrapyd-deploy command to `scrapyd-client <https://pypi.org/project/scrapyd-client/>`__ package. (:commit:`c1358dc`, :commit:`c9d66ca`, :commit:`191353e`)
+- Allow remote ``items_dir`` configuration. (:commit:`e261591`, :commit:`35a21db`)
+- Look for a ``~/.scrapyd.conf`` file in the user's home directory. (:commit:`1fce99b`)
 
-Setup script and Tests/CI
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Fixed
+~~~~~
 
-- Restore integration test script (66de25d)
-- Changed scripts to be installed using entry_points (b670f5e)
-- Renovate scrapy upstart job (d130770)
-- Travis.yml: remove deprecated ``--use-mirros`` pip option (b3cdc61)
-- Mark package as zip unsafe because twistd requires a plain ``txapp.py`` (f27c054)
-- Removed python 2.6/lucid env from travis (5277755)
-- Made Scrapyd package name lowercase (1adfc31)
-
-Documentation
-~~~~~~~~~~~~~
-
-- Spiders should allow for arbitrary keyword arguments (696154)
-- Various typos (51f1d69, 0a4a77a)
-- Fix release notes: 1.0 is already released (6c8dcfb)
-- Point website module's links to readthedocs (215c700)
-- Remove reference to 'scrapy server' command (f599b60)
+- Check if a spider exists before scheduling it. (:issue:`8`, :commit:`288afef`, :commit:`a185ff2`)
+- Sanitize version names when creating egg paths. (:commit:`8023720`)
+- Generate correct feed URIs, using w3lib. (:commit:`9a88ea5`)
+- Fix git versioning for projects without annotated tags. (:issue:`34`, :commit:`e91dcf4`)
+- Use valid HTML markup on website pages. (:commit:`da5664f`, :commit:`26089cd`)
+- Use ``file`` protocol for ``SCRAPY_FEED_URI`` environment variable on Windows. (:commit:`4f0060a`)
+- Copy ``JsonResource`` class from Scrapy, which no longer provides it. (:commit:`99ea920`)
+- Lowercase ``scrapyd`` package name. (:commit:`1adfc31`).
+- Mark package as zip-unsafe, because Twisted requires a plain ``txapp.py``. (:commit:`f27c054`)
+- Install scripts using ``entry_points`` instead of ``scripts``. (:commit:`b670f5e`)
 
 1.0.2 (2016-03-28)
 ------------------
 
-setup script
-~~~~~~~~~~~~
+Fixed
+~~~~~
 
-- Specified maximum versions for requirements that became incompatible.
-- Marked package as zip-unsafe because twistd requires a plain ``txapp.py``
-
-documentation
-~~~~~~~~~~~~~
-
-- Updated broken links, references to wrong versions and scrapy
-- Warn that scrapyd 1.0 felling out of support
+- Mark package as zip-unsafe, because Twisted requires a plain ``txapp.py``.
+- Specify maximum versions for compatible requirements.
 
 1.0.1 (2013-09-02)
 ------------------
