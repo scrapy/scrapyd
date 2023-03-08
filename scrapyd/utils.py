@@ -8,7 +8,6 @@ from scrapy.utils.misc import load_object
 from twisted.web import resource
 
 from scrapyd.config import Config
-from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.sqlite import JsonSqliteDict
 
 
@@ -58,10 +57,11 @@ def get_spider_queues(config):
     dbsdir = config.get('dbs_dir', 'dbs')
     if not os.path.exists(dbsdir):
         os.makedirs(dbsdir)
+    spiderqueue = load_object(config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue'))
     d = {}
     for project in get_project_list(config):
         dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
+        d[project] = spiderqueue(dbpath)
     return d
 
 

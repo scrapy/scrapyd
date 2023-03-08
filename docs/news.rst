@@ -3,6 +3,16 @@
 Release notes
 =============
 
+Unreleased
+----------
+
+Added
+~~~~~
+
+- Webservice
+
+  - Add ``spiderqueue`` configuration option for custom spider queue.
+
 1.4.1 (2023-02-10)
 ------------------
 
