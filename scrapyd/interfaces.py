@@ -105,10 +105,16 @@ class ISpiderScheduler(Interface):
 class IEnvironment(Interface):
     """A component to generate the environment of crawler processes"""
 
+    def get_settings(message):
+        """Return the Scrapy settings to use for running the process.
+
+        `message` is the message received from the IPoller.next() method.
+        """
+
     def get_environment(message, slot):
         """Return the environment variables to use for running the process.
 
-        `message` is the message received from the IPoller.next() method
+        `message` is the message received from the IPoller.next() method.
         `slot` is the Launcher slot where the process will be running.
         """
 
