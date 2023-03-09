@@ -3,6 +3,7 @@ from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
 from scrapyd import spiderqueue
+from scrapyd.config import Config
 from scrapyd.interfaces import ISpiderQueue
 
 
@@ -11,7 +12,7 @@ class SpiderQueueTest(unittest.TestCase):
     """
 
     def setUp(self):
-        self.q = spiderqueue.SqliteSpiderQueue(':memory:')
+        self.q = spiderqueue.SqliteSpiderQueue(Config(values={'dbs_dir': ':memory:'}), 'quotesbot')
         self.name = 'spider1'
         self.priority = 5
         self.args = {

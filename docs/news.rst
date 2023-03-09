@@ -9,9 +9,14 @@ Unreleased
 Added
 ~~~~~
 
-- Webservice
+- Add ``spiderqueue`` configuration option for custom spider queue.
 
-  - Add ``spiderqueue`` configuration option for custom spider queue.
+Changed
+~~~~~~~
+
+- ``scrapyd.spiderqueue.SqliteSpiderQueue`` is initialized with a ``scrapyd.config.Config`` object and a project name, rather than a SQLite connection string (i.e. database file path).
+- If ``dbs_dir`` is set to ``:memory`` or to a URL, it is passed through without modification and without creating a directory to ``scrapyd.jobstorage.SqliteJobStorage`` and ``scrapyd.spiderqueue.SqliteSpiderQueue``.
+- ``scrapyd.utils.get_spider_queues`` defers the creation of the ``dbs_dir`` directory to the spider queue implementation.
 
 1.4.1 (2023-02-10)
 ------------------
