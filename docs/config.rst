@@ -142,6 +142,16 @@ and services.
 
 For more info see `Twisted Application Framework`_
 
+.. _spiderqueue:
+
+spiderqueue
+-----------
+
+The scheduler enqueues crawls in per-project spider queues, for the poller to pick.
+You can define a custom spider queue class that implements the ISpiderQueue interface.
+
+Defaults to ``scrapyd.spiderqueue.SqliteSpiderQueue``.
+
 .. _webroot:
 
 webroot

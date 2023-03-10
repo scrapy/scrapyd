@@ -2,13 +2,14 @@ from zope.interface import implementer
 
 from scrapyd.interfaces import ISpiderQueue
 from scrapyd.sqlite import JsonSqlitePriorityQueue
+from scrapyd.utils import sqlite_connection_string
 
 
 @implementer(ISpiderQueue)
 class SqliteSpiderQueue(object):
 
-    def __init__(self, database=None, table='spider_queue'):
-        self.q = JsonSqlitePriorityQueue(database, table)
+    def __init__(self, config, project, table='spider_queue'):
+        self.q = JsonSqlitePriorityQueue(sqlite_connection_string(config, project), table)
 
     def add(self, name, priority=0.0, **spider_args):
         d = spider_args.copy()

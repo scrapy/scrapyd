@@ -2,13 +2,13 @@ import json
 import os
 import sys
 from subprocess import PIPE, Popen
+from urllib.parse import urlsplit
 
 from packaging.version import InvalidVersion, Version
 from scrapy.utils.misc import load_object
 from twisted.web import resource
 
 from scrapyd.config import Config
-from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.sqlite import JsonSqliteDict
 
 
@@ -55,14 +55,17 @@ class UtilsCache:
 
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
-    dbsdir = config.get('dbs_dir', 'dbs')
-    if not os.path.exists(dbsdir):
-        os.makedirs(dbsdir)
-    d = {}
-    for project in get_project_list(config):
-        dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
-    return d
+    spiderqueue = load_object(config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue'))
+    return {project: spiderqueue(config, project) for project in get_project_list(config)}
+
+
+def sqlite_connection_string(config, database):
+    dbs_dir = config.get('dbs_dir', 'dbs')
+    if dbs_dir == ':memory:' or urlsplit(dbs_dir).scheme:
+        return dbs_dir
+    if not os.path.exists(dbs_dir):
+        os.makedirs(dbs_dir)
+    return os.path.join(dbs_dir, f'{database}.db')
 
 
 def get_project_list(config):

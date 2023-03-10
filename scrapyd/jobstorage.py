@@ -1,10 +1,10 @@
-import os
 from datetime import datetime
 
 from zope.interface import implementer
 
 from scrapyd.interfaces import IJobStorage
 from scrapyd.sqlite import SqliteFinishedJobs
+from scrapyd.utils import sqlite_connection_string
 
 
 def job_log_url(job):
@@ -50,11 +50,7 @@ class MemoryJobStorage(object):
 class SqliteJobStorage(object):
 
     def __init__(self, config):
-        dbsdir = config.get('dbs_dir', 'dbs')
-        if not os.path.exists(dbsdir):
-            os.makedirs(dbsdir)
-        dbpath = os.path.join(dbsdir, 'jobs.db')
-        self.jstorage = SqliteFinishedJobs(dbpath, "finished_jobs")
+        self.jstorage = SqliteFinishedJobs(sqlite_connection_string(config, 'jobs'), "finished_jobs")
         self.finished_to_keep = config.getint('finished_to_keep', 100)
 
     def add(self, job):
