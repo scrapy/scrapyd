@@ -121,7 +121,7 @@ If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topic
 
 .. code-block:: json
 
-   {items_dir: {"format": "jsonlines"}}
+   {"value from items_dir": {"format": "jsonlines"}}
 
 .. _jobs_to_keep:
 
