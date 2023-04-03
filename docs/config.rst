@@ -64,10 +64,16 @@ Whether debug mode is enabled. Defaults to ``off``. When debug mode is enabled
 the full Python traceback will be returned (as plain text responses) when there
 is an error processing a JSON API call.
 
+.. _eggs_dir:
+
 eggs_dir
 --------
 
 The directory where the project eggs will be stored.
+
+.. seealso::
+
+   :ref:`eggstorage`
 
 dbs_dir
 -------
@@ -78,10 +84,24 @@ spider queues).
 logs_dir
 --------
 
-The directory where the Scrapy logs will be stored. If you want to disable
-storing logs set this option empty, like this::
+The directory where the Scrapy logs will be stored.
 
-    logs_dir =
+To disable log storage, set this option to empty:
+
+.. code-block:: ini
+
+   logs_dir =
+
+To log messages to a remote service, you can, for example, reconfigure Scrapy's logger from your Scrapy project:
+
+.. code-block:: python
+
+   import logging
+   import logstash
+
+   logger = logging.getLogger("scrapy")
+   logger.handlers.clear()
+   logger.addHandler(logstash.LogstashHandler("https://user:pass@id.us-east-1.aws.found.io", 5959, version=1))
 
 .. _items_dir:
 
@@ -91,10 +111,17 @@ items_dir
 .. versionadded:: 0.15
 
 The directory where the Scrapy items will be stored.
-This option is disabled by default
-because you are expected to use a database or a feed exporter.
-Setting it to non-empty results in storing scraped item feeds
-to the specified directory by overriding the scrapy setting ``FEEDS``.
+
+This option is disabled by default. It is recommended to either:
+
+-  Use `feed exports <https://docs.scrapy.org/en/latest/topics/feed-exports.html>`__, by setting the ``FEEDS`` Scrapy setting in your Scrapy project. See the full list of `storage backends <https://docs.scrapy.org/en/latest/topics/feed-exports.html#storages>`__.
+-  Use the `item pipeline <https://docs.scrapy.org/en/latest/topics/item-pipeline.html>`__, to store the scraped items in a database. See the `MongoDB example <https://docs.scrapy.org/en/latest/topics/item-pipeline.html#write-items-to-mongodb>`__, which can be adapted to another database.
+
+If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in feeds being stored in the specified directory as JSON lines.
+
+.. code-block:: json
+
+   {items_dir: {"format": "jsonlines"}}
 
 .. _jobs_to_keep:
 
@@ -173,14 +200,17 @@ A class that stores finished jobs. There are 2 implementations provided:
 If another backend is needed, one can implement its own class by implementing the IJobStorage 
 interface.
 
+.. _eggstorage:
+
 eggstorage
 ----------
 
-A class that stores and retrieves eggs for running spiders. 
-The default implementation is FilesystemEggStorage and stores eggs on the file system based on
-``eggs_dir`` configuration.
+A class that stores project eggs, implementing the ``IEggStorage`` interface.
 
-One can customize the storage by implementing the IEggStorage interface.
+The default value is ``scrapyd.eggstorage.FilesystemEggStorage``.
+This implementation stores eggs in the directory specified by the :ref:`eggs_dir` setting.
+
+You can implement your own egg storage: for example, to store eggs remotely.
 
 node_name
 ---------
