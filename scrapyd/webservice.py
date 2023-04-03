@@ -140,14 +140,16 @@ class ListJobs(WsResource):
             {
                 "project": s.project,
                 "spider": s.spider,
-                "id": s.job, "pid": s.pid,
+                "id": s.job,
+                "pid": s.pid,
                 "start_time": str(s.start_time),
             } for s in spiders if project is None or s.project == project
         ]
         finished = [
             {
                 "project": s.project,
-                "spider": s.spider, "id": s.job,
+                "spider": s.spider,
+                "id": s.job,
                 "start_time": str(s.start_time),
                 "end_time": str(s.end_time),
                 "log_url": job_log_url(s),

@@ -43,8 +43,7 @@ class Launcher(Service):
         args += get_crawl_args(msg)
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'],
-                                   msg['_job'], env)
+        pp = ScrapyProcessProtocol(project, msg['_spider'], msg['_job'], env, args)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -68,8 +67,7 @@ class Launcher(Service):
 
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
-        self.slot = slot
+    def __init__(self, project, spider, job, env, args):
         self.pid = None
         self.project = project
         self.spider = spider
@@ -77,8 +75,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.start_time = datetime.now()
         self.end_time = None
         self.env = env
-        self.logfile = env.get('SCRAPYD_LOG_FILE')
-        self.itemsfile = env.get('SCRAPYD_FEED_URI')
+        self.args = args
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
@@ -99,6 +96,6 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.deferred.callback(self)
 
     def log(self, action):
-        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r log=%(log)r items=%(items)r'
+        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r args=%(args)r'
         log.msg(format=fmt, action=action, project=self.project, spider=self.spider,
-                job=self.job, pid=self.pid, log=self.logfile, items=self.itemsfile)
+                job=self.job, pid=self.pid, args=self.args)
