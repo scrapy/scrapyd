@@ -197,7 +197,7 @@ A class that stores finished jobs. There are 2 implementations provided:
 * ``scrapyd.jobstorage.MemoryJobStorage`` (default) jobs are stored in memory and lost when the daemon is restarted
 * ``scrapyd.jobstorage.SqliteJobStorage`` jobs are persisted in a Sqlite database in ``dbs_dir``
 
-If another backend is needed, one can implement its own class by implementing the IJobStorage 
+If another backend is needed, one can implement its own class by implementing the IJobStorage
 interface.
 
 .. _eggstorage:
@@ -211,6 +211,14 @@ The default value is ``scrapyd.eggstorage.FilesystemEggStorage``.
 This implementation stores eggs in the directory specified by the :ref:`eggs_dir` setting.
 
 You can implement your own egg storage: for example, to store eggs remotely.
+
+prefix_header
+----------
+
+.. versionadded:: 1.4.2
+
+Behind a reverse proxy set a custom header (see proxy settings) to pass the application specific base-path to scrapyd used in monitor templates.
+Default to ``x-forwarded-prefix``
 
 node_name
 ---------

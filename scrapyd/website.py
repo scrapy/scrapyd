@@ -10,12 +10,21 @@ from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
 from scrapyd.jobstorage import job_items_url, job_log_url
 
 
+class ProxyPrefixMixin:
+    def get_proxy_prefix(self, txrequest):
+        self.proxy_prefix = ''
+        prefix = txrequest.getHeader(self.prefix_header) if self.prefix_header else None
+        if prefix:
+            self.proxy_prefix = '/' + prefix.strip('/')
+
+
 class Root(resource.Resource):
 
     def __init__(self, config, app):
         resource.Resource.__init__(self)
         self.debug = config.getboolean('debug', False)
         self.runner = config.get('runner')
+        self.prefix_header = config.get('prefix_header')
         logsdir = config.get('logs_dir')
         itemsdir = config.get('items_dir')
         self.local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ['', 'file'])
@@ -55,16 +64,19 @@ class Root(resource.Resource):
         return self.app.getComponent(IPoller)
 
 
-class Home(resource.Resource):
+class Home(ProxyPrefixMixin, resource.Resource):
 
     def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
         self.local_items = local_items
+        self.prefix_header = root.prefix_header
 
     def render_GET(self, txrequest):
+        self.get_proxy_prefix(txrequest)
         vars = {
-            'projects': ', '.join(self.root.scheduler.list_projects())
+            'projects': ', '.join(self.root.scheduler.list_projects()),
+            'proxy_prefix': self.proxy_prefix
         }
         s = """
 <html>
@@ -73,12 +85,12 @@ class Home(resource.Resource):
 <h1>Scrapyd</h1>
 <p>Available projects: <b>%(projects)s</b></p>
 <ul>
-<li><a href="/jobs">Jobs</a></li>
+<li><a href="%(proxy_prefix)s/jobs">Jobs</a></li>
 """ % vars
         if self.local_items:
-            s += '<li><a href="/items/">Items</a></li>'
+            s += '<li><a href="%(proxy_prefix)s/items/">Items</a></li>'
         s += """
-<li><a href="/logs/">Logs</a></li>
+<li><a href="%(proxy_prefix)s/logs/">Logs</a></li>
 <li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
 </ul>
 
@@ -109,15 +121,16 @@ def microsec_trunc(timelike):
     return timelike - timedelta(microseconds=ms)
 
 
-class Jobs(resource.Resource):
+class Jobs(ProxyPrefixMixin, resource.Resource):
 
     def __init__(self, root, local_items):
         resource.Resource.__init__(self)
         self.root = root
         self.local_items = local_items
+        self.prefix_header = root.prefix_header
 
     cancel_button = """
-    <form method="post" action="/cancel.json">
+    <form method="post" action="{proxy_prefix}/cancel.json">
     <input type="hidden" name="project" value="{project}"/>
     <input type="hidden" name="job" value="{jobid}"/>
     <input type="submit" style="float: left;" value="Cancel"/>
@@ -161,7 +174,7 @@ class Jobs(resource.Resource):
             '<style type="text/css">' + self.gen_css() + '</style>'
             '</head>'
             '<body><h1>Jobs</h1>'
-            '<p><a href="..">Go up</a></p>'
+            '<p><a href="./">Go up</a></p>'
             + self.prep_table() +
             '</body>'
             '</html>'
@@ -192,7 +205,7 @@ class Jobs(resource.Resource):
                 "Project": project,
                 "Spider": m['name'],
                 "Job": m['_job'],
-                "Cancel": self.cancel_button(project=project, jobid=m['_job']),
+                "Cancel": self.cancel_button(project=project, jobid=m['_job'], proxy_prefix=self.proxy_prefix),
             })
             for project, queue in self.root.poller.queues.items()
             for m in queue.list()
@@ -207,9 +220,9 @@ class Jobs(resource.Resource):
                 "PID": p.pid,
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(datetime.now() - p.start_time),
-                "Log": f'<a href="{job_log_url(p)}">Log</a>',
-                "Items": f'<a href="{job_items_url(p)}">Items</a>',
-                "Cancel": self.cancel_button(project=p.project, jobid=p.job),
+                "Log": f'<a href="{self.proxy_prefix}{job_log_url(p)}">Log</a>',
+                "Items": f'<a href="{self.proxy_prefix}{job_items_url(p)}">Items</a>',
+                "Cancel": self.cancel_button(project=p.project, jobid=p.job, proxy_prefix=self.proxy_prefix),
             })
             for p in self.root.launcher.processes.values()
         )
@@ -223,13 +236,14 @@ class Jobs(resource.Resource):
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(p.end_time - p.start_time),
                 "Finish": microsec_trunc(p.end_time),
-                "Log": f'<a href="{job_log_url(p)}">Log</a>',
-                "Items": f'<a href="{job_items_url(p)}">Items</a>',
+                "Log": f'<a href="{self.proxy_prefix}{job_log_url(p)}">Log</a>',
+                "Items": f'<a href="{self.proxy_prefix}{job_items_url(p)}">Items</a>',
             })
             for p in self.root.launcher.finished
         )
 
     def render(self, txrequest):
+        self.get_proxy_prefix(txrequest)
         doc = self.prep_doc()
         txrequest.setHeader('Content-Type', 'text/html; charset=utf-8')
         doc = doc.encode('utf-8')
