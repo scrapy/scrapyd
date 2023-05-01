@@ -154,6 +154,18 @@ The interval used to poll queues, in seconds.
 Defaults to ``5.0``.
 Can be a float, such as ``0.2``
 
+.. _prefix_header:
+
+prefix_header
+-------------
+
+.. versionadded:: 1.4.2
+
+The header for the base path of the original request.
+A base path must have a leading slash and no trailing slash, e.g. ``/base/path``.
+The header is relevant only if Scrapyd is running behind a reverse proxy, and if the public URL contains a base path, before the Scrapyd API path components.
+Defaults to ``x-forwarded-prefix``.
+
 runner
 ------
 
@@ -211,14 +223,6 @@ The default value is ``scrapyd.eggstorage.FilesystemEggStorage``.
 This implementation stores eggs in the directory specified by the :ref:`eggs_dir` setting.
 
 You can implement your own egg storage: for example, to store eggs remotely.
-
-prefix_header
-----------
-
-.. versionadded:: 1.4.2
-
-Behind a reverse proxy set a custom header (see proxy settings) to pass the application specific base-path to scrapyd used in monitor templates.
-Default to ``x-forwarded-prefix``
 
 node_name
 ---------
