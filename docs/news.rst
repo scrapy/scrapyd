@@ -3,13 +3,14 @@
 Release notes
 =============
 
-Unreleased
-----------
+1.4.2 (2023-05-01)
+------------------
 
 Added
 ~~~~~
 
 - Add ``spiderqueue`` configuration option for custom spider queue.
+- Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` configuration option.
 
 Changed
 ~~~~~~~

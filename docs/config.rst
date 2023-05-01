@@ -154,6 +154,18 @@ The interval used to poll queues, in seconds.
 Defaults to ``5.0``.
 Can be a float, such as ``0.2``
 
+.. _prefix_header:
+
+prefix_header
+-------------
+
+.. versionadded:: 1.4.2
+
+The header for the base path of the original request.
+A base path must have a leading slash and no trailing slash, e.g. ``/base/path``.
+The header is relevant only if Scrapyd is running behind a reverse proxy, and if the public URL contains a base path, before the Scrapyd API path components.
+Defaults to ``x-forwarded-prefix``.
+
 runner
 ------
 
@@ -197,7 +209,7 @@ A class that stores finished jobs. There are 2 implementations provided:
 * ``scrapyd.jobstorage.MemoryJobStorage`` (default) jobs are stored in memory and lost when the daemon is restarted
 * ``scrapyd.jobstorage.SqliteJobStorage`` jobs are persisted in a Sqlite database in ``dbs_dir``
 
-If another backend is needed, one can implement its own class by implementing the IJobStorage 
+If another backend is needed, one can implement its own class by implementing the IJobStorage
 interface.
 
 .. _eggstorage:
