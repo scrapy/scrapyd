@@ -87,7 +87,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
             s += '<li><a href="%(base_path)s/items/">Items</a></li>'
         s += """
 <li><a href="%(base_path)s/logs/">Logs</a></li>
-<li><a href="http://scrapyd.readthedocs.org/en/latest/">Documentation</a></li>
+<li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
 
 <h2>How to schedule a spider?</h2>
@@ -95,11 +95,11 @@ class Home(PrefixHeaderMixin, resource.Resource):
 <p>To schedule a spider you need to use the API (this web UI is only for
 monitoring)</p>
 
-<p>Example using <a href="http://curl.haxx.se/">curl</a>:</p>
+<p>Example using <a href="https://curl.se/">curl</a>:</p>
 <p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
 
 <p>For more information about the API, see the
-<a href="http://scrapyd.readthedocs.org/en/latest/">Scrapyd documentation</a></p>
+<a href="https://scrapyd.readthedocs.io/en/latest/">Scrapyd documentation</a></p>
 </body>
 </html>
 """
