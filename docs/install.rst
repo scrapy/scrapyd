@@ -3,7 +3,7 @@
 Installation
 ============
 
-This documents explains how to install and configure Scrapyd, to deploy and run
+This document explains how to install and configure Scrapyd, to deploy and run
 your Scrapy spiders.
 
 Requirements
