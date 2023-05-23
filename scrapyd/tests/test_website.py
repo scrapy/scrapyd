@@ -24,10 +24,10 @@ class TestWebsite:
         content = site_no_egg.children[b''].render_GET(txrequest)
         expect_headers = {
             b'Content-Type': [b'text/html; charset=utf-8'],
-            b'Content-Length': [b'708'],
+            b'Content-Length': [b'704'],
         }
         if site_no_egg.local_items:
-            expect_headers[b'Content-Length'] = [b'744']
+            expect_headers[b'Content-Length'] = [b'740']
 
         headers = dict(txrequest.responseHeaders.getAllRawHeaders())
 
