@@ -204,6 +204,8 @@ This setting must provide the root class of the twisted web resource.
 jobstorage
 ----------
 
+.. versionadded:: 1.3
+
 A class that stores finished jobs. There are 2 implementations provided:
 
 * ``scrapyd.jobstorage.MemoryJobStorage`` (default) jobs are stored in memory and lost when the daemon is restarted

@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "Scrapyd"
-copyright = "2013-2022, Scrapy group"
+copyright = "2013-2023, Scrapy group"
 author = "Scrapy group"
 
 # The short X.Y version
