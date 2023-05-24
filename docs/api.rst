@@ -219,7 +219,7 @@ Example response::
         ]
     }
 
-.. note:: All job data is kept in memory and will be reset when the Scrapyd service is restarted. See `issue 12`_.
+.. note:: All job data is kept in memory by default and will be reset when the Scrapyd service is restarted. See `jobstorage`_.
 
 delversion.json
 ---------------
@@ -260,4 +260,4 @@ Example response::
     {"status": "ok"}
 
 .. _DOWNLOAD_DELAY: http://doc.scrapy.org/en/latest/topics/settings.html#download-delay
-.. _issue 12: https://github.com/scrapy/scrapyd/issues/12
+.. _jobstorage: https://scrapyd.readthedocs.io/en/stable/config.html#jobstorage
