@@ -71,7 +71,6 @@ class Home(PrefixHeaderMixin, resource.Resource):
 
     def render_GET(self, txrequest):
         vars = {
-            'projects': ', '.join(self.root.scheduler.list_projects()),
             'base_path': self.get_base_path(txrequest),
         }
         s = """
@@ -79,7 +78,6 @@ class Home(PrefixHeaderMixin, resource.Resource):
 <head><title>Scrapyd</title></head>
 <body>
 <h1>Scrapyd</h1>
-<p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="%(base_path)s/jobs">Jobs</a></li>
 """
@@ -90,6 +88,16 @@ class Home(PrefixHeaderMixin, resource.Resource):
 <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
 
+<p>Available projects:<p>
+""" % vars
+        if self.root.scheduler.list_projects():
+            s += '<ul>'
+            for project_name in sorted(self.root.scheduler.list_projects()):
+                s += '<li>' + project_name + '</li>'
+            s += '</ul>'
+        else:
+            s += '<b>no projects</b>'
+        s += """
 <h2>How to schedule a spider?</h2>
 
 <p>To schedule a spider you need to use the API (this web UI is only for
