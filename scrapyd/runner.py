@@ -23,19 +23,18 @@ def project_environment(project):
     version, eggfile = eggstorage.get(project, eggversion)
     if eggfile:
         prefix = '%s-%s-' % (project, version)
-        fd, eggpath = tempfile.mkstemp(prefix=prefix, suffix='.egg')
-        lf = os.fdopen(fd, 'wb')
-        shutil.copyfileobj(eggfile, lf)
-        lf.close()
-        activate_egg(eggpath)
+        f = tempfile.NamedTemporaryFile(suffix='.egg', prefix=prefix, delete=False)
+        shutil.copyfileobj(eggfile, f)
+        f.close()
+        activate_egg(f.name)
     else:
-        eggpath = None
+        f = None
     try:
         assert 'scrapy.conf' not in sys.modules, "Scrapy settings already loaded"
         yield
     finally:
-        if eggpath:
-            os.remove(eggpath)
+        if f:
+            os.remove(f.name)
 
 
 def main():
