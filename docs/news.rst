@@ -3,6 +3,14 @@
 Release notes
 =============
 
+1.4.3 (2023-09-25)
+------------------
+
+Fixed
+~~~~~
+
+- Fix "The process cannot access the file because it is being used by another process" on Windows.
+
 1.4.2 (2023-05-01)
 ------------------
 
