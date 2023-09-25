@@ -71,25 +71,31 @@ class Home(PrefixHeaderMixin, resource.Resource):
 
     def render_GET(self, txrequest):
         vars = {
-            'projects': ', '.join(self.root.scheduler.list_projects()),
             'base_path': self.get_base_path(txrequest),
         }
-        s = """
+        s = """\
 <html>
 <head><title>Scrapyd</title></head>
 <body>
 <h1>Scrapyd</h1>
-<p>Available projects: <b>%(projects)s</b></p>
 <ul>
 <li><a href="%(base_path)s/jobs">Jobs</a></li>
 """
         if self.local_items:
-            s += '<li><a href="%(base_path)s/items/">Items</a></li>'
-        s += """
+            s += '<li><a href="%(base_path)s/items/">Items</a></li>\n'
+        s += """\
 <li><a href="%(base_path)s/logs/">Logs</a></li>
 <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
-
+""" % vars
+        if self.root.scheduler.list_projects():
+            s += '<p>Available projects:<p>\n<ul>\n'
+            for project_name in sorted(self.root.scheduler.list_projects()):
+                s += f'<li>{project_name}</li>\n'
+            s += '</ul>\n'
+        else:
+            s += '<p>No projects available.</p>\n'
+        s += """
 <h2>How to schedule a spider?</h2>
 
 <p>To schedule a spider you need to use the API (this web UI is only for
