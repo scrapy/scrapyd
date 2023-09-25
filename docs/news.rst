@@ -6,6 +6,11 @@ Release notes
 1.4.3 (2023-09-25)
 ------------------
 
+Changed
+~~~~~~~
+
+- Change project from comma-separated list to bulleted list on landing page. (@bsekiewicz)
+
 Fixed
 ~~~~~
 
