@@ -73,7 +73,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
         vars = {
             'base_path': self.get_base_path(txrequest),
         }
-        s = """
+        s = """\
 <html>
 <head><title>Scrapyd</title></head>
 <body>
@@ -82,21 +82,19 @@ class Home(PrefixHeaderMixin, resource.Resource):
 <li><a href="%(base_path)s/jobs">Jobs</a></li>
 """
         if self.local_items:
-            s += '<li><a href="%(base_path)s/items/">Items</a></li>'
-        s += """
+            s += '<li><a href="%(base_path)s/items/">Items</a></li>\n'
+        s += """\
 <li><a href="%(base_path)s/logs/">Logs</a></li>
 <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
-
-<p>Available projects:<p>
 """ % vars
         if self.root.scheduler.list_projects():
-            s += '<ul>'
+            s += '<p>Available projects:<p>\n<ul>\n'
             for project_name in sorted(self.root.scheduler.list_projects()):
-                s += '<li>' + project_name + '</li>'
-            s += '</ul>'
+                s += f'<li>{project_name}</li>\n'
+            s += '</ul>\n'
         else:
-            s += '<b>no projects</b>'
+            s += '<p>No projects available.</p>\n'
         s += """
 <h2>How to schedule a spider?</h2>
 
