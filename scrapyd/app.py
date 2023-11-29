@@ -1,3 +1,4 @@
+import os
 import sys
 
 from scrapy.utils.misc import load_object
@@ -17,7 +18,11 @@ from scrapyd.scheduler import SpiderScheduler
 
 def create_wrapped_resource(webcls, config, app):
     username = config.get('username', '')
+    if os.environ.get("SCRAPYD_USERNAME"):
+        username = os.environ["SCRAPYD_USERNAME"]
     password = config.get('password', '')
+    if os.environ.get("SCRAPYD_PASSWORD"):
+        password = os.environ["SCRAPYD_PASSWORD"]
     if ':' in username:
         sys.exit("The `username` option contains illegal character ':', "
                  "check and update the configuration file of Scrapyd")
@@ -36,7 +41,11 @@ def create_wrapped_resource(webcls, config, app):
 def application(config):
     app = Application("Scrapyd")
     http_port = config.getint('http_port', 6800)
+    if os.environ.get("SCRAPYD_HTTP_PORT"):
+        http_port = int(os.environ["SCRAPYD_HTTP_PORT"])
     bind_address = config.get('bind_address', '127.0.0.1')
+    if os.environ.get("SCRAPYD_BIND_ADDRESS"):
+        bind_address = int(os.environ["SCRAPYD_BIND_ADDRESS"])
     poll_interval = config.getfloat('poll_interval', 5)
 
     poller = QueuePoller(config)
