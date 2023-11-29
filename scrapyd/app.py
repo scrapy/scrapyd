@@ -18,7 +18,11 @@ from scrapyd.scheduler import SpiderScheduler
 
 def create_wrapped_resource(webcls, config, app):
     username = config.get('username', '')
+    if os.environ.get("SCRAPYD_USERNAME"):
+        username = os.environ["SCRAPYD_USERNAME"]
     password = config.get('password', '')
+    if os.environ.get("SCRAPYD_PASSWORD"):
+        password = os.environ["SCRAPYD_PASSWORD"]
     if ':' in username:
         sys.exit("The `username` option contains illegal character ':', "
                  "check and update the configuration file of Scrapyd")
