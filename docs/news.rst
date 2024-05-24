@@ -3,6 +3,16 @@
 Release notes
 =============
 
+.. changelog
+
+Unreleased
+----------
+
+Changed
+~~~~~~~
+
+- Add a confirmation dialog to the Cancel button.
+
 1.4.3 (2023-09-25)
 ------------------
 
