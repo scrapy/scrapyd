@@ -132,7 +132,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         self.prefix_header = root.prefix_header
 
     cancel_button = """
-    <form method="post" action="{base_path}/cancel.json">
+    <form method="post" onsubmit="return confirm('Are you sure?');" action="{base_path}/cancel.json">
     <input type="hidden" name="project" value="{project}"/>
     <input type="hidden" name="job" value="{jobid}"/>
     <input type="submit" style="float: left;" value="Cancel"/>
