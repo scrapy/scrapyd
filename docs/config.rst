@@ -164,6 +164,10 @@ The interval used to poll queues, in seconds.
 Defaults to ``5.0``.
 Can be a float, such as ``0.2``
 
+.. attention::
+
+   It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue`. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+
 .. _prefix_header:
 
 prefix_header
