@@ -12,6 +12,7 @@ Added
 ~~~~~
 
 - Add environment variables to override common options. See :doc:`config`.
+- Add documentation on how to add endpoints. See :ref:`config-services`.
 
 Changed
 ~~~~~~~

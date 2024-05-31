@@ -15,6 +15,9 @@ them in order with the latest one taking more priority:
 The configuration file supports the options below (see default values in
 the :ref:`example <config-example>`).
 
+Options
+-------
+
 The following environment variables override corresponding options:
 
 * ``SCRAPYD_HTTP_PORT`` (``http_port``)
@@ -23,25 +26,25 @@ The following environment variables override corresponding options:
 * ``SCRAPYD_PASSWORD`` (``password``)
 
 http_port
----------
+~~~~~~~~~
 
 The TCP port where the HTTP JSON API will listen. Defaults to ``6800``.
 
 bind_address
-------------
+~~~~~~~~~~~~
 
 The IP address where the website and json webservices will listen.
 Defaults to ``127.0.0.1`` (localhost)
 
 username
---------
+~~~~~~~~
 
 .. versionadded:: 1.3
 
 Set both ``username`` and ``password`` to non-empty to enable basic authentication.
 
 password
---------
+~~~~~~~~
 
 .. versionadded:: 1.3
 
@@ -50,7 +53,7 @@ See the ``username`` option above.
 .. _max_proc:
 
 max_proc
---------
+~~~~~~~~
 
 The maximum number of concurrent Scrapy process that will be started. If unset
 or ``0`` it will use the number of cpus available in the system multiplied by
@@ -59,13 +62,13 @@ the value in ``max_proc_per_cpu`` option. Defaults to ``0``.
 .. _max_proc_per_cpu:
 
 max_proc_per_cpu
-----------------
+~~~~~~~~~~~~~~~~
 
 The maximum number of concurrent Scrapy process that will be started per cpu.
 Defaults to ``4``.
 
 debug
------
+~~~~~
 
 Whether debug mode is enabled. Defaults to ``off``. When debug mode is enabled
 the full Python traceback will be returned (as plain text responses) when there
@@ -74,7 +77,7 @@ is an error processing a JSON API call.
 .. _eggs_dir:
 
 eggs_dir
---------
+~~~~~~~~
 
 The directory where the project eggs will be stored.
 
@@ -83,13 +86,13 @@ The directory where the project eggs will be stored.
    :ref:`eggstorage`
 
 dbs_dir
--------
+~~~~~~~
 
 The directory where the project databases will be stored (this includes the
 spider queues).
 
 logs_dir
---------
+~~~~~~~~
 
 The directory where the Scrapy logs will be stored.
 
@@ -113,7 +116,7 @@ To log messages to a remote service, you can, for example, reconfigure Scrapy's 
 .. _items_dir:
 
 items_dir
----------
+~~~~~~~~~
 
 .. versionadded:: 0.15
 
@@ -133,7 +136,7 @@ If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topic
 .. _jobs_to_keep:
 
 jobs_to_keep
-------------
+~~~~~~~~~~~~
 
 .. versionadded:: 0.15
 
@@ -146,7 +149,7 @@ This setting was named ``logs_to_keep`` in previous versions.
 .. _finished_to_keep:
 
 finished_to_keep
-----------------
+~~~~~~~~~~~~~~~~
 
 .. versionadded:: 0.14
 
@@ -155,7 +158,7 @@ Defaults to ``100``.
 This only reflects on the website /jobs endpoint and relevant json webservices.
 
 poll_interval
--------------
+~~~~~~~~~~~~~
 
 The interval used to poll queues, in seconds.
 Defaults to ``5.0``.
@@ -164,7 +167,7 @@ Can be a float, such as ``0.2``
 .. _prefix_header:
 
 prefix_header
--------------
+~~~~~~~~~~~~~
 
 .. versionadded:: 1.4.2
 
@@ -174,13 +177,13 @@ The header is relevant only if Scrapyd is running behind a reverse proxy, and if
 Defaults to ``x-forwarded-prefix``.
 
 runner
-------
+~~~~~~
 
 The module that will be used for launching sub-processes. You can customize the
 Scrapy processes launched from Scrapyd by using your own module.
 
 application
------------
+~~~~~~~~~~~
 
 A function that returns the (Twisted) Application object to use. This can be
 used if you want to extend Scrapyd by adding and removing your own components
@@ -191,7 +194,7 @@ For more info see `Twisted Application Framework`_
 .. _spiderqueue:
 
 spiderqueue
------------
+~~~~~~~~~~~
 
 The scheduler enqueues crawls in per-project spider queues, for the poller to pick.
 You can define a custom spider queue class that implements the ISpiderQueue interface.
@@ -201,7 +204,7 @@ Defaults to ``scrapyd.spiderqueue.SqliteSpiderQueue``.
 .. _webroot:
 
 webroot
--------
+~~~~~~~
 
 A twisted web resource that represents the interface to scrapyd.
 Scrapyd includes an interface with a website to provide simple monitoring
@@ -209,7 +212,7 @@ and access to the application's webresources.
 This setting must provide the root class of the twisted web resource.
 
 jobstorage
-----------
+~~~~~~~~~~
 
 .. versionadded:: 1.3
 
@@ -224,7 +227,7 @@ interface.
 .. _eggstorage:
 
 eggstorage
-----------
+~~~~~~~~~~
 
 A class that stores project eggs, implementing the ``IEggStorage`` interface.
 
@@ -234,11 +237,29 @@ This implementation stores eggs in the directory specified by the :ref:`eggs_dir
 You can implement your own egg storage: for example, to store eggs remotely.
 
 node_name
----------
+~~~~~~~~~
 
 .. versionadded:: 1.1
 
 The node name for each node to something like the display hostname. Defaults to ``${socket.gethostname()}``.
+
+.. _config-services:
+
+Services
+--------
+
+Normally, you can leave the ``[services]`` section from the :ref:`example <config-example>` as-is.
+
+If you want to add an endpoint, add another line, like:
+
+.. code-block:: ini
+
+   [services]
+   myendpoint.json   = amodule.anothermodule.MyEndpoint
+   schedule.json     = scrapyd.webservice.Schedule
+   ...
+
+You can use the endpoints in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
 
 .. _config-example:
 
