@@ -8,6 +8,11 @@ Release notes
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- Add environment variables to override common options. See :doc:`config`.
+
 Changed
 ~~~~~~~
 

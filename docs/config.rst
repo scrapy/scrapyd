@@ -12,8 +12,15 @@ them in order with the latest one taking more priority:
 * ``scrapyd.conf``
 * ``~/.scrapyd.conf`` (users home directory)
 
-The configuration file supports the following options (see default values in
+The configuration file supports the options below (see default values in
 the :ref:`example <config-example>`).
+
+The following environment variables override corresponding options:
+
+* ``SCRAPYD_HTTP_PORT`` (``http_port``)
+* ``SCRAPYD_BIND_ADDRESS`` (``bind_address``)
+* ``SCRAPYD_USERNAME`` (``username``)
+* ``SCRAPYD_PASSWORD`` (``password``)
 
 http_port
 ---------
