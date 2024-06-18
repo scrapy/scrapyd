@@ -66,10 +66,13 @@ Schedule a spider run (also known as a job), returning the job id.
   * ``project`` (string, required) - the project name
   * ``spider`` (string, required) - the spider name
   * ``setting`` (string, optional) - a Scrapy setting to use when running the spider
-  * ``jobid`` (string, optional) - a job id used to identify the job, overrides the default generated UUID
+  * ``jobid`` (string, optional) - a job ID to identify the job, overrides the default hexadecimal UUIDv1
   * ``priority`` (float, optional) - priority for this project's spider queue — 0 by default
   * ``_version`` (string, optional) - the version of the project to use
   * any other parameter is passed as spider argument
+
+If the :ref:`logs_dir` setting is set, log files are written to ``{logs_dir}/{project}/{spider}/{jobid}.log``.
+Set the ``jobid`` parameter to configure the basename of the log file.
 
 Example request::
 

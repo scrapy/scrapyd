@@ -91,6 +91,8 @@ dbs_dir
 The directory where the project databases will be stored (this includes the
 spider queues).
 
+.. _logs_dir:
+
 logs_dir
 ~~~~~~~~
 
