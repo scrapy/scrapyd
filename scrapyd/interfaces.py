@@ -46,6 +46,9 @@ class IPoller(Interface):
         -  a unique identifier for this run in the `_job` key
 
         This message will be passed later to IEnvironment.get_environment().
+
+        Called ``max_proc`` times when the launcher starts, and each time a
+        Scrapy process ends.
         """
 
     def update_projects():

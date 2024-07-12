@@ -19,6 +19,11 @@ Changed
 
 - Add a confirmation dialog to the Cancel button.
 
+Fixed
+~~~~~
+
+- When managing multiple projects, the next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
+
 1.4.3 (2023-09-25)
 ------------------
 
