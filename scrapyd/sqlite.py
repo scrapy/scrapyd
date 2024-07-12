@@ -123,7 +123,7 @@ class JsonSqlitePriorityQueue(object):
         return n
 
     def clear(self):
-        self.conn.execute("delete from %s" % self.table)
+        self.conn.execute("DELETE FROM %s" % self.table)
         self.conn.commit()
 
     def __len__(self):

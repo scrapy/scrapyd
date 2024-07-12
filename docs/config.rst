@@ -15,23 +15,36 @@ them in order with the latest one taking more priority:
 The configuration file supports the options below (see default values in
 the :ref:`example <config-example>`).
 
-Options
--------
+Environment variables
+---------------------
 
 The following environment variables override corresponding options:
 
-* ``SCRAPYD_HTTP_PORT`` (:ref:`http_port`)
 * ``SCRAPYD_BIND_ADDRESS`` (:ref:`bind_address`)
+* ``SCRAPYD_HTTP_PORT`` (:ref:`http_port`)
 * ``SCRAPYD_USERNAME`` (:ref:`username`)
 * ``SCRAPYD_PASSWORD`` (:ref:`password`)
 
-http_port
-~~~~~~~~~
+Application options
+-------------------
 
-The TCP port on which the :ref:`webui` and :doc:`api` listen for connections.
+.. _application:
+
+application
+~~~~~~~~~~~
+
+The function that returns the Twisted Application to use.
+
+If necessary, override this to fully control how Scrapyd works.
 
 Default
-  ``6800``
+  ``scrapyd.app.application``
+
+.. seealso::
+
+   `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
+
+.. _bind_address:
 
 bind_address
 ~~~~~~~~~~~~
@@ -50,6 +63,18 @@ Options
      .. note::
 
         If ``sysctl`` sets ``net.ipv6.bindv6only`` to true (default false), then ``::0`` listens for IPv6 connections only.
+
+.. _http_port:
+
+http_port
+~~~~~~~~~
+
+The TCP port on which the :ref:`webui` and :doc:`api` listen for connections.
+
+Default
+  ``6800``
+Options
+  Any integer
 
 .. _username:
 
@@ -70,10 +95,55 @@ password
 
 .. versionadded:: 1.3.0
 
-No effect unless :ref:`username` is set.
+Enable basic authentication by setting this and :ref:`username` to non-empty values.
 
 Default
   ``""`` (empty)
+
+poll_interval
+~~~~~~~~~~~~~
+
+The number of seconds to wait between checking whether the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
+
+Default
+  ``5.0``
+Options
+   Any floating-point number
+
+.. attention::
+
+   It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+
+.. _spiderqueue:
+
+spiderqueue
+~~~~~~~~~~~
+
+The class that stores job queues.
+
+Default
+  ``scrapyd.spiderqueue.SqliteSpiderQueue``
+Options
+  -  ``scrapyd.spiderqueue.SqliteSpiderQueue`` stores spider queues in SQLite databases named after each project, in the :ref:`dbs_dir` directory
+  -  Implement your own, using the ``ISpiderQueue`` interface
+Also used by
+  -  :ref:`addversion.json` webservice, to create a queue if the project is new
+  -  :ref:`schedule.json` webservice, to add a pending job
+  -  :ref:`cancel.json` webservice, to remove a pending job
+  -  :ref:`listjobs.json` webservice, to list the pending jobs
+  -  :ref:`daemonstatus.json` webservice, to count the pending jobs
+  -  :ref:`webui`, to list the pending jobs and, if queues are transient, to create the queues per project at startup
+
+Launcher options
+----------------
+
+launcher
+~~~~~~~~
+
+The class that starts Scrapy processes.
+
+Default
+  ``scrapyd.launcher.Launcher``
 
 .. _max_proc:
 
@@ -87,52 +157,24 @@ Default
 Options
   Any non-negative integer, including:
 
-  - ``0`` to use :ref:`max_proc_per_cpu` multiplied by the number of CPUs
+  -  ``0`` to use :ref:`max_proc_per_cpu` multiplied by the number of CPUs
 
 .. _max_proc_per_cpu:
 
 max_proc_per_cpu
 ~~~~~~~~~~~~~~~~
 
-No effect unless :ref:`max_proc` is set.
+See :ref:`max_proc`.
 
 Default
   ``4``
-
-debug
-~~~~~
-
-Whether debug mode is enabled.
-
-If enabled, a Python traceback is returned (as a plain-text response) when the :doc:`api` errors.
-
-Default
-  ``off``
-
-.. _eggs_dir:
-
-eggs_dir
-~~~~~~~~
-
-The directory in which project eggs are stored, when using the default :ref:`eggstorage` value.
-
-Default
-  ``eggs``
-
-dbs_dir
-~~~~~~~
-
-The directory in which project databases are stored, when using the SQLite :ref:`jobstorage` and :ref:`spiderqueue` values.
-
-Default
-  ``dbs``
 
 .. _logs_dir:
 
 logs_dir
 ~~~~~~~~
 
-The directory in which Scrapy logs are stored.
+The directory in which to write Scrapy logs.
 
 To disable log storage, set this option to empty:
 
@@ -153,15 +195,17 @@ To log messages to a remote service, you can, for example, reconfigure Scrapy's 
 
 Default
   ``logs``
+Also used by
+  :ref:`webui`, to link to log files
 
 .. _items_dir:
 
 items_dir
 ~~~~~~~~~
 
-The directory in which Scrapy items are stored.
+The directory in which to write Scrapy items.
 
-If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in feeds being stored in the specified directory as JSON lines:
+If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in feeds being written to the specified directory as JSON lines:
 
 .. code-block:: json
 
@@ -172,44 +216,45 @@ Default
 
    -  `Feed exports <https://docs.scrapy.org/en/latest/topics/feed-exports.html>`__, by setting the ``FEEDS`` Scrapy setting in your Scrapy project. See the full list of `storage backends <https://docs.scrapy.org/en/latest/topics/feed-exports.html#storages>`__.
    -  `Item pipeline <https://docs.scrapy.org/en/latest/topics/item-pipeline.html>`__, to store the scraped items in a database. See the `MongoDB example <https://docs.scrapy.org/en/latest/topics/item-pipeline.html#write-items-to-mongodb>`__, which can be adapted to another database.
+Also used by
+  :ref:`webui`, to link to item feeds
 
 .. _jobs_to_keep:
 
 jobs_to_keep
 ~~~~~~~~~~~~
 
-The number of finished jobs per spider, for which to keep log files and item feeds.
-
-No effect unless either :ref:`logs_dir` or :ref:`items_dir` is set.
+The number of finished jobs per spider, for which to keep log files in the :ref:`logs_dir` directory and item feeds in the :ref:`items_dir` directory.
 
 Default
   ``5``
 
-.. _finished_to_keep:
+runner
+~~~~~~
 
-finished_to_keep
-~~~~~~~~~~~~~~~~
+The Python `script <https://docs.python.org/3/tutorial/modules.html#executing-modules-as-scripts>`__ to run Scrapy's `CLI <https://docs.scrapy.org/en/latest/topics/commands.html>`__.
 
-The number of finished jobs, for which to keep metadata in the :ref:`jobstorage` backend.
-
-Finished jobs are accessed via the :ref:`webui` and :ref:`listjobs.json` endpoint.
+If necessary, override this to fully control how the Scrapy CLI is called.
 
 Default
-  ``100``
+  ``scrapyd.runner``
+Also used by
+  :ref:`listspiders.json` webservice, to run Scrapy's `list <https://docs.scrapy.org/en/latest/topics/commands.html#list>`__ command
 
-poll_interval
-~~~~~~~~~~~~~
+Web UI and API options
+----------------------
 
-The number of seconds to wait between checking the statuses of :ref:`spider queues<spiderqueue>`.
+.. _webroot:
+
+webroot
+~~~~~~~
+
+The class that defines the :ref:`webui` and :doc:`api`, as a Twisted Resource.
+
+If necessary, override this to fully control how the web UI and API work.
 
 Default
-  ``5.0``
-Options
-   Any floating-point number
-
-.. attention::
-
-   It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+  ``scrapyd.website.Root``
 
 .. _prefix_header:
 
@@ -226,52 +271,54 @@ A base path must have a leading slash and no trailing slash, e.g. ``/base/path``
 Default
   ``x-forwarded-prefix``
 
-runner
-~~~~~~
+node_name
+~~~~~~~~~
 
-The `executable <https://docs.python.org/3/tutorial/modules.html#executing-modules-as-scripts>`__ Python module for running Scrapy processes.
+.. versionadded:: 1.1.0
 
-Change it, to customize how Scrapy processes are run.
-
-Default
-  ``scrapyd.runner``
-
-application
-~~~~~~~~~~~
-
-The function that returns the Twisted Application to use.
-
-Change it, to customize how Scrapyd works.
+The node name, which appears in :doc:`api` responses.
 
 Default
-  ``scrapyd.app.application``
+  ``socket.gethostname()``
 
-.. seealso::
+debug
+~~~~~
 
-   `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
+Whether debug mode is enabled.
 
-.. _spiderqueue:
-
-spiderqueue
-~~~~~~~~~~~
-
-The class for storing the jobs queue.
+If enabled, a Python traceback is returned (as a plain-text response) when the :doc:`api` errors.
 
 Default
-  ``scrapyd.spiderqueue.SqliteSpiderQueue``
+  ``off``
+
+Egg storage options
+-------------------
+
+.. _eggstorage:
+
+eggstorage
+~~~~~~~~~~
+
+The class that stores project eggs.
+
+Default
+  ``scrapyd.eggstorage.FilesystemEggStorage``
 Options
-  - ``scrapyd.spiderqueue.SqliteSpiderQueue`` stores spider queues in SQLite databases named after projects, in the :ref:`dbs_dir` directory
-  -  Implement your own, using the ``ISpiderQueue`` interface
+  -  ``scrapyd.eggstorage.FilesystemEggStorage`` writes eggs in the :ref:`eggs_dir` directory
+  -  Implement your own, using the ``IEggStorage`` interface: for example, to store eggs remotely
 
-.. _webroot:
+.. _eggs_dir:
 
-webroot
-~~~~~~~
+eggs_dir
+~~~~~~~~
 
-The class that defines the :ref:`webui` and :doc:`api`, as a Twisted Resource.
+The directory in which to write project eggs.
 
 Default
-  ``scrapyd.website.Root``
+  ``eggs``
+
+Job storage options
+-------------------
 
 .. _jobstorage:
 
@@ -280,7 +327,7 @@ jobstorage
 
 .. versionadded:: 1.3.0
 
-The class for storing finished jobs.
+The class that stores finished jobs.
 
 Default
   ``scrapyd.jobstorage.MemoryJobStorage``
@@ -293,28 +340,33 @@ Options
 
    :ref:`finished_to_keep`
 
-.. _eggstorage:
+.. _finished_to_keep:
 
-eggstorage
-~~~~~~~~~~
+finished_to_keep
+~~~~~~~~~~~~~~~~
 
-The class for storing project eggs.
+The number of finished jobs, for which to keep metadata in the :ref:`jobstorage` backend.
 
-Default
-  ``scrapyd.eggstorage.FilesystemEggStorage``
-Options
-  -  ``scrapyd.eggstorage.FilesystemEggStorage`` stores eggs in the :ref:`eggs_dir` directory
-  -  Implement your own, using the ``IEggStorage`` interface: for example, to store eggs remotely
-
-node_name
-~~~~~~~~~
-
-.. versionadded:: 1.1.0
-
-The node name, which appears in :doc:`api` responses.
+Finished jobs are accessed via the :ref:`webui` and :ref:`listjobs.json` webservice.
 
 Default
-  ``socket.gethostname()``
+  ``100``
+
+Directories
+-----------
+
+.. _dbs_dir:
+
+dbs_dir
+~~~~~~~
+
+The directory in which to write SQLite databases.
+
+Default
+  ``dbs``
+Used by
+  -  :ref:`spiderqueue` (``scrapyd.spiderqueue.SqliteSpiderQueue``)
+  -  :ref:`jobstorage` (``scrapyd.jobstorage.SqliteJobStorage``)
 
 .. _config-services:
 
@@ -323,17 +375,17 @@ Services
 
 Normally, you can leave the ``[services]`` section from the :ref:`example <config-example>` as-is.
 
-If you want to add an endpoint, add another line, like:
+If you want to add a webservice (endpoint), add another line, like:
 
 .. code-block:: ini
    :emphasize-lines: 2
 
    [services]
-   myendpoint.json   = amodule.anothermodule.MyEndpoint
+   mywebservice.json   = amodule.anothermodule.MyWebService
    schedule.json     = scrapyd.webservice.Schedule
    ...
 
-You can use the endpoints in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
+You can use the webservices in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
 
 .. _config-example:
 
