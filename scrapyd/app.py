@@ -16,13 +16,13 @@ from scrapyd.poller import QueuePoller
 from scrapyd.scheduler import SpiderScheduler
 
 
-def create_wrapped_resource(webcls, config, app):
+def create_wrapped_resource(webroot_cls, config, app):
     username = os.getenv('SCRAPYD_USERNAME') or config.get('username', '')
     password = os.getenv('SCRAPYD_PASSWORD') or config.get('password', '')
     if ':' in username:
         sys.exit("The `username` option contains illegal character ':', "
                  "check and update the configuration file of Scrapyd")
-    resource = webcls(config, app)
+    resource = webroot_cls(config, app)
     if username and password:
         log.msg("Basic authentication enabled")
         portal = Portal(PublicHTMLRealm(resource),
@@ -48,24 +48,27 @@ def application(config):
     app.setComponent(ISpiderScheduler, scheduler)
     app.setComponent(IEnvironment, environment)
 
-    jspath = config.get('jobstorage', 'scrapyd.jobstorage.MemoryJobStorage')
-    jscls = load_object(jspath)
-    jobstorage = jscls(config)
+    jobstorage_path = config.get('jobstorage', 'scrapyd.jobstorage.MemoryJobStorage')
+    jobstorage_cls = load_object(jobstorage_path)
+    jobstorage = jobstorage_cls(config)
     app.setComponent(IJobStorage, jobstorage)
-    eggstorage = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
-    eggstoragecls = load_object(eggstorage)
-    app.setComponent(IEggStorage, eggstoragecls(config))
 
-    laupath = config.get('launcher', 'scrapyd.launcher.Launcher')
-    laucls = load_object(laupath)
-    launcher = laucls(config, app)
+    eggstorage_path = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstorage_cls = load_object(eggstorage_path)
+    eggstorage = eggstorage_cls(config)
+    app.setComponent(IEggStorage, eggstorage)
+
+    launcher_path = config.get('launcher', 'scrapyd.launcher.Launcher')
+    launcher_cls = load_object(launcher_path)
+    launcher = launcher_cls(config, app)
 
     timer = TimerService(poll_interval, poller.poll)
 
-    webpath = config.get('webroot', 'scrapyd.website.Root')
-    webcls = load_object(webpath)
-    resource = create_wrapped_resource(webcls, config, app)
+    webroot_path = config.get('webroot', 'scrapyd.website.Root')
+    webroot_cls = load_object(webroot_path)
+    resource = create_wrapped_resource(webroot_cls, config, app)
     webservice = TCPServer(http_port, server.Site(resource), interface=bind_address)
+
     log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
             bind_address=bind_address, http_port=http_port)
 
