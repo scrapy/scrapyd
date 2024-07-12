@@ -40,9 +40,11 @@ class IPoller(Interface):
         waiting to run already.
 
         The message is a dict containing (at least):
-        * the name of the project to be run in the '_project' key
-        * the name of the spider to be run in the '_spider' key
-        * a unique identifier for this run in the `_job` key
+
+        -  the name of the project to be run in the '_project' key
+        -  the name of the spider to be run in the '_spider' key
+        -  a unique identifier for this run in the `_job` key
+
         This message will be passed later to IEnvironment.get_environment().
         """
 
@@ -59,8 +61,8 @@ class ISpiderQueue(Interface):
         This method can return a deferred. """
 
     def pop():
-        """Pop the next mesasge from the queue. The messages is a dict
-        conaining a key 'name' with the spider name and other keys as spider
+        """Pop the next message from the queue. The messages is a dict
+        containing a key 'name' with the spider name and other keys as spider
         attributes.
 
         This method can return a deferred. """
