@@ -23,7 +23,7 @@ class SqliteSpiderQueue(object):
         return len(self.q)
 
     def list(self):
-        return [x[0] for x in self.q]
+        return [message for message, _ in self.q]
 
     def remove(self, func):
         return self.q.remove(func)

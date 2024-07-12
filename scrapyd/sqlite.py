@@ -16,55 +16,54 @@ class JsonSqliteDict(MutableMapping):
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        q = "create table if not exists %s (key blob primary key, value blob)" \
-            % table
-        self.conn.execute(q)
+        sql = "CREATE TABLE IF NOT EXISTS %s (key blob PRIMARY KEY, value blob)" % table
+        self.conn.execute(sql)
 
     def __getitem__(self, key):
         key = self.encode(key)
-        q = "select value from %s where key=?" % self.table
-        value = self.conn.execute(q, (key,)).fetchone()
+        sql = "SELECT value FROM %s WHERE key = ?" % self.table
+        value = self.conn.execute(sql, (key,)).fetchone()
         if value:
             return self.decode(value[0])
         raise KeyError(key)
 
     def __setitem__(self, key, value):
         key, value = self.encode(key), self.encode(value)
-        q = "insert or replace into %s (key, value) values (?,?)" % self.table
-        self.conn.execute(q, (key, value))
+        sql = "INSERT OR REPLACE INTO %s (key, value) VALUES (?, ?)" % self.table
+        self.conn.execute(sql, (key, value))
         self.conn.commit()
 
     def __delitem__(self, key):
         key = self.encode(key)
-        q = "delete from %s where key=?" % self.table
-        self.conn.execute(q, (key,))
+        sql = "DELETE FROM %s WHERE key = ?" % self.table
+        self.conn.execute(sql, (key,))
         self.conn.commit()
 
     def __len__(self):
-        q = "select count(*) from %s" % self.table
-        return self.conn.execute(q).fetchone()[0]
+        sql = "SELECT COUNT(*) FROM %s" % self.table
+        return self.conn.execute(sql).fetchone()[0]
 
     def __iter__(self):
-        for k in self.iterkeys():
-            yield k
+        for key in self.iterkeys():
+            yield key
 
     def iterkeys(self):
-        q = "select key from %s" % self.table
-        return (self.decode(x[0]) for x in self.conn.execute(q))
+        sql = "SELECT key FROM %s" % self.table
+        return (self.decode(row[0]) for row in self.conn.execute(sql))
 
     def keys(self):
         return list(self.iterkeys())
 
     def itervalues(self):
-        q = "select value from %s" % self.table
-        return (self.decode(x[0]) for x in self.conn.execute(q))
+        sql = "SELECT value FROM %s" % self.table
+        return (self.decode(row[0]) for row in self.conn.execute(sql))
 
     def values(self):
         return list(self.itervalues())
 
     def iteritems(self):
-        q = "select key, value from %s" % self.table
-        return ((self.decode(x[0]), self.decode(x[1])) for x in self.conn.execute(q))
+        sql = "SELECT key, value FROM %s" % self.table
+        return ((self.decode(row[0]), self.decode(row[1])) for row in self.conn.execute(sql))
 
     def items(self):
         return list(self.iteritems())
@@ -86,25 +85,23 @@ class JsonSqlitePriorityQueue(object):
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        q = "create table if not exists %s (id integer primary key, " \
-            "priority real key, message blob)" % table
-        self.conn.execute(q)
+        sql = "CREATE TABLE IF NOT EXISTS %s (id integer PRIMARY KEY, priority real key, message blob)" % table
+        self.conn.execute(sql)
 
     def put(self, message, priority=0.0):
         args = (priority, self.encode(message))
-        q = "insert into %s (priority, message) values (?,?)" % self.table
-        self.conn.execute(q, args)
+        sql = "INSERT INTO %s (priority, message) VALUES (?, ?)" % self.table
+        self.conn.execute(sql, args)
         self.conn.commit()
 
     def pop(self):
-        q = "select id, message from %s order by priority desc limit 1" \
-            % self.table
-        idmsg = self.conn.execute(q).fetchone()
+        sql = "SELECT id, message FROM %s ORDER BY priority DESC LIMIT 1" % self.table
+        idmsg = self.conn.execute(sql).fetchone()
         if idmsg is None:
             return
         id, msg = idmsg
-        q = "delete from %s where id=?" % self.table
-        c = self.conn.execute(q, (id,))
+        sql = "DELETE FROM %s WHERE id = ?" % self.table
+        c = self.conn.execute(sql, (id,))
         if not c.rowcount:  # record vanished, so let's try again
             self.conn.rollback()
             return self.pop()
@@ -112,12 +109,12 @@ class JsonSqlitePriorityQueue(object):
         return self.decode(msg)
 
     def remove(self, func):
-        q = "select id, message from %s" % self.table
+        sql = "SELECT id, message FROM %s" % self.table
         n = 0
-        for id, msg in self.conn.execute(q):
+        for id, msg in self.conn.execute(sql):
             if func(self.decode(msg)):
-                q = "delete from %s where id=?" % self.table
-                c = self.conn.execute(q, (id,))
+                sql = "DELETE FROM %s WHERE id = ?" % self.table
+                c = self.conn.execute(sql, (id,))
                 if not c.rowcount:  # record vanished, so let's try again
                     self.conn.rollback()
                     return self.remove(func)
@@ -130,13 +127,12 @@ class JsonSqlitePriorityQueue(object):
         self.conn.commit()
 
     def __len__(self):
-        q = "select count(*) from %s" % self.table
-        return self.conn.execute(q).fetchone()[0]
+        sql = "SELECT COUNT(*) FROM %s" % self.table
+        return self.conn.execute(sql).fetchone()[0]
 
     def __iter__(self):
-        q = "select message, priority from %s order by priority desc" % \
-            self.table
-        return ((self.decode(x), y) for x, y in self.conn.execute(q))
+        sql = "SELECT message, priority FROM %s ORDER BY priority DESC" % self.table
+        return ((self.decode(message), priority) for message, priority in self.conn.execute(sql))
 
     def encode(self, obj):
         return sqlite3.Binary(json.dumps(obj).encode('ascii'))
@@ -153,14 +149,14 @@ class SqliteFinishedJobs(object):
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        q = "create table if not exists %s (id integer primary key, " \
+        sql = "CREATE TABLE IF NOT EXISTS %s (id integer PRIMARY KEY, " \
             "project text, spider text, job text, start_time datetime, end_time datetime)" % table
-        self.conn.execute(q)
+        self.conn.execute(sql)
 
     def add(self, job):
         args = (job.project, job.spider, job.job, job.start_time, job.end_time)
-        q = "insert into %s (project, spider, job, start_time, end_time) values (?,?,?,?,?)" % self.table
-        self.conn.execute(q, args)
+        sql = "INSERT INTO %s (project, spider, job, start_time, end_time) VALUES (?, ?, ?, ?, ?)" % self.table
+        self.conn.execute(sql, args)
         self.conn.commit()
 
     def clear(self, finished_to_keep=None):
@@ -169,19 +165,18 @@ class SqliteFinishedJobs(object):
             limit = len(self) - finished_to_keep
             if limit <= 0:
                 return  # nothing to delete
-            w = "where id <= (select max(id) from " \
-                "(select id from %s order by end_time limit %d))" % (self.table, limit)
-        q = "delete from %s %s" % (self.table, w)
-        self.conn.execute(q)
+            w = "WHERE id <= " \
+                "(SELECT max(id) FROM (SELECT id FROM %s ORDER BY end_time LIMIT %d))" % (self.table, limit)
+        sql = "DELETE FROM %s %s" % (self.table, w)
+        self.conn.execute(sql)
         self.conn.commit()
 
     def __len__(self):
-        q = "select count(*) from %s" % self.table
-        return self.conn.execute(q).fetchone()[0]
+        sql = "SELECT COUNT(*) FROM %s" % self.table
+        return self.conn.execute(sql).fetchone()[0]
 
     def __iter__(self):
-        q = "select project, spider, job, start_time, end_time from %s order by end_time desc" % \
-            self.table
+        sql = "SELECT project, spider, job, start_time, end_time FROM %s ORDER BY end_time DESC" % self.table
         return ((j[0], j[1], j[2],
                 datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"),
-                datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(q))
+                datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(sql))
