@@ -5,6 +5,8 @@ API
 
 The following section describes the available resources in Scrapyd JSON API.
 
+.. _daemonstatus.json:
+
 daemonstatus.json
 -----------------
 
@@ -24,6 +26,7 @@ Example response::
 
     { "status": "ok", "running": "0", "pending": "0", "finished": "0", "node_name": "node-name" }
 
+.. _addversion.json:
 
 addversion.json
 ---------------
@@ -53,7 +56,7 @@ schedule.json_ and listspiders.json_ allow you to explicitly set the desired pro
 
 .. _packaging Version: https://packaging.pypa.io/en/stable/version.html
 
-.. _scrapyd-schedule:
+.. _schedule.json:
 
 schedule.json
 -------------
@@ -121,6 +124,8 @@ Example response::
 
     {"status": "ok", "prevstate": "running"}
 
+.. _listprojects.json:
+
 listprojects.json
 -----------------
 
@@ -136,6 +141,8 @@ Example request::
 Example response::
 
     {"status": "ok", "projects": ["myproject", "otherproject"]}
+
+.. _listversions.json:
 
 listversions.json
 -----------------
@@ -155,6 +162,8 @@ Example request::
 Example response::
 
     {"status": "ok", "versions": ["r99", "r156"]}
+
+.. _listspiders.json:
 
 listspiders.json
 ----------------
@@ -224,6 +233,8 @@ Example response::
 
 .. note:: All job data is kept in memory by default and will be reset when the Scrapyd service is restarted. See `jobstorage`_.
 
+.. _delversion.json:
+
 delversion.json
 ---------------
 
@@ -243,6 +254,8 @@ Example request::
 Example response::
 
     {"status": "ok"}
+
+.. _delproject.json:
 
 delproject.json
 ---------------

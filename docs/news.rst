@@ -12,7 +12,7 @@ Added
 ~~~~~
 
 - Add environment variables to override common options. See :doc:`config`.
-- Add documentation on how to add endpoints. See :ref:`config-services`.
+- Add documentation on how to add webservices (endpoints). See :ref:`config-services`.
 
 Changed
 ~~~~~~~
@@ -62,7 +62,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``items_url`` and ``log_url`` to the response from the listjobs.json webservice. (@mxdev88)
+- Add ``items_url`` and ``log_url`` to the response from the :ref:`listjobs.json` webservice. (@mxdev88)
 - Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
 - Python 3.12 support. Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
@@ -94,7 +94,7 @@ Fixed
 ~~~~~
 
 - Print Scrapyd's version instead of Twisted's version with ``--version`` (``-v``) flag. (@niuguy)
-- Override Scrapy's ``LOG_STDOUT`` setting to ``False`` to suppress logging output for listspiders.json webservice. (@Lucioric2000)
+- Override Scrapy's ``LOG_STDOUT`` setting to ``False`` to suppress logging output for :ref:`listspiders.json` webservice. (@Lucioric2000)
 
 1.3.0 (2022-01-12)
 ------------------
@@ -103,9 +103,9 @@ Added
 ~~~~~
 
 - Add support for HTTP authentication.
-- Make ``project`` argument to listjobs.json optional, to easily query for all jobs.
+- Make optional the ``project`` argument to the :ref:`listjobs.json` webservice, to easily query for all jobs.
 - Improve HTTP headers across webservices.
-- Add shortcut to jobs page to cancel a job using the cancel.json webservice.
+- Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
 - Add configuration options for job storage class and egg storage class.
 - Improve test coverage.
 - Python 3.7, 3.8, 3.9, 3.10 support.
@@ -147,10 +147,10 @@ Added
 
 - Webservice
 
-  - Add daemonstatus.json webservice.
-  - Add project version argument to the schedule.json webservice.
-  - Add jobid argument to the schedule.json webservice.
-  - Add the run's PID to the response of the listjobs.json webservice.
+  - Add the :ref:`daemonstatus.json` webservice.
+  - Add a ``_version`` argument to the :ref:`schedule.json` webservice.
+  - Add a ``jobid`` argument to the :ref:`schedule.json` webservice.
+  - Add the run's PID to the response of the :ref:`listjobs.json` webservice.
   - Include full tracebacks from Scrapy when failing to get spider list.
     This makes debugging deployment problems easier, but webservice output noisier.
 
@@ -217,7 +217,7 @@ Added
 ~~~~~
 
 - Add ``node_name`` (hostname) to webservice responses. (:commit:`fac3a5c`, :commit:`4aebe1c`)
-- Add ``start_time`` to the response from the listjobs.json webservice. (:commit:`6712af9`, :commit:`acd460b`)
+- Add ``start_time`` to the response from the :ref:`listjobs.json` webservice. (:commit:`6712af9`, :commit:`acd460b`)
 
 Changed
 ~~~~~~~
