@@ -18,6 +18,7 @@ Changed
 ~~~~~~~
 
 - Add a confirmation dialog to the Cancel button.
+- Drop support for end-of-life Python version 3.7.
 
 Fixed
 ~~~~~
