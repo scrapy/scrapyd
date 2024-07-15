@@ -226,6 +226,12 @@ jobs_to_keep
 
 The number of finished jobs per spider, for which to keep log files in the :ref:`logs_dir` directory and item feeds in the :ref:`items_dir` directory.
 
+To "disable" this feature, set this to an arbitrarily large value. For example, on a 64-bit system:
+
+.. code-block:: ini
+
+   jobs_to_keep = 9223372036854775807
+
 Default
   ``5``
 
