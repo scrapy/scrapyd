@@ -11,6 +11,7 @@ Unreleased
 Added
 ~~~~~
 
+- Add "Last modified" column to the directory listings of log files and item feeds.
 - Add environment variables to override common options. See :doc:`config`.
 - Add documentation on how to add webservices (endpoints). See :ref:`config-services`.
 

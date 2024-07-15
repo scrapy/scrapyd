@@ -1,9 +1,11 @@
 import socket
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
+from html import escape
+from urllib.parse import quote, urlparse
 
 from scrapy.utils.misc import load_object
 from twisted.application.service import IServiceCollection
+from twisted.python import filepath
 from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
@@ -13,6 +15,116 @@ from scrapyd.jobstorage import job_items_url, job_log_url
 class PrefixHeaderMixin:
     def get_base_path(self, txrequest):
         return txrequest.getHeader(self.prefix_header) or ''
+
+
+# Use local DirectoryLister class.
+class File(static.File):
+    def directoryListing(self):
+        path = self.path
+        names = self.listNames()
+        return DirectoryLister(
+            path, names, self.contentTypes, self.contentEncodings, self.defaultType
+        )
+
+
+# Add "Last modified" column.
+class DirectoryLister(static.DirectoryLister):
+    template = """<html>
+<head>
+<title>%(header)s</title>
+<style>
+.even-dir { background-color: #efe0ef }
+.even { background-color: #eee }
+.odd-dir {background-color: #f0d0ef }
+.odd { background-color: #dedede }
+.icon { text-align: center }
+.listing {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%%;
+    padding: 0.1em;
+    }
+
+body { border: 0; padding: 0; margin: 0; background-color: #efefef; }
+h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin white dashed;}
+
+</style>
+</head>
+
+<body>
+<h1>%(header)s</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Filename</th>
+            <th>Size</th>
+            <th>Last modified</th>
+            <th>Content type</th>
+            <th>Content encoding</th>
+        </tr>
+    </thead>
+    <tbody>
+%(tableContent)s
+    </tbody>
+</table>
+
+</body>
+</html>
+"""
+
+    linePattern = """<tr class="%(class)s">
+    <td><a href="%(href)s">%(text)s</a></td>
+    <td>%(size)s</td>
+    <td>%(modified)s</td>
+    <td>%(type)s</td>
+    <td>%(encoding)s</td>
+</tr>
+"""
+
+    def _getFilesAndDirectories(self, directory):
+        files = []
+        dirs = []
+
+        for path in directory:
+            if isinstance(path, bytes):
+                path = path.decode("utf8")
+
+            url = quote(path, "/")
+            escapedPath = escape(path)
+            childPath = filepath.FilePath(self.path).child(path)
+            modified = datetime.fromtimestamp(childPath.getModificationTime()).strftime("%Y-%m-%d %H:%M")  # NEW
+
+            if childPath.isdir():
+                dirs.append(
+                    {
+                        "text": escapedPath + "/",
+                        "href": url + "/",
+                        "size": "",
+                        "type": "[Directory]",
+                        "encoding": "",
+                        "modified": modified,  # NEW
+                    }
+                )
+            else:
+                mimetype, encoding = static.getTypeAndEncoding(
+                    path, self.contentTypes, self.contentEncodings, self.defaultType
+                )
+                try:
+                    size = childPath.getsize()
+                except OSError:
+                    continue
+                files.append(
+                    {
+                        "text": escapedPath,
+                        "href": url,
+                        "type": "[%s]" % mimetype,
+                        "encoding": (encoding and "[%s]" % encoding or ""),
+                        "size": static.formatFileSize(size),
+                        "modified": modified,  # NEW
+                    }
+                )
+        return dirs, files
 
 
 class Root(resource.Resource):
@@ -29,9 +141,9 @@ class Root(resource.Resource):
         self.nodename = config.get('node_name', socket.gethostname())
         self.putChild(b'', Home(self, self.local_items))
         if logsdir:
-            self.putChild(b'logs', static.File(logsdir.encode('ascii', 'ignore'), 'text/plain'))
+            self.putChild(b'logs', File(logsdir.encode('ascii', 'ignore'), 'text/plain'))
         if self.local_items:
-            self.putChild(b'items', static.File(itemsdir, 'text/plain'))
+            self.putChild(b'items', File(itemsdir, 'text/plain'))
         self.putChild(b'jobs', Jobs(self, self.local_items))
         services = config.items('services', ())
         for servName, servClsName in services:
