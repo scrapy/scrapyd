@@ -62,12 +62,13 @@ class Environment(object):
                            url.fragment))
 
     def _get_file(self, message, dir, ext):
-        logsdir = os.path.join(dir, message['_project'],
-                               message['_spider'])
-        if not os.path.exists(logsdir):
-            os.makedirs(logsdir)
-        to_delete = sorted((os.path.join(logsdir, x) for x in
-                            os.listdir(logsdir)), key=os.path.getmtime)[:-self.jobs_to_keep]
+        absdir = os.path.join(dir, message['_project'], message['_spider'])
+        if not os.path.exists(absdir):
+            os.makedirs(absdir)
+        to_delete = sorted(
+            (os.path.join(absdir, x) for x in os.listdir(absdir)),
+            key=os.path.getmtime,
+        )[:-self.jobs_to_keep]
         for x in to_delete:
             os.remove(x)
-        return os.path.join(logsdir, "%s.%s" % (message['_job'], ext))
+        return os.path.join(absdir, "%s.%s" % (message['_job'], ext))
