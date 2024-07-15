@@ -140,7 +140,7 @@ Fixed
 
 - Fix HTTP header types for newer Twisted versions.
 - ``DeferredQueue`` no longer hides a pending job when reaching ``max_proc``.
-- The :ref:`addversion.json`` webservice now works on Windows.
+- The :ref:`addversion.json` webservice now works on Windows.
 - test: Update binary eggs to be compatible with Scrapy 1.x.
 
 Removed

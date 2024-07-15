@@ -338,7 +338,7 @@ The class that stores finished jobs.
 Default
   ``scrapyd.jobstorage.MemoryJobStorage``
 Options
-  -  ``scrapyd.jobstorage.MemoryJobStorage`` stores jobs in memory, such that jobs and lost when the Scrapyd process ends
+  -  ``scrapyd.jobstorage.MemoryJobStorage`` stores jobs in memory, such that jobs are lost when the Scrapyd process ends
   -  ``scrapyd.jobstorage.SqliteJobStorage`` stores jobs in a SQLite database named ``jobs.db``, in the :ref:`dbs_dir` directory
   -  Implement your own, using the ``IJobStorage`` interface
 
