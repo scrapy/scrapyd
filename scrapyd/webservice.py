@@ -5,6 +5,7 @@ from copy import copy
 from io import BytesIO
 
 from twisted.python import log
+from twisted.web import http
 
 from scrapyd.jobstorage import job_items_url, job_log_url
 from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
@@ -25,6 +26,16 @@ class WsResource(JsonResource):
             log.err()
             r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
             return self.render_object(r, txrequest).encode('utf-8')
+
+    def render_OPTIONS(self, txrequest):
+        methods = ['OPTIONS', 'HEAD']
+        if hasattr(self, 'render_GET'):
+            methods.append('GET')
+        if hasattr(self, 'render_POST'):
+            methods.append('POST')
+        txrequest.setHeader('Allow', ', '.join(methods))
+        txrequest.setResponseCode(http.NO_CONTENT)
+        return b''
 
 
 class DaemonStatus(WsResource):

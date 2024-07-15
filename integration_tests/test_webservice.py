@@ -1,3 +1,5 @@
+import pytest
+import requests
 import scrapy
 
 from integration_tests import req
@@ -9,6 +11,28 @@ def assert_webservice(method, path, expected, **kwargs):
     json.pop("node_name")
 
     assert json == expected
+
+
+@pytest.mark.parametrize(
+    "webservice,method",
+    [
+        ("daemonstatus", "GET"),
+        ("addversion", "POST"),
+        ("schedule", "POST"),
+        ("cancel", "POST"),
+        ("listprojects", "GET"),
+        ("listversions", "GET"),
+        ("listspiders", "GET"),
+        ("listjobs", "GET"),
+        ("delversion", "POST"),
+        ("delproject", "POST"),
+    ],
+)
+def test_options(webservice, method):
+    response = requests.options(f"http://127.0.0.1:6800/{webservice}.json", auth=("hello12345", "67890world"))
+    assert response.status_code == 204, response.status_code
+    assert response.content == b''
+    assert response.headers['Allow'] == f"OPTIONS, HEAD, {method}"
 
 
 def test_daemonstatus():
