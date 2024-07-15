@@ -25,6 +25,7 @@ Fixed
 ~~~~~
 
 - The :ref:`cancel.json` webservice now works on Windows.
+- The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
 - When managing multiple projects, the next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 
 1.4.3 (2023-09-25)

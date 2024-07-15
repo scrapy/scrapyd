@@ -70,5 +70,8 @@ class Environment(object):
             key=os.path.getmtime,
         )[:-self.jobs_to_keep]
         for x in to_delete:
-            os.remove(x)
+            try:
+                os.remove(x)
+            except OSError:
+                pass
         return os.path.join(absdir, "%s.%s" % (message['_job'], ext))
