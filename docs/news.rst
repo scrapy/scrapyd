@@ -24,6 +24,7 @@ Changed
 Fixed
 ~~~~~
 
+- The :ref:`cancel.json` webservice now works on Windows.
 - When managing multiple projects, the next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 
 1.4.3 (2023-09-25)
@@ -138,7 +139,7 @@ Fixed
 
 - Fix HTTP header types for newer Twisted versions.
 - ``DeferredQueue`` no longer hides a pending job when reaching ``max_proc``.
-- ``AddVersion``'s arguments' string types no longer break Windows environments.
+- The :ref:`addversion.json`` webservice now works on Windows.
 - test: Update binary eggs to be compatible with Scrapy 1.x.
 
 Removed

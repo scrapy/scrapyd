@@ -1,3 +1,4 @@
+import sys
 import traceback
 import uuid
 from copy import copy
@@ -69,7 +70,7 @@ class Cancel(WsResource):
         args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
         project = args['project']
         jobid = args['job']
-        signal = args.get('signal', 'TERM')
+        signal = args.get('signal', 'INT' if sys.platform != 'win32' else 'BREAK')
         prevstate = None
         queue = self.root.poller.queues[project]
         c = queue.remove(lambda x: x["_job"] == jobid)
