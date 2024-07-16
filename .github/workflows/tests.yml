@@ -1,31 +1,22 @@
 name: Tests
 on: [push, pull_request]
-
 jobs:
   tests:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
-
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: install requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[test]
-      - name: Run unit tests
-        run: |
-          pytest scrapyd --cov=./ --cov-report=xml
-
+          cache: pip
+          cache-dependency-path: setup.py
+      - run: pip install -e .[test]
+      - name: pytest scrapyd --cov=. --cov-report=xml
       - name: Run integration tests
         run: |
           printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
@@ -35,9 +26,7 @@ jobs:
           pytest integration_tests
           cat scrapyd.log
           kill %%
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/reports/
