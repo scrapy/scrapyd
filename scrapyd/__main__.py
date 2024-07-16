@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import pkgutil
 import sys
 from os.path import dirname, join

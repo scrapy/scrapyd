@@ -59,7 +59,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'scrapyd = scrapyd.scripts.scrapyd_run:main'
+            'scrapyd = scrapyd.__main__:main'
         ]
     }
 )

@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from scrapyd.scripts.scrapyd_run import main
+from scrapyd.__main__ import main
 
 __version__ = pkgutil.get_data(__package__, '../VERSION').decode('ascii').strip()
 
