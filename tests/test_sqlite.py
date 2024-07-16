@@ -1,3 +1,4 @@
+import datetime
 import unittest
 
 from scrapyd.jobstorage import Job
@@ -154,7 +155,9 @@ class SqliteFinishedJobsTest(unittest.TestCase):
 
     def setUp(self):
         self.q = SqliteFinishedJobs(':memory:')
-        self.j1, self.j2, self.j3 = Job('p1', 's1'), Job('p2', 's2'), Job('p3', 's3')
+        self.j1 = Job('p1', 's1', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
+        self.j2 = Job('p2', 's2', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8))
+        self.j3 = Job('p3', 's3', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9))
         self.q.add(self.j1)
         self.q.add(self.j2)
         self.q.add(self.j3)

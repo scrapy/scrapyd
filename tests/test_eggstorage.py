@@ -35,7 +35,7 @@ class SomeFakeEggStorage:
 class TestConfigureEggStorage(unittest.TestCase):
     def test_egg_config_application(self):
         config = Config()
-        eggstore = 'scrapyd.tests.test_eggstorage.SomeFakeEggStorage'
+        eggstore = 'tests.test_eggstorage.SomeFakeEggStorage'
         config.cp.set('scrapyd', 'eggstorage', eggstore)
         app = application(config)
         app_eggstorage = app.getComponent(IEggStorage)
@@ -78,20 +78,20 @@ class EggStorageTest(unittest.TestCase):
         ])
         self.assertEqual(self.eggst.list('mybot2'), [])
 
-        v, f = self.eggst.get('mybot')
+        v, name = self.eggst.get('mybot')
         self.assertEqual(v, "03_ver")
-        self.assertEqual(f.read(), b"egg03")
-        f.close()
+        with open(name, 'rb') as f:
+            self.assertEqual(f.read(), b"egg03")
 
-        v, f = self.eggst.get('mybot', '02_my branch')
+        v, name = self.eggst.get('mybot', '02_my branch')
         self.assertEqual(v, "02_my branch")
-        self.assertEqual(f.read(), b"egg02")
-        f.close()
+        with open(name, 'rb') as f:
+            self.assertEqual(f.read(), b"egg02")
 
-        v, f = self.eggst.get('mybot', '02_my_branch')
+        v, name = self.eggst.get('mybot', '02_my_branch')
         self.assertEqual(v, "02_my_branch")
-        self.assertEqual(f.read(), b"egg02")
-        f.close()
+        with open(name, 'rb') as f:
+            self.assertEqual(f.read(), b"egg02")
 
         self.eggst.delete('mybot', '02_my branch')
         self.assertEqual(self.eggst.list('mybot'), ['01', '03_ver'])

@@ -16,7 +16,7 @@ venv
 /_trial_temp
 /dbs
 /htmlcov
-/scrapyd.tests.test_*
+/tests.test_*
 /scrapyd.conf
 /twistd.pid
 /eggs

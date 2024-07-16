@@ -18,10 +18,9 @@ def project_environment(project):
     eggstorage = eggstorage_cls(config)
 
     eggversion = os.environ.get('SCRAPYD_EGG_VERSION', None)
-    version, eggfile = eggstorage.get(project, eggversion)
-    if eggfile:
-        activate_egg(eggfile.name)
-        eggfile.close()
+    version, eggpath = eggstorage.get(project, eggversion)
+    if eggpath:
+        activate_egg(eggpath)
 
     assert 'scrapy.conf' not in sys.modules, "Scrapy settings already loaded"
     yield

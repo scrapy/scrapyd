@@ -25,7 +25,7 @@ class MockScrapyDServer:
         """
         command = [
             sys.executable, '-m',
-            "scrapyd.tests.start_mock_app",
+            "tests.start_mock_app",
             get_ephemeral_port()
         ]
         if self.authentication is not None:

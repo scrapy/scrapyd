@@ -24,34 +24,45 @@ Documentation
 Changed
 ~~~~~~~
 
+- **BACKWARDS-INCOMPATIBLE CHANGE:** The ``IEggStorage.get()`` interface returns a ``(version, filename)`` tuple, instead of a ``(version, file)`` tuple.
+- Drop support for end-of-life Python version 3.7.
+
+Web UI
+^^^^^^
+
 - Add a confirmation dialog to the Cancel button.
 - Add "Last modified" column to the directory listings of log files and item feeds.
-- Drop support for end-of-life Python version 3.7.
 
 API
 ^^^
 
-- If the ``egg`` parameter to the :ref:`addversion.json` webservice is not a ZIP file, use the error message, "egg is not a ZIP file (if using curl, use egg=@path not egg=path)".
-- Clarify some error messages, for example:
+- Clarify error messages, for example:
 
-  - ``'project' parameter is required`` instead of ``'project'``
-  - ``project 'myproject' not found`` instead of ``'myproject'``
-  - ``exception class: message`` instead of ``message``
-  - ``ValueError: Unknown or corrupt egg`` instead of ``TypeError: 'tuple' object is not an iterator``
+  - ``'project' parameter is required``, instead of ``'project'``
+  - ``project 'myproject' not found``, instead of ``'myproject'``
+  - ``exception class: message``, instead of ``message``
+  - ``ValueError: Unknown or corrupt egg``, instead of ``TypeError: 'tuple' object is not an iterator``
 
 CLI
 ^^^
 
-- Correct the usage message and long description, remove all ``twistd`` subcommands, and remove the ``--nodaemon`` and ``--python=`` options, which it overrides.
-- Run the ``scrapyd.__main__`` module instead of the ``scrapyd.scripts.scrapyd_run`` module.
+- Correct the usage message and long description, remove all ``twistd`` subcommands, and remove the ``--nodaemon`` and ``--python=`` options, which are overridden.
+- Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
 Fixed
 ~~~~~
 
 - The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
-- The :ref:`cancel.json` webservice now works on Windows.
+- The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
+
+Platform support
+^^^^^^^^^^^^^^^^
+
+Scrapyd is now tested on macOS and Windows, in addition to Linux.
+
+- The :ref:`cancel.json` webservice now works on Windows, by using SIGBREAK instead of SIGNINT or SIGTERM.
+- The :ref:`dbs_dir` setting no longer causes an error if it contains a drive letter on Windows.
 - The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
-- When managing multiple projects, the next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 
 1.4.3 (2023-09-25)
 ------------------

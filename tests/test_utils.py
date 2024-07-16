@@ -61,7 +61,7 @@ class GetSpiderListTest(unittest.TestCase):
 
     def add_test_version(self, file, project, version):
         eggstorage = self.app.getComponent(IEggStorage)
-        eggfile = BytesIO(get_data("scrapyd.tests", file))
+        eggfile = BytesIO(get_data("tests", file))
         eggstorage.put(eggfile, project, version)
 
     def test_get_spider_list_log_stdout(self):

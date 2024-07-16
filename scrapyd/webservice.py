@@ -55,7 +55,6 @@ class WsResource(JsonResource):
             methods.append('POST')
         txrequest.setHeader('Allow', ', '.join(methods))
         txrequest.setResponseCode(http.NO_CONTENT)
-        return b''
 
     def _error(self, message):
         return {"node_name": self.root.nodename, "status": "error", "message": message}
@@ -104,6 +103,9 @@ class Cancel(WsResource):
         args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
         project = _get_required_param(args, 'project')
         jobid = _get_required_param(args, 'job')
+        # Instead of os.name, use sys.platform, which disambiguates Cygwin, which implements SIGINT not SIGBREAK.
+        # https://cygwin.com/cygwin-ug-net/kill.html
+        # https://github.com/scrapy/scrapy/blob/06f9c289d1c92dbb8e41a837b886e5cadb81a061/tests/test_crawler.py#L886
         signal = args.get('signal', 'INT' if sys.platform != 'win32' else 'BREAK')
         prevstate = None
         try:
