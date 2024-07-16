@@ -35,7 +35,7 @@ class SomeFakeEggStorage:
 class TestConfigureEggStorage(unittest.TestCase):
     def test_egg_config_application(self):
         config = Config()
-        eggstore = 'scrapyd.tests.test_eggstorage.SomeFakeEggStorage'
+        eggstore = 'tests.test_eggstorage.SomeFakeEggStorage'
         config.cp.set('scrapyd', 'eggstorage', eggstore)
         app = application(config)
         app_eggstorage = app.getComponent(IEggStorage)

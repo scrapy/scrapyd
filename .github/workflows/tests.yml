@@ -16,7 +16,7 @@ jobs:
           cache: pip
           cache-dependency-path: setup.py
       - run: pip install -e .[test]
-      - run: pytest scrapyd --cov=. --cov-report=xml
+      - run: pytest tests --cov scrapyd
       - name: Run integration tests
         run: |
           printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf

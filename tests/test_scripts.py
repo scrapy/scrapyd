@@ -5,7 +5,7 @@ import pytest
 
 from scrapyd.__main__ import main
 
-__version__ = pkgutil.get_data(__package__, '../VERSION').decode('ascii').strip()
+__version__ = pkgutil.get_data(__package__, '../scrapyd/VERSION').decode('ascii').strip()
 
 
 def test_print_version(capsys, monkeypatch):

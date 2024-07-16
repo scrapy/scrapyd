@@ -5,7 +5,7 @@ import pytest
 import requests
 from requests.models import Response
 
-from scrapyd.tests.mockserver import MockScrapyDServer
+from tests.mockserver import MockScrapyDServer
 
 
 @pytest.fixture
