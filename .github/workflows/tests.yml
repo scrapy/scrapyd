@@ -26,7 +26,7 @@ jobs:
           pytest integration_tests
           cat scrapyd.log
           kill %%
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./coverage/reports/
