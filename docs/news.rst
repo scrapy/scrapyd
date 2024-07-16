@@ -26,7 +26,7 @@ API
 ^^^
 
 - If the ``egg`` parameter to the :ref:`addversion.json`` webservice is not a ZIP file, use the error message, "egg is not a ZIP file (if using curl, use egg=@path not egg=path)".
-- Clarify some error messages: for example, ``KeyError: 'project' (missing required parameter?)`` instead of ``'project'``, and ``exception class: message`` instead of ``message``.
+- Clarify some error messages: for example, ``'project' parameter is required`` instead of ``'project'``, and ``exception class: message`` instead of ``message``.
 
 CLI
 ^^^

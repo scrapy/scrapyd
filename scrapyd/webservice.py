@@ -8,8 +8,23 @@ from io import BytesIO
 from twisted.python import log
 from twisted.web import http
 
+from scrapyd.exceptions import MissingRequiredArgument
 from scrapyd.jobstorage import job_items_url, job_log_url
 from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+
+
+def _get_required_param(args, param):
+    try:
+        return args[param]
+    except KeyError as e:
+        raise MissingRequiredArgument(str(e))
+
+
+def _pop_required_param(args, param):
+    try:
+        return args.pop(param)
+    except KeyError as e:
+        raise MissingRequiredArgument(str(e))
 
 
 class WsResource(JsonResource):
@@ -25,8 +40,8 @@ class WsResource(JsonResource):
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
-            if isinstance(e, KeyError):
-                message = f"KeyError: {e} (missing required parameter?)"
+            if isinstance(e, MissingRequiredArgument):
+                message = f"{e} parameter is required"
             else:
                 message = f"{type(e).__name__}: {str(e)}"
             r = {"node_name": self.root.nodename, "status": "error", "message": message}
@@ -66,8 +81,8 @@ class Schedule(WsResource):
         settings = args.pop('setting', [])
         settings = dict(x.split('=', 1) for x in settings)
         args = {k: v[0] for k, v in args.items()}
-        project = args.pop('project')
-        spider = args.pop('spider')
+        project = _pop_required_param(args, 'project')
+        spider = _pop_required_param(args, 'spider')
         version = args.get('_version', '')
         priority = float(args.pop('priority', 0))
         spiders = get_spider_list(project, version=version)
@@ -84,8 +99,8 @@ class Cancel(WsResource):
 
     def render_POST(self, txrequest):
         args = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
-        project = args['project']
-        jobid = args['job']
+        project = _get_required_param(args, 'project')
+        jobid = _get_required_param(args, 'job')
         signal = args.get('signal', 'INT' if sys.platform != 'win32' else 'BREAK')
         prevstate = None
         queue = self.root.poller.queues[project]
@@ -103,12 +118,12 @@ class Cancel(WsResource):
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
-        eggf = BytesIO(txrequest.args.pop(b'egg')[0])
+        eggf = BytesIO(_pop_required_param(txrequest.args, b'egg')[0])
         if not zipfile.is_zipfile(eggf):
             return {"status": "error", "message": "egg is not a ZIP file (if using curl, use egg=@path not egg=path)"}
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
-        version = args['version'][0]
+        project = _get_required_param(args, 'project')[0]
+        version = _get_required_param(args, 'version')[0]
         self.root.eggstorage.put(eggf, project, version)
         spiders = get_spider_list(project, version=version)
         self.root.update_projects()
@@ -128,7 +143,7 @@ class ListVersions(WsResource):
 
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
+        project = _get_required_param(args, 'project')[0]
         versions = self.root.eggstorage.list(project)
         return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
@@ -137,7 +152,7 @@ class ListSpiders(WsResource):
 
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
+        project = _get_required_param(args, 'project')[0]
         version = args.get('_version', [''])[0]
         spiders = get_spider_list(project, runner=self.root.runner, version=version)
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
@@ -184,7 +199,7 @@ class DeleteProject(WsResource):
 
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
+        project = _get_required_param(args, 'project')[0]
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
@@ -198,8 +213,8 @@ class DeleteVersion(DeleteProject):
 
     def render_POST(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        project = args['project'][0]
-        version = args['version'][0]
+        project = _get_required_param(args, 'project')[0]
+        version = _get_required_param(args, 'version')[0]
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
