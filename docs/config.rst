@@ -200,6 +200,8 @@ Default
 Also used by
   :ref:`webui`, to link to log files
 
+.. attention:: Each ``*_dir`` setting must point to a different directory.
+
 .. _items_dir:
 
 items_dir
@@ -220,6 +222,8 @@ Default
    -  `Item pipeline <https://docs.scrapy.org/en/latest/topics/item-pipeline.html>`__, to store the scraped items in a database. See the `MongoDB example <https://docs.scrapy.org/en/latest/topics/item-pipeline.html#write-items-to-mongodb>`__, which can be adapted to another database.
 Also used by
   :ref:`webui`, to link to item feeds
+
+.. attention:: Each ``*_dir`` setting must point to a different directory.
 
 .. _jobs_to_keep:
 
@@ -325,6 +329,8 @@ The directory in which to write project eggs.
 Default
   ``eggs``
 
+.. attention:: Each ``*_dir`` setting must point to a different directory.
+
 Job storage options
 -------------------
 
@@ -375,6 +381,8 @@ Default
 Used by
   -  :ref:`spiderqueue` (``scrapyd.spiderqueue.SqliteSpiderQueue``)
   -  :ref:`jobstorage` (``scrapyd.jobstorage.SqliteJobStorage``)
+
+.. attention:: Each ``*_dir`` setting must point to a different directory.
 
 .. _config-services:
 
