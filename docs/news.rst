@@ -11,6 +11,7 @@ Unreleased
 Added
 ~~~~~
 
+- Add a :ref:`status.json` webservice, to get the status of a job.
 - Respond to HTTP ``OPTIONS`` method requests.
 - Add environment variables to override common options. See :doc:`config`.
 
