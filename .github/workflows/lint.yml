@@ -5,10 +5,12 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
+          cache: pip
+          cache-dependency-path: setup.py
       - run: pip install --upgrade pre-commit
       - run: pre-commit run --all-files
       - run: pip install --upgrade check-manifest setuptools
