@@ -20,6 +20,7 @@ def assert_webservice(method, path, expected, **kwargs):
         ("addversion", "POST"),
         ("schedule", "POST"),
         ("cancel", "POST"),
+        ("status", "GET"),
         ("listprojects", "GET"),
         ("listversions", "GET"),
         ("listspiders", "GET"),
@@ -56,6 +57,15 @@ def test_schedule():
             ),
         },
         data={"project": "nonexistent", "spider": "nospider"},
+    )
+
+
+def test_status_nonexistent():
+    assert_webservice(
+        "get",
+        "/status.json",
+        {"status": "ok", "currstate": "unknown"},
+        params={"job": "sample"},
     )
 
 
