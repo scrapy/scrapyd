@@ -60,6 +60,15 @@ def test_schedule():
     )
 
 
+def test_status_nonexistent():
+    assert_webservice(
+        "get",
+        "/status.json",
+        {"status": "ok", "currstate": "unknown"},
+        params={"job": "sample"},
+    )
+
+
 def test_cancel_nonexistent():
     assert_webservice(
         "post",
