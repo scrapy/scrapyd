@@ -62,7 +62,7 @@ def get_spider_queues(config):
 
 def sqlite_connection_string(config, database):
     dbs_dir = config.get('dbs_dir', 'dbs')
-    if dbs_dir == ':memory:' or urlsplit(dbs_dir).scheme:
+    if dbs_dir == ':memory:' or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
         return dbs_dir
     if not os.path.exists(dbs_dir):
         os.makedirs(dbs_dir)
