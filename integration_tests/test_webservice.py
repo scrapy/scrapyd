@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import requests
 import scrapy
@@ -9,6 +11,9 @@ def assert_webservice(method, path, expected, **kwargs):
     response = req(method, path, **kwargs)
     json = response.json()
     json.pop("node_name")
+    if "message" in expected:
+        if sys.platform == 'win32':
+            expected["message"] = expected["message"].replace("\n", "\r\n")
 
     assert json == expected
 
@@ -125,7 +130,10 @@ def test_delversion_nonexistent():
         "/delversion.json",
         {
             "status": "error",
-            "message": "FileNotFoundError: [Errno 2] No such file or directory: 'eggs/nonexistent/noegg.egg'",
+            "message": "FileNotFoundError: " + (
+                "[Errno 2] No such file or directory: 'eggs/nonexistent/noegg.egg'" if sys.platform != 'win32'
+                else "[WinError 3] The system cannot find the path specified: 'eggs\\\\nonexistent\\\\noegg.egg'"
+            ),
         },
         data={"project": "nonexistent", "version": "noegg"},
     )
@@ -137,7 +145,10 @@ def test_delproject_nonexistent():
         "/delproject.json",
         {
             "status": "error",
-            "message": "FileNotFoundError: [Errno 2] No such file or directory: 'eggs/nonexistent'",
+            "message": "FileNotFoundError: " + (
+                "[Errno 2] No such file or directory: 'eggs/nonexistent'" if sys.platform != 'win32'
+                else "[WinError 3] The system cannot find the path specified: 'eggs\\\\nonexistent'"
+            ),
         },
         data={"project": "nonexistent"},
     )
