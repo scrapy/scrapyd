@@ -13,8 +13,12 @@ Added
 
 - Respond to HTTP ``OPTIONS`` method requests.
 - Add environment variables to override common options. See :doc:`config`.
-- Add documentation on how to add webservices (endpoints). See :ref:`config-services`.
-- Add documentation on how to create a Docker image. See :ref:`docker`.
+
+Documentation
+^^^^^^^^^^^^^
+
+- How to add webservices (endpoints). See :ref:`config-services`.
+- How to create Docker images. See :ref:`docker`.
 
 Changed
 ~~~~~~~

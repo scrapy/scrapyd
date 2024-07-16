@@ -18,6 +18,8 @@ the :ref:`example <config-example>`).
 Environment variables
 ---------------------
 
+.. versionadded:: 1.5.0
+
 The following environment variables override corresponding options:
 
 * ``SCRAPYD_BIND_ADDRESS`` (:ref:`bind_address`)

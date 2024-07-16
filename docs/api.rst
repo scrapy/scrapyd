@@ -111,6 +111,30 @@ Example:
     When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first
     value is sent to the spider.
 
+.. _status.json
+
+status.json
+-----------
+
+.. versionadded:: 1.5.0
+
+Get the status of a job.
+
+Supported request methods
+  ``GET``
+Parameters
+  ``job`` (required)
+    the job ID
+  ``project``
+    the project name
+
+Example:
+
+.. code-block:: shell-session
+
+    $ curl http://localhost:6800/status.json?job=6487ec79947edab326d6db28a2d86511e8247444
+    {"node_name": "mynodename", "status": "ok", "currstate": "running"}
+
 .. _cancel.json:
 
 cancel.json
@@ -137,28 +161,6 @@ Example:
    {"node_name": "mynodename", "status": "ok", "prevstate": "running"}
 
 .. _listprojects.json:
-
-status.json
------------
-
-    .. versionadded:: 1.2.1
-
-    View the status of a spider run (aka. job).
-
-    * Supported Request Methods: ``GET``
-    * Parameters:
-
-      * ``project`` (string, optional) - the project name
-      * ``job`` (string, required) - the job id
-
-    Example request::
-
-        $ curl "http://localhost:6800/status.json?job=6487ec79947edab326d6db28a2d86511e8247444&project=myproject"
-
-    Example response::
-
-        { "node_name": "node-name", "status": "running" }
-
 
 listprojects.json
 -----------------

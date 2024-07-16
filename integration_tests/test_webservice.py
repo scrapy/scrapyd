@@ -20,6 +20,7 @@ def assert_webservice(method, path, expected, **kwargs):
         ("addversion", "POST"),
         ("schedule", "POST"),
         ("cancel", "POST"),
+        ("status", "GET"),
         ("listprojects", "GET"),
         ("listversions", "GET"),
         ("listspiders", "GET"),

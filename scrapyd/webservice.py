@@ -73,6 +73,7 @@ class DaemonStatus(WsResource):
             "finished": finished,
         }
 
+
 class Schedule(WsResource):
 
     def render_POST(self, txrequest):
@@ -158,30 +159,32 @@ class ListSpiders(WsResource):
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
 
-class JobStatus(WsResource):
+class Status(WsResource):
 
     def render_GET(self, txrequest):
-        result = {"node_name": self.root.nodename, "status":"unknown"}
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
-        job = args['job'][0]
+        job = _get_required_param(args, 'job')[0]
         project = args.get('project', [None])[0]
+
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
 
+        result = {"node_name": self.root.nodename, "status": "ok", "currstate": "unknown"}
+
         for s in self.root.launcher.finished:
-            if (project is None or s.project == project) and (s.job == job):
-                result["status"] = "finished"
+            if (project is None or s.project == project) and s.job == job:
+                result["currstate"] = "finished"
                 return result
 
         for s in spiders:
-            if (project is None or s.project == project) and (s.job == job):
-                result["status"] = "running"
+            if (project is None or s.project == project) and s.job == job:
+                result["currstate"] = "running"
                 return result
 
-        for x in queues[qname].list():
-            for qname in (queues if project is None else [project]):
-                if(x["_job"] == job):
-                    result["status"] = "pending"
+        for qname in (queues if project is None else [project]):
+            for x in queues[qname].list():
+                if x["_job"] == job:
+                    result["currstate"] = "pending"
                     return result
 
         return result
@@ -192,8 +195,10 @@ class ListJobs(WsResource):
     def render_GET(self, txrequest):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args.get('project', [None])[0]
+
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
+
         pending = [
             {"project": qname, "spider": x["name"], "id": x["_job"]}
             for qname in (queues if project is None else [project])
@@ -206,7 +211,9 @@ class ListJobs(WsResource):
                 "id": s.job,
                 "pid": s.pid,
                 "start_time": str(s.start_time),
-            } for s in spiders if project is None or s.project == project
+            }
+            for s in spiders
+            if project is None or s.project == project
         ]
         finished = [
             {
@@ -217,9 +224,11 @@ class ListJobs(WsResource):
                 "end_time": str(s.end_time),
                 "log_url": job_log_url(s),
                 "items_url": job_items_url(s),
-            } for s in self.root.launcher.finished
+            }
+            for s in self.root.launcher.finished
             if project is None or s.project == project
         ]
+
         return {"node_name": self.root.nodename, "status": "ok",
                 "pending": pending, "running": running, "finished": finished}
 
