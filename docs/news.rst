@@ -34,6 +34,7 @@ API
 - Clarify some error messages, for example:
 
   - ``'project' parameter is required`` instead of ``'project'``
+  - ``project 'myproject' not found`` instead of ``'myproject'``
   - ``exception class: message`` instead of ``message``
   - ``ValueError: Unknown or corrupt egg`` instead of ``TypeError: 'tuple' object is not an iterator``
 
@@ -46,6 +47,7 @@ CLI
 Fixed
 ~~~~~
 
+- The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
 - The :ref:`cancel.json` webservice now works on Windows.
 - The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
 - When managing multiple projects, the next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.

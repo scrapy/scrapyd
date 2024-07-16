@@ -44,7 +44,7 @@ class WsResource(JsonResource):
                 message = f"{e} parameter is required"
             else:
                 message = f"{type(e).__name__}: {str(e)}"
-            r = {"node_name": self.root.nodename, "status": "error", "message": message}
+            r = self._error(message)
             return self.render_object(r, txrequest).encode('utf-8')
 
     def render_OPTIONS(self, txrequest):
@@ -56,6 +56,9 @@ class WsResource(JsonResource):
         txrequest.setHeader('Allow', ', '.join(methods))
         txrequest.setResponseCode(http.NO_CONTENT)
         return b''
+
+    def _error(self, message):
+        return {"node_name": self.root.nodename, "status": "error", "message": message}
 
 
 class DaemonStatus(WsResource):
@@ -87,7 +90,7 @@ class Schedule(WsResource):
         priority = float(args.pop('priority', 0))
         spiders = get_spider_list(project, version=version)
         if spider not in spiders:
-            return {"status": "error", "message": "spider '%s' not found" % spider}
+            return self._error("spider '%s' not found" % spider)
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
         args['_job'] = jobid
@@ -103,7 +106,10 @@ class Cancel(WsResource):
         jobid = _get_required_param(args, 'job')
         signal = args.get('signal', 'INT' if sys.platform != 'win32' else 'BREAK')
         prevstate = None
-        queue = self.root.poller.queues[project]
+        try:
+            queue = self.root.poller.queues[project]
+        except KeyError as e:
+            return self._error(f"project {e} not found")
         c = queue.remove(lambda x: x["_job"] == jobid)
         if c:
             prevstate = "pending"
@@ -120,7 +126,7 @@ class AddVersion(WsResource):
     def render_POST(self, txrequest):
         egg = _pop_required_param(txrequest.args, b'egg')[0]
         if not zipfile.is_zipfile(BytesIO(egg)):
-            return {"status": "error", "message": "egg is not a ZIP file (if using curl, use egg=@path not egg=path)"}
+            return self._error("egg is not a ZIP file (if using curl, use egg=@path not egg=path)")
         eggf = BytesIO(egg)
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = _get_required_param(args, 'project')[0]

@@ -51,7 +51,7 @@ def test_schedule():
         {
             "status": "error",
             "message": (
-                f'Scrapy {scrapy.__version__} - no active project\n\n'
+                f'RunnerError: Scrapy {scrapy.__version__} - no active project\n\n'
                 'Unknown command: list\n\n'
                 'Use "scrapy" to see available commands\n'
             ),
@@ -64,7 +64,7 @@ def test_cancel_nonexistent():
     assert_webservice(
         "post",
         "/cancel.json",
-        {"status": "error", "message": "'nonexistent'"},
+        {"status": "error", "message": "project 'nonexistent' not found"},
         data={"project": "nonexistent", "job": "nojob"},
     )
 
@@ -93,7 +93,7 @@ def test_listspiders_nonexistent():
         {
             "status": "error",
             "message": (
-                f'Scrapy {scrapy.__version__} - no active project\n\n'
+                f'RunnerError: Scrapy {scrapy.__version__} - no active project\n\n'
                 'Unknown command: list\n\n'
                 'Use "scrapy" to see available commands\n'
             ),
@@ -114,7 +114,10 @@ def test_delversion_nonexistent():
     assert_webservice(
         "post",
         "/delversion.json",
-        {"status": "error", "message": "[Errno 2] No such file or directory: 'eggs/nonexistent/noegg.egg'"},
+        {
+            "status": "error",
+            "message": "FileNotFoundError: [Errno 2] No such file or directory: 'eggs/nonexistent/noegg.egg'",
+        },
         data={"project": "nonexistent", "version": "noegg"},
     )
 
@@ -123,6 +126,9 @@ def test_delproject_nonexistent():
     assert_webservice(
         "post",
         "/delproject.json",
-        {"status": "error", "message": "[Errno 2] No such file or directory: 'eggs/nonexistent'"},
+        {
+            "status": "error",
+            "message": "FileNotFoundError: [Errno 2] No such file or directory: 'eggs/nonexistent'",
+        },
         data={"project": "nonexistent"},
     )
