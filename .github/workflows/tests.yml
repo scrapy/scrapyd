@@ -25,7 +25,6 @@ jobs:
           sleep 1
           pytest integration_tests
           cat scrapyd.log
-          kill %%
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
