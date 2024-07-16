@@ -58,7 +58,7 @@ Fixed
 Platform support
 ^^^^^^^^^^^^^^^^
 
-Scrapyd is now tested on macOS and Windows, in addition to Linux.
+Scrapyd is now tested on macOS and Windows, in addition to Linux. Scrapyd is also now tested on PyPy 3.9.
 
 - The :ref:`cancel.json` webservice now works on Windows, by using SIGBREAK instead of SIGNINT or SIGTERM.
 - The :ref:`dbs_dir` setting no longer causes an error if it contains a drive letter on Windows.
