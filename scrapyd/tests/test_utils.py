@@ -10,6 +10,7 @@ from scrapy.utils.test import get_pythonpath
 from twisted.trial import unittest
 
 from scrapyd import get_application
+from scrapyd.exceptions import RunnerError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list, sorted_versions
 
@@ -123,7 +124,7 @@ class GetSpiderListTest(unittest.TestCase):
             return Popen(cmd, *args, **kwargs)
 
         with mock.patch('scrapyd.utils.Popen', wraps=popen_wrapper):
-            exc = self.assertRaises(RuntimeError, get_spider_list, 'mybot3', pythonpath=pypath)
+            exc = self.assertRaises(RunnerError, get_spider_list, 'mybot3', pythonpath=pypath)
         self.assertRegex(str(exc).rstrip(), r'Exception: This should break the `scrapy list` command$')
 
 

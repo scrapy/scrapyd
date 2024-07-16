@@ -118,9 +118,10 @@ class Cancel(WsResource):
 class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
-        eggf = BytesIO(_pop_required_param(txrequest.args, b'egg')[0])
-        if not zipfile.is_zipfile(eggf):
+        egg = _pop_required_param(txrequest.args, b'egg')[0]
+        if not zipfile.is_zipfile(BytesIO(egg)):
             return {"status": "error", "message": "egg is not a ZIP file (if using curl, use egg=@path not egg=path)"}
+        eggf = BytesIO(egg)
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = _get_required_param(args, 'project')[0]
         version = _get_required_param(args, 'version')[0]

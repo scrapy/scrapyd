@@ -9,6 +9,7 @@ from scrapy.utils.misc import load_object
 from twisted.web import resource
 
 from scrapyd.config import Config
+from scrapyd.exceptions import RunnerError
 from scrapyd.sqlite import JsonSqliteDict
 
 
@@ -139,7 +140,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     if proc.returncode:
         msg = err or out or ''
         msg = msg.decode('utf8')
-        raise RuntimeError(msg)
+        raise RunnerError(msg)
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
     tmp = out.decode('utf-8').splitlines()

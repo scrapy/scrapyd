@@ -8,8 +8,11 @@ def activate_egg(eggpath):
     to activate a Scrapy egg file. Don't use it from other code as it may
     leave unwanted side effects.
     """
+    distributions = pkg_resources.find_distributions(eggpath)
+    if isinstance(distributions, tuple):
+        raise ValueError("Unknown or corrupt egg")
     try:
-        d = next(pkg_resources.find_distributions(eggpath))
+        d = next(distributions)
     except StopIteration:
         raise ValueError("Unknown or corrupt egg")
     d.activate()
