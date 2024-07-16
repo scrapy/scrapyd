@@ -22,7 +22,10 @@ class JsonResource(resource.Resource):
         return self.render_object(r, txrequest)
 
     def render_object(self, obj, txrequest):
-        r = self.json_encoder.encode(obj) + "\n"
+        if obj is None:
+            r = ''
+        else:
+            r = self.json_encoder.encode(obj) + "\n"
         txrequest.setHeader('Content-Type', 'application/json')
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
         txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')

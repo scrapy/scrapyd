@@ -55,7 +55,6 @@ class WsResource(JsonResource):
             methods.append('POST')
         txrequest.setHeader('Allow', ', '.join(methods))
         txrequest.setResponseCode(http.NO_CONTENT)
-        return b''
 
     def _error(self, message):
         return {"node_name": self.root.nodename, "status": "error", "message": message}
