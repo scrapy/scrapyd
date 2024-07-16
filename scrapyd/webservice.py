@@ -1,6 +1,7 @@
 import sys
 import traceback
 import uuid
+import zipfile
 from copy import copy
 from io import BytesIO
 
@@ -103,6 +104,8 @@ class AddVersion(WsResource):
 
     def render_POST(self, txrequest):
         eggf = BytesIO(txrequest.args.pop(b'egg')[0])
+        if not zipfile.is_zipfile(eggf):
+            return {"status": "error", "message": "egg is not a ZIP file (if using curl, use egg=@path not egg=path)"}
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         project = args['project'][0]
         version = args['version'][0]
