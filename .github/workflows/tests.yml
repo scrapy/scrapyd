@@ -16,7 +16,7 @@ jobs:
           cache: pip
           cache-dependency-path: setup.py
       - run: pip install -e .[test]
-      - name: pytest scrapyd --cov=. --cov-report=xml
+      - run: pytest scrapyd --cov=. --cov-report=xml
       - name: Run integration tests
         run: |
           printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
@@ -26,15 +26,6 @@ jobs:
           pytest integration_tests
           cat scrapyd.log
           kill %%
-      - uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/reports/
-          env_vars: OS,PYTHON
-          fail_ci_if_error: false
-          files: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
-          # https://github.com/codecov/codecov-action/issues/476
-          # path_to_write_report: ./coverage/codecov_report.txt
-          verbose: true
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: coveralls --service=github
