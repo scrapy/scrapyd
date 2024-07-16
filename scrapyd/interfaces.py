@@ -1,5 +1,6 @@
 from zope.interface import Interface
 
+
 class IEggStorage(Interface):
     """A component that handles storing and retrieving eggs"""
 
@@ -8,7 +9,7 @@ class IEggStorage(Interface):
         version"""
 
     def get(project, version=None):
-        """Return a tuple (version, file) with the the egg for the specified
+        """Return a tuple (version, filename) for the egg matching the specified
         project and version. If version is None, the latest version is
         returned. If no egg is found for the given project/version (None, None)
         should be returned."""
@@ -39,10 +40,15 @@ class IPoller(Interface):
         waiting to run already.
 
         The message is a dict containing (at least):
-        * the name of the project to be run in the '_project' key
-        * the name of the spider to be run in the '_spider' key
-        * a unique identifier for this run in the `_job` key
+
+        -  the name of the project to be run in the '_project' key
+        -  the name of the spider to be run in the '_spider' key
+        -  a unique identifier for this run in the `_job` key
+
         This message will be passed later to IEnvironment.get_environment().
+
+        Called ``max_proc`` times when the launcher starts, and each time a
+        Scrapy process ends.
         """
 
     def update_projects():
@@ -58,8 +64,8 @@ class ISpiderQueue(Interface):
         This method can return a deferred. """
 
     def pop():
-        """Pop the next mesasge from the queue. The messages is a dict
-        conaining a key 'name' with the spider name and other keys as spider
+        """Pop the next message from the queue. The messages is a dict
+        containing a key 'name' with the spider name and other keys as spider
         attributes.
 
         This method can return a deferred. """
@@ -104,12 +110,19 @@ class ISpiderScheduler(Interface):
 class IEnvironment(Interface):
     """A component to generate the environment of crawler processes"""
 
+    def get_settings(message):
+        """Return the Scrapy settings to use for running the process.
+
+        `message` is the message received from the IPoller.next() method.
+        """
+
     def get_environment(message, slot):
         """Return the environment variables to use for running the process.
 
-        `message` is the message received from the IPoller.next() method
+        `message` is the message received from the IPoller.next() method.
         `slot` is the Launcher slot where the process will be running.
         """
+
 
 class IJobStorage(Interface):
     """A component that handles storing and retrieving finished jobs. """
@@ -124,4 +137,4 @@ class IJobStorage(Interface):
         """Return a number of the finished jobs. """
 
     def __iter__():
-        """Iterate over the finished jobs. """  
+        """Iterate over the finished jobs. """

@@ -1,3 +1,0 @@
-debian/000-default etc/scrapyd/conf.d
-debian/tmp/usr/bin/scrapyd
-debian/tmp/usr/lib

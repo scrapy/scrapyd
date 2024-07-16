@@ -1,16 +1,16 @@
-import sys
-import os
-from .sqlite import JsonSqliteDict
-from subprocess import Popen, PIPE
-import six
-from six import iteritems
-from six.moves.configparser import NoSectionError
 import json
+import os
+import sys
+from subprocess import PIPE, Popen
+from urllib.parse import urlsplit
+
+from packaging.version import InvalidVersion, Version
+from scrapy.utils.misc import load_object
 from twisted.web import resource
 
-from scrapyd.spiderqueue import SqliteSpiderQueue
 from scrapyd.config import Config
-from scrapy.utils.misc import load_object
+from scrapyd.exceptions import RunnerError
+from scrapyd.sqlite import JsonSqliteDict
 
 
 class JsonResource(resource.Resource):
@@ -22,13 +22,17 @@ class JsonResource(resource.Resource):
         return self.render_object(r, txrequest)
 
     def render_object(self, obj, txrequest):
-        r = self.json_encoder.encode(obj) + "\n"
+        if obj is None:
+            r = ''
+        else:
+            r = self.json_encoder.encode(obj) + "\n"
         txrequest.setHeader('Content-Type', 'application/json')
         txrequest.setHeader('Access-Control-Allow-Origin', '*')
         txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        txrequest.setHeader('Access-Control-Allow-Headers',' X-Requested-With')
+        txrequest.setHeader('Access-Control-Allow-Headers', ' X-Requested-With')
         txrequest.setHeader('Content-Length', str(len(r)))
         return r
+
 
 class UtilsCache:
     # array of project name that need to be invalided
@@ -52,16 +56,21 @@ class UtilsCache:
     def __setitem__(self, key, value):
         self.cache_manager[key] = value
 
+
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
-    dbsdir = config.get('dbs_dir', 'dbs')
-    if not os.path.exists(dbsdir):
-        os.makedirs(dbsdir)
-    d = {}
-    for project in get_project_list(config):
-        dbpath = os.path.join(dbsdir, '%s.db' % project)
-        d[project] = SqliteSpiderQueue(dbpath)
-    return d
+    spiderqueue = load_object(config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue'))
+    return {project: spiderqueue(config, project) for project in get_project_list(config)}
+
+
+def sqlite_connection_string(config, database):
+    dbs_dir = config.get('dbs_dir', 'dbs')
+    if dbs_dir == ':memory:' or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
+        return dbs_dir
+    if not os.path.exists(dbs_dir):
+        os.makedirs(dbs_dir)
+    return os.path.join(dbs_dir, f'{database}.db')
+
 
 def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
@@ -74,13 +83,14 @@ def get_project_list(config):
     projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects
 
+
 def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
     """Return a (new) dict with unicode keys (and values when "keys_only" is
     False) of the given dict converted to strings. `dct_or_tuples` can be a
     dict or a list of tuples, like any dict constructor supports.
     """
     d = {}
-    for k, v in iteritems(dict(dct_or_tuples)):
+    for k, v in dct_or_tuples.items():
         k = _to_native_str(k, encoding)
         if not keys_only:
             if isinstance(v, dict):
@@ -91,6 +101,7 @@ def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
                 v = _to_native_str(v, encoding)
         d[k] = v
     return d
+
 
 def get_crawl_args(message):
     """Return the command-line arguments to use for the scrapy crawl process
@@ -108,6 +119,7 @@ def get_crawl_args(message):
         args += ['%s=%s' % (k, v)]
     return args
 
+
 def get_spider_list(project, runner=None, pythonpath=None, version=''):
     """Return the spider list from the given project, using the given runner"""
     if "cache" not in get_spider_list.__dict__:
@@ -124,17 +136,17 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
     if pythonpath:
         env['PYTHONPATH'] = pythonpath
     if version:
-        env['SCRAPY_EGG_VERSION'] = version
-    pargs = [sys.executable, '-m', runner, 'list']
+        env['SCRAPYD_EGG_VERSION'] = version
+    pargs = [sys.executable, '-m', runner, 'list', '-s', 'LOG_STDOUT=0']
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
     if proc.returncode:
         msg = err or out or ''
         msg = msg.decode('utf8')
-        raise RuntimeError(msg.encode('unicode_escape') if six.PY2 else msg)
+        raise RunnerError(msg)
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
-    tmp = out.decode('utf-8').splitlines();
+    tmp = out.decode('utf-8').splitlines()
     try:
         project_cache = get_spider_list.cache[project]
         project_cache[version] = tmp
@@ -147,10 +159,15 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
 def _to_native_str(text, encoding='utf-8', errors='strict'):
     if isinstance(text, str):
         return text
-    if not isinstance(text, (bytes, six.text_type)):
+    if not isinstance(text, (bytes, str)):
         raise TypeError('_to_native_str must receive a bytes, str or unicode '
                         'object, got %s' % type(text).__name__)
-    if six.PY2:
-        return text.encode(encoding, errors)
-    else:
-        return text.decode(encoding, errors)
+
+    return text.decode(encoding, errors)
+
+
+def sorted_versions(versions):
+    try:
+        return sorted(versions, key=Version)
+    except InvalidVersion:
+        return sorted(versions)
