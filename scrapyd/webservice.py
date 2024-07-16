@@ -24,7 +24,11 @@ class WsResource(JsonResource):
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
-            r = {"node_name": self.root.nodename, "status": "error", "message": str(e)}
+            if isinstance(e, KeyError):
+                message = f"KeyError: {e} (missing required parameter?)"
+            else:
+                message = f"{type(e).__name__}: {str(e)}"
+            r = {"node_name": self.root.nodename, "status": "error", "message": message}
             return self.render_object(r, txrequest).encode('utf-8')
 
     def render_OPTIONS(self, txrequest):

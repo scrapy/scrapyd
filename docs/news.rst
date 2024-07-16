@@ -20,9 +20,18 @@ Changed
 
 - Add a confirmation dialog to the Cancel button.
 - Add "Last modified" column to the directory listings of log files and item feeds.
-- The Scrapyd CLI corrects the usage message and long description, removes all ``twistd`` subcommands, and removes the ``--nodaemon`` and ``--python=`` options, which it overrides.
-- The Scrapyd CLI runs from the ``scrapyd.__main__`` module instead of from the ``scrapyd.scripts.scrapyd_run`` module.
 - Drop support for end-of-life Python version 3.7.
+
+API
+^^^
+
+- Clarify some error messages: for example, ``KeyError: 'project' (missing required parameter?)`` instead of ``'project'``, and ``exception class: message`` instead of ``message``.
+
+CLI
+^^^
+
+- Correct the usage message and long description, remove all ``twistd`` subcommands, and remove the ``--nodaemon`` and ``--python=`` options, which it overrides.
+- Run the ``scrapyd.__main__`` module instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
 Fixed
 ~~~~~
