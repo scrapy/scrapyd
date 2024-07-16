@@ -9,7 +9,7 @@ Contributing
 
 These docs describe how to setup and contribute to Scrapyd.
 
-Reporting Issues & Bugs
+Reporting issues & bugs
 -----------------------
 
 Issues should be reported to the Scrapyd project `issue tracker`_ on GitHub
@@ -48,7 +48,7 @@ And their unit-tests are in::
 
     scrapyd/tests/test_scheduler.py
 
-Installing Locally
+Installing locally
 ------------------
 
 To install a locally edited version of Scrapyd onto the system to use and test, inside the project root run:
