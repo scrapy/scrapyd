@@ -24,6 +24,7 @@ Documentation
 Changed
 ~~~~~~~
 
+- The ``IEggStorage.get()`` interface returns a ``(version, filename)`` tuple, instead of a ``(version, file)`` tuple.
 - Add a confirmation dialog to the Cancel button.
 - Add "Last modified" column to the directory listings of log files and item feeds.
 - Drop support for end-of-life Python version 3.7.
