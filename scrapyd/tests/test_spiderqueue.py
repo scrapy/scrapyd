@@ -1,18 +1,20 @@
 from twisted.internet.defer import inlineCallbacks, maybeDeferred
 from twisted.trial import unittest
-
 from zope.interface.verify import verifyObject
 
-from scrapyd.interfaces import ISpiderQueue
 from scrapyd import spiderqueue
+from scrapyd.config import Config
+from scrapyd.interfaces import ISpiderQueue
+
 
 class SpiderQueueTest(unittest.TestCase):
     """This test case also supports queues with deferred methods.
     """
 
     def setUp(self):
-        self.q = spiderqueue.SqliteSpiderQueue(':memory:')
+        self.q = spiderqueue.SqliteSpiderQueue(Config(values={'dbs_dir': ':memory:'}), 'quotesbot')
         self.name = 'spider1'
+        self.priority = 5
         self.args = {
             'arg1': 'val1',
             'arg2': 2,
@@ -20,7 +22,6 @@ class SpiderQueueTest(unittest.TestCase):
         }
         self.msg = self.args.copy()
         self.msg['name'] = self.name
-
 
     def test_interface(self):
         verifyObject(ISpiderQueue, self.q)
@@ -30,7 +31,7 @@ class SpiderQueueTest(unittest.TestCase):
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 0)
 
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 1)
@@ -43,19 +44,19 @@ class SpiderQueueTest(unittest.TestCase):
 
     @inlineCallbacks
     def test_list(self):
-        l = yield maybeDeferred(self.q.list)
-        self.assertEqual(l, [])
+        actual = yield maybeDeferred(self.q.list)
+        self.assertEqual(actual, [])
 
-        yield maybeDeferred(self.q.add, self.name, **self.args)
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
-        l = yield maybeDeferred(self.q.list)
-        self.assertEqual(l, [self.msg, self.msg])
+        actual = yield maybeDeferred(self.q.list)
+        self.assertEqual(actual, [self.msg, self.msg])
 
     @inlineCallbacks
     def test_clear(self):
-        yield maybeDeferred(self.q.add, self.name, **self.args)
-        yield maybeDeferred(self.q.add, self.name, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
+        yield maybeDeferred(self.q.add, self.name, self.priority, **self.args)
 
         c = yield maybeDeferred(self.q.count)
         self.assertEqual(c, 2)

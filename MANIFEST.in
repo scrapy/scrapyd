@@ -1,10 +1,12 @@
-include README.rst
 include LICENSE
-include MANIFEST.in
 include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
-recursive-include scrapyd/tests *.egg
-recursive-include scrapyd/scripts *.py
-recursive-include docs *
-prune docs/_build
-recursive-include extras *
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs *.txt
+recursive-include docs Makefile
+recursive-include scrapyd *.py
+recursive-include scrapyd *.egg
+recursive-include integration_tests *.py
+exclude .pre-commit-config.yaml
+exclude .readthedocs.yaml

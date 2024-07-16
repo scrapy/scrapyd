@@ -1,10 +1,11 @@
 import glob
-from io import StringIO
-from pkgutil import get_data
-from six.moves.configparser import SafeConfigParser, NoSectionError, NoOptionError
+import io
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from os.path import expanduser
+from pkgutil import get_data
 
 from scrapy.utils.conf import closest_scrapy_cfg
+
 
 class Config(object):
     """A ConfigParser wrapper to support defaults when calling instance
@@ -16,13 +17,17 @@ class Config(object):
         if values is None:
             sources = self._getsources()
             default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
-            self.cp = SafeConfigParser()
-            self.cp.readfp(StringIO(default_config))
-            self.cp.read(sources)
-            for fp in extra_sources:
-                self.cp.readfp(fp)
+            self.cp = ConfigParser()
+            self.cp.read_string(default_config)
+            sources.extend(extra_sources)
+            for fname in sources:
+                try:
+                    with io.open(fname) as fp:
+                        self.cp.read_file(fp)
+                except (IOError, OSError):
+                    pass
         else:
-            self.cp = SafeConfigParser(values)
+            self.cp = ConfigParser(values)
             self.cp.add_section(self.SECTION)
 
     def _getsources(self):

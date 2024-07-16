@@ -2,13 +2,14 @@ import sys
 from datetime import datetime
 from multiprocessing import cpu_count
 
-from twisted.internet import reactor, defer, protocol, error
 from twisted.application.service import Service
+from twisted.internet import defer, error, protocol, reactor
 from twisted.python import log
 
-from scrapyd.utils import get_crawl_args, native_stringify_dict
 from scrapyd import __version__
-from .interfaces import IPoller, IEnvironment
+from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
+from scrapyd.utils import get_crawl_args, native_stringify_dict
+
 
 class Launcher(Service):
 
@@ -16,8 +17,7 @@ class Launcher(Service):
 
     def __init__(self, config, app):
         self.processes = {}
-        self.finished = []
-        self.finished_to_keep = config.getint('finished_to_keep', 100)
+        self.finished = app.getComponent(IJobStorage)
         self.max_proc = self._get_max_proc(config)
         self.runner = config.get('runner', 'scrapyd.runner')
         self.app = app
@@ -34,15 +34,16 @@ class Launcher(Service):
         poller.next().addCallback(self._spawn_process, slot)
 
     def _spawn_process(self, message, slot):
+        e = self.app.getComponent(IEnvironment)
+        message.setdefault('settings', {})
+        message['settings'].update(e.get_settings(message))
         msg = native_stringify_dict(message, keys_only=False)
         project = msg['_project']
         args = [sys.executable, '-m', self.runner, 'crawl']
         args += get_crawl_args(msg)
-        e = self.app.getComponent(IEnvironment)
         env = e.get_environment(msg, slot)
         env = native_stringify_dict(env, keys_only=False)
-        pp = ScrapyProcessProtocol(slot, project, msg['_spider'], \
-            msg['_job'], env)
+        pp = ScrapyProcessProtocol(project, msg['_spider'], msg['_job'], env, args)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)
         self.processes[slot] = pp
@@ -50,8 +51,7 @@ class Launcher(Service):
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)
         process.end_time = datetime.now()
-        self.finished.append(process)
-        del self.finished[:-self.finished_to_keep] # keep last 100 finished jobs
+        self.finished.add(process)
         self._wait_for_project(slot)
 
     def _get_max_proc(self, config):
@@ -64,10 +64,10 @@ class Launcher(Service):
             max_proc = cpus * config.getint('max_proc_per_cpu', 4)
         return max_proc
 
+
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
 
-    def __init__(self, slot, project, spider, job, env):
-        self.slot = slot
+    def __init__(self, project, spider, job, env, args):
         self.pid = None
         self.project = project
         self.spider = spider
@@ -75,8 +75,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.start_time = datetime.now()
         self.end_time = None
         self.env = env
-        self.logfile = env.get('SCRAPY_LOG_FILE')
-        self.itemsfile = env.get('SCRAPY_FEED_URI')
+        self.args = args
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
@@ -97,6 +96,6 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.deferred.callback(self)
 
     def log(self, action):
-        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r log=%(log)r items=%(items)r'
+        fmt = '%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r args=%(args)r'
         log.msg(format=fmt, action=action, project=self.project, spider=self.spider,
-                job=self.job, pid=self.pid, log=self.logfile, items=self.itemsfile)
+                job=self.job, pid=self.pid, args=self.args)

@@ -1,40 +1,45 @@
 # -*- coding: utf-8 -*-
-import sys, os
+import os
+from io import BytesIO
 from pkgutil import get_data
-try:
-    from cStringIO import StringIO as BytesIO
-except ImportError:
-    from io import BytesIO
+from subprocess import Popen
+from unittest import mock
 
-import six
-
+import pytest
+from scrapy.utils.test import get_pythonpath
 from twisted.trial import unittest
 
-from scrapy.utils.test import get_pythonpath
-from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import get_crawl_args, get_spider_list, UtilsCache
 from scrapyd import get_application
+from scrapyd.exceptions import RunnerError
+from scrapyd.interfaces import IEggStorage
+from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list, sorted_versions
+
 
 def get_pythonpath_scrapyd():
     scrapyd_path = __import__('scrapyd').__path__[0]
-    return os.path.dirname(scrapyd_path) + os.pathsep + get_pythonpath() + os.pathsep + os.environ.get('PYTHONPATH', '')
+    return os.path.join(os.path.dirname(scrapyd_path), get_pythonpath(), os.environ.get('PYTHONPATH', ''))
 
 
 class UtilsTest(unittest.TestCase):
 
     def test_get_crawl_args(self):
         msg = {'_project': 'lolo', '_spider': 'lala'}
+
         self.assertEqual(get_crawl_args(msg), ['lala'])
+
         msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': u'val1'}
         cargs = get_crawl_args(msg)
+
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1'])
-        assert all(isinstance(x, str) for x in cargs), cargs
+        self.assertTrue(all(isinstance(x, str) for x in cargs), cargs)
 
     def test_get_crawl_args_with_settings(self):
         msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': u'val1', 'settings': {'ONE': 'two'}}
         cargs = get_crawl_args(msg)
+
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1', '-s', 'ONE=two'])
-        assert all(isinstance(x, str) for x in cargs), cargs
+        self.assertTrue(all(isinstance(x, str) for x in cargs), cargs)
+
 
 class GetSpiderListTest(unittest.TestCase):
     def setUp(self):
@@ -58,6 +63,12 @@ class GetSpiderListTest(unittest.TestCase):
         eggstorage = self.app.getComponent(IEggStorage)
         eggfile = BytesIO(get_data("scrapyd.tests", file))
         eggstorage.put(eggfile, project, version)
+
+    def test_get_spider_list_log_stdout(self):
+        self.add_test_version('logstdout.egg', 'logstdout', 'logstdout')
+        spiders = get_spider_list('logstdout', pythonpath=get_pythonpath_scrapyd())
+        # If LOG_STDOUT were respected, the output would be [].
+        self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
 
     def test_get_spider_list(self):
         # mybot.egg has two spiders, spider1 and spider2
@@ -92,24 +103,35 @@ class GetSpiderListTest(unittest.TestCase):
         spiders = get_spider_list('mybot', pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ['spider1', 'spider2'])
 
+    @pytest.mark.skipif(os.name == 'nt', reason='get_spider_list() unicode '
+                                                'fails on windows')
     def test_get_spider_list_unicode(self):
         # mybotunicode.egg has two spiders, araña1 and araña2
         self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
         spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
+
         self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])
 
     def test_failed_spider_list(self):
         self.add_test_version('mybot3.egg', 'mybot3', 'r1')
         pypath = get_pythonpath_scrapyd()
         # Workaround missing support for context manager in twisted < 15
-        exc = self.assertRaises(RuntimeError,
-                                get_spider_list, 'mybot3', pythonpath=pypath)
-        tb = str(exc).rstrip()
-        tb = tb.decode('unicode_escape') if six.PY2 else tb
-        tb_regex = (
-            r'^Traceback \(most recent call last\):\n'
-            r'(?:  File .*\n(?:    .*\n)?)*'  # Skipped lines
-            r'  File "(?:[^"\\]|\\.)*/mybot3/settings\.py", line 1, in <module>\n'
-            r'Exception: This should break the `scrapy list` command$'
-        )
-        self.assertRegexpMatches(tb, tb_regex)
+
+        # Add -W ignore to sub-python to prevent warnings & tb mixup in stderr
+        def popen_wrapper(*args, **kwargs):
+            cmd, args = args[0], args[1:]
+            cmd = [cmd[0], '-W', 'ignore'] + cmd[1:]
+            return Popen(cmd, *args, **kwargs)
+
+        with mock.patch('scrapyd.utils.Popen', wraps=popen_wrapper):
+            exc = self.assertRaises(RunnerError, get_spider_list, 'mybot3', pythonpath=pypath)
+        self.assertRegex(str(exc).rstrip(), r'Exception: This should break the `scrapy list` command$')
+
+
+@pytest.mark.parametrize("versions,expected", [
+    (['zzz', 'b', 'ddd', 'a', 'x'], ['a', 'b', 'ddd', 'x', 'zzz']),
+    (["10", "1", "9"], ["1", "9", "10"]),
+    (["2.11", "2.01", "2.9"], ["2.01", "2.9", "2.11"])
+])
+def test_sorted_versions(versions, expected):
+    assert sorted_versions(versions) == expected

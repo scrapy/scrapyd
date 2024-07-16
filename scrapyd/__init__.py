@@ -1,10 +1,11 @@
 import pkgutil
 
+from scrapy.utils.misc import load_object
+
+from scrapyd.config import Config
+
 __version__ = pkgutil.get_data(__package__, 'VERSION').decode('ascii').strip()
 version_info = tuple(__version__.split('.')[:3])
-
-from scrapy.utils.misc import load_object
-from scrapyd.config import Config
 
 
 def get_application(config=None):

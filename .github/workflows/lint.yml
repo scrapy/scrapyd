@@ -1,0 +1,15 @@
+name: Lint
+on: [push, pull_request]
+jobs:
+  build:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - run: pip install --upgrade pre-commit
+      - run: pre-commit run --all-files
+      - run: pip install --upgrade check-manifest setuptools
+      - run: check-manifest

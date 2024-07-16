@@ -1,5 +1,6 @@
 from zope.interface import Interface
 
+
 class IEggStorage(Interface):
     """A component that handles storing and retrieving eggs"""
 
@@ -16,6 +17,9 @@ class IEggStorage(Interface):
     def list(project):
         """Return the list of versions which have eggs stored (for the given
         project) in order (the latest version is the currently used)."""
+
+    def list_projects():
+        """Return the list of projects from the stored eggs """
 
     def delete(project, version=None):
         """Delete the egg stored for the given project and version. If should
@@ -36,10 +40,15 @@ class IPoller(Interface):
         waiting to run already.
 
         The message is a dict containing (at least):
-        * the name of the project to be run in the '_project' key
-        * the name of the spider to be run in the '_spider' key
-        * a unique identifier for this run in the `_job` key
+
+        -  the name of the project to be run in the '_project' key
+        -  the name of the spider to be run in the '_spider' key
+        -  a unique identifier for this run in the `_job` key
+
         This message will be passed later to IEnvironment.get_environment().
+
+        Called ``max_proc`` times when the launcher starts, and each time a
+        Scrapy process ends.
         """
 
     def update_projects():
@@ -49,14 +58,14 @@ class IPoller(Interface):
 
 class ISpiderQueue(Interface):
 
-    def add(name, **spider_args):
+    def add(name, priority, **spider_args):
         """Add a spider to the queue given its name a some spider arguments.
 
         This method can return a deferred. """
 
     def pop():
-        """Pop the next mesasge from the queue. The messages is a dict
-        conaining a key 'name' with the spider name and other keys as spider
+        """Pop the next message from the queue. The messages is a dict
+        containing a key 'name' with the spider name and other keys as spider
         attributes.
 
         This method can return a deferred. """
@@ -87,7 +96,7 @@ class ISpiderQueue(Interface):
 class ISpiderScheduler(Interface):
     """A component to schedule spider runs"""
 
-    def schedule(project, spider_name, **spider_args):
+    def schedule(project, spider_name, priority, **spider_args):
         """Schedule a spider for the given project"""
 
     def list_projects():
@@ -101,9 +110,31 @@ class ISpiderScheduler(Interface):
 class IEnvironment(Interface):
     """A component to generate the environment of crawler processes"""
 
+    def get_settings(message):
+        """Return the Scrapy settings to use for running the process.
+
+        `message` is the message received from the IPoller.next() method.
+        """
+
     def get_environment(message, slot):
         """Return the environment variables to use for running the process.
 
-        `message` is the message received from the IPoller.next() method
+        `message` is the message received from the IPoller.next() method.
         `slot` is the Launcher slot where the process will be running.
         """
+
+
+class IJobStorage(Interface):
+    """A component that handles storing and retrieving finished jobs. """
+
+    def add(job):
+        """Add a finished job in the storage. """
+
+    def list():
+        """Return a list of the finished jobs. """
+
+    def __len__():
+        """Return a number of the finished jobs. """
+
+    def __iter__():
+        """Iterate over the finished jobs. """

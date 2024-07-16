@@ -1,5 +1,4 @@
 import warnings
-import inspect
 
 
 class ScrapydDeprecationWarning(Warning):
@@ -31,6 +30,7 @@ def deprecate_class(cls):
     for b in cls.__bases__:
         if type(b) not in WarningMeta2.__bases__:
             WarningMeta2.__bases__ += (type(b),)
+
     def new_init(*args, **kwargs):
         warnings.warn('%r will be removed from a later scrapyd release' % cls,
                       ScrapydDeprecationWarning)
