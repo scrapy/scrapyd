@@ -111,7 +111,7 @@ Example:
     When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first
     value is sent to the spider.
 
-.. _status.json
+.. _status.json:
 
 status.json
 -----------
