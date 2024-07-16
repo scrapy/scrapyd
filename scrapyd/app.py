@@ -36,10 +36,9 @@ def create_wrapped_resource(webroot_cls, config, app):
 
 def application(config):
     app = Application("Scrapyd")
-    http_port = int(os.getenv('SCRAPYD_HTTP_PORT') or config.getint('http_port', 6800))
     bind_address = os.getenv('SCRAPYD_BIND_ADDRESS') or config.get('bind_address', '127.0.0.1')
-    uds_path = config.get('unix_socket_path', '')
-    uds_path = uds_path and os.path.abspath(uds_path)
+    http_port = int(os.getenv('SCRAPYD_HTTP_PORT') or config.getint('http_port', 6800))
+    unix_socket_path = os.getenv('SCRAPYD_UNIX_SOCKET_PATH') or config.get('unix_socket_path', '')
 
     poll_interval = config.getfloat('poll_interval', 5)
 
@@ -71,15 +70,16 @@ def application(config):
     webroot_cls = load_object(webroot_path)
     resource = server.Site(create_wrapped_resource(webroot_cls, config, app))
 
-    if http_port:
+    if bind_address and http_port:
         webservice = TCPServer(http_port, resource, interface=bind_address)
         log.msg(format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
                 bind_address=bind_address, http_port=http_port)
-    if uds_path:
-        webservice = UNIXServer(uds_path, resource, mode=0o660)
-        log.msg(format="Scrapyd web console available at http+unix://%(uds_path)s",
-                uds_path=uds_path)
-    
+    if unix_socket_path:
+        unix_socket_path = os.path.abspath(unix_socket_path)
+        webservice = UNIXServer(unix_socket_path, resource, mode=0o660)
+        log.msg(format="Scrapyd web console available at http+unix://%(unix_socket_path)s",
+                unix_socket_path=unix_socket_path)
+
     launcher.setServiceParent(app)
     timer.setServiceParent(app)
     webservice.setServiceParent(app)
