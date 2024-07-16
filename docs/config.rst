@@ -26,6 +26,7 @@ The following environment variables override corresponding options:
 * ``SCRAPYD_HTTP_PORT`` (:ref:`http_port`)
 * ``SCRAPYD_USERNAME`` (:ref:`username`)
 * ``SCRAPYD_PASSWORD`` (:ref:`password`)
+* ``SCRAPYD_UNIX_SOCKET_PATH`` (:ref:`unix_socket_path`)
 
 Application options
 -------------------
@@ -77,6 +78,21 @@ Default
   ``6800``
 Options
   Any integer
+
+.. _unix_socket_path:
+
+unix_socket_path
+----------------
+
+The filesystem path of the Unix socket on which the :ref:`webui` and :doc:`api` listen for connections.
+
+For example:
+
+.. code-block:: ini
+
+   unix_socket_path = /var/run/scrapyd/web.socket
+
+The file's mode is set to 660 (owner and group, read and write).
 
 .. _username:
 
