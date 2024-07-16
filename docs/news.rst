@@ -12,7 +12,6 @@ Added
 ~~~~~
 
 - Respond to HTTP ``OPTIONS`` method requests.
-- Add "Last modified" column to the directory listings of log files and item feeds.
 - Add environment variables to override common options. See :doc:`config`.
 - Add documentation on how to add webservices (endpoints). See :ref:`config-services`.
 
@@ -20,6 +19,7 @@ Changed
 ~~~~~~~
 
 - Add a confirmation dialog to the Cancel button.
+- Add "Last modified" column to the directory listings of log files and item feeds.
 - Drop support for end-of-life Python version 3.7.
 
 Fixed
