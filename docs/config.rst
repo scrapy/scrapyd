@@ -10,7 +10,7 @@ them in order with the latest one taking more priority:
 * ``c:\scrapyd\scrapyd.conf`` (Windows)
 * ``/etc/scrapyd/conf.d/*`` (in alphabetical order, Unix)
 * ``scrapyd.conf``
-* ``~/.scrapyd.conf`` (users home directory)
+* ``~/.scrapyd.conf`` (home directory of the user that invoked ``scrapyd``)
 
 The configuration file supports the options below (see default values in
 the :ref:`example <config-example>`).
