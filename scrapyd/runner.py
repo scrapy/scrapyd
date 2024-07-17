@@ -24,21 +24,16 @@ def project_environment(project):
 
     tmp = None
     if egg:
-        if hasattr(egg, 'name'):  # for example, FileIO
-            try:
+        try:
+            if hasattr(egg, 'name'):  # for example, FileIO
                 activate_egg(egg.name)
-            finally:
-                egg.close()
-        if hasattr(egg, 'read'):  # for example, BytesIO
-            try:
+            else:  # for example, BytesIO
                 tmp = tempfile.NamedTemporaryFile(suffix='.egg', prefix=f'{project}-{version}-', delete=False)
                 shutil.copyfileobj(egg, tmp)
                 tmp.close()
                 activate_egg(tmp.name)
-            finally:
-                egg.close()
-        else:  # a file path
-            activate_egg(egg)
+        finally:
+            egg.close()
 
     try:
         assert 'scrapy.conf' not in sys.modules, "Scrapy settings already loaded"

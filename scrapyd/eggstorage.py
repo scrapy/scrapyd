@@ -29,7 +29,7 @@ class FilesystemEggStorage(object):
                 version = self.list(project)[-1]
             except IndexError:
                 return None, None
-        return version, self._eggpath(project, version)
+        return version, open(self._eggpath(project, version), 'rb')
 
     def list(self, project):
         versions = [

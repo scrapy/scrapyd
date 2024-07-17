@@ -78,20 +78,26 @@ class EggStorageTest(unittest.TestCase):
         ])
         self.assertEqual(self.eggst.list('mybot2'), [])
 
-        v, name = self.eggst.get('mybot')
-        self.assertEqual(v, "03_ver")
-        with open(name, 'rb') as f:
+        v, f = self.eggst.get('mybot')
+        try:
+            self.assertEqual(v, "03_ver")
             self.assertEqual(f.read(), b"egg03")
+        finally:
+            f.close()
 
-        v, name = self.eggst.get('mybot', '02_my branch')
-        self.assertEqual(v, "02_my branch")
-        with open(name, 'rb') as f:
+        v, f = self.eggst.get('mybot', '02_my branch')
+        try:
+            self.assertEqual(v, "02_my branch")
             self.assertEqual(f.read(), b"egg02")
+        finally:
+            f.close()
 
-        v, name = self.eggst.get('mybot', '02_my_branch')
-        self.assertEqual(v, "02_my_branch")
-        with open(name, 'rb') as f:
+        v, f = self.eggst.get('mybot', '02_my_branch')
+        try:
+            self.assertEqual(v, "02_my_branch")
             self.assertEqual(f.read(), b"egg02")
+        finally:
+            f.close()
 
         self.eggst.delete('mybot', '02_my branch')
         self.assertEqual(self.eggst.list('mybot'), ['01', '03_ver'])

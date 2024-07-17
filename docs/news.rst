@@ -25,7 +25,6 @@ Documentation
 Changed
 ~~~~~~~
 
-- The ``IEggStorage.get()`` interface can return a ``(version, filename)`` tuple in addition to a ``(version, file)`` tuple.
 - Drop support for end-of-life Python version 3.7.
 
 Web UI
