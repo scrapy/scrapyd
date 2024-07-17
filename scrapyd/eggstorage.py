@@ -52,5 +52,5 @@ class FilesystemEggStorage(object):
                 self.delete(project)
 
     def _eggpath(self, project, version):
-        sanitized_version = re.sub(r'[^a-zA-Z0-9_-]', '_', version)
+        sanitized_version = re.sub(r'[^A-Za-z0-9_-]', '_', version)
         return os.path.join(self.basedir, project, f"{sanitized_version}.egg")
