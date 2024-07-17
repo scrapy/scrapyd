@@ -60,7 +60,12 @@ Fixed
 - The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
 - The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
+
+Security
+^^^^^^^^
+
 - The ``FilesystemEggStorage`` class used by the :ref:`listversions.json` webservice escapes project names before globbing, to disallow listing arbitrary directories.
+- The :ref:`webui` escapes user input (project names, spider names, and job IDs) to prevent cross-site scripting (XSS).
 
 Platform support
 ^^^^^^^^^^^^^^^^
