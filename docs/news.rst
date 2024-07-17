@@ -47,7 +47,11 @@ API
 CLI
 ^^^
 
-- Correct the usage message and long description, remove all ``twistd`` subcommands, and remove the ``--nodaemon`` and ``--python=`` options, which are overridden.
+- Correct the usage message and long description.
+- Remove the ``--rundir`` option, which only works if ``*_dir`` settings are absolute paths.
+- Remove the ``--nodaemon`` option, which Scrapyd enables.
+- Remove the ``--python=`` option, which Scrapyd needs to set to its application.
+- Remove all ``twistd`` subcommands (FTP servers, etc.). Run ``twistd``, if needed.
 - Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
 Fixed

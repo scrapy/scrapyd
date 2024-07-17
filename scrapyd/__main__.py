@@ -13,8 +13,8 @@ class ServerOptions(twistd.ServerOptions):
 
     def __init__(self):
         super().__init__()
-        # main() always sets -n (--nodaemon) and -y (--python=).
-        self.longOpt = [opt for opt in self.longOpt if opt not in ('nodaemon', 'python=')]
+        # main() always sets -n (--nodaemon) and -y (--python=). Scrapyd's *_dir settings don't respect --rundir.
+        self.longOpt = [opt for opt in self.longOpt if opt not in ('nodaemon', 'python=', 'rundir=')]
 
     @property
     def subCommands(self):
