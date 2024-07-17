@@ -54,6 +54,13 @@ class EggStorageTest(unittest.TestCase):
     def test_interface(self):
         verifyObject(IEggStorage, self.eggst)
 
+    def test_list_secure(self):
+        self.eggst.put(BytesIO(b"egg01"), 'mybot', '01')
+        versions = self.eggst.list('*')
+
+        self.eggst.delete('mybot')
+        self.assertEqual(versions, [])
+
     @patch('scrapyd.eggstorage.glob', new=lambda x: ['ddd', 'abc', 'bcaa'])
     def test_list_hashes(self):
         versions = self.eggst.list('any')

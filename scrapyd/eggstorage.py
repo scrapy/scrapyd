@@ -1,7 +1,7 @@
 import os
 import re
 import shutil
-from glob import glob
+from glob import escape, glob
 
 from zope.interface import implementer
 
@@ -34,7 +34,7 @@ class FilesystemEggStorage(object):
     def list(self, project):
         versions = [
             os.path.splitext(os.path.basename(path))[0]
-            for path in glob(os.path.join(self.basedir, project, "*.egg"))
+            for path in glob(os.path.join(self.basedir, escape(project), "*.egg"))
         ]
         return sorted_versions(versions)
 
