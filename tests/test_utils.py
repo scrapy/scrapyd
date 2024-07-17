@@ -12,7 +12,7 @@ from twisted.trial import unittest
 from scrapyd import get_application
 from scrapyd.exceptions import RunnerError
 from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import UtilsCache, check_disallowed_characters, get_crawl_args, get_spider_list, sorted_versions
+from scrapyd.utils import UtilsCache, get_crawl_args, get_spider_list, sorted_versions
 
 
 def get_pythonpath_scrapyd():
@@ -135,17 +135,3 @@ class GetSpiderListTest(unittest.TestCase):
 ])
 def test_sorted_versions(versions, expected):
     assert sorted_versions(versions) == expected
-
-
-@pytest.mark.parametrize('project_name, allowed', [
-    ('/hello/world', False),
-    ('@hello/world', False),
-    ('hello world', True),
-    ('hello_world', True),
-    ('hello-world', True),
-    ('C:\\hello\\world', False),
-    ("chrząścz", False),
-    ('"hello world"', True)
-])
-def test_disallowed_chars(project_name, allowed):
-    assert check_disallowed_characters(project_name) == allowed

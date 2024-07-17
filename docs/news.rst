@@ -37,6 +37,12 @@ Web UI
 API
 ^^^
 
+- **BACKWARDS-INCOMPATIBLE CHANGE:** The ``project`` parameter must contain one or more characters, when required.
+- **BACKWARDS-INCOMPATIBLE CHANGE:** The ``project`` parameter must contain only the characters: A-Z, a-z, 0-9, ``.``, ``_``, ``-``, ``"``, ``'`` or whitespace.
+- **BACKWARDS-INCOMPATIBLE CHANGE:** Use HTTP error status codes instead of 200 OK, if an error occurs.
+
+  - Missing parameter: 400 Bad Request
+
 - Clarify error messages, for example:
 
   - ``'project' parameter is required``, instead of ``'project'``

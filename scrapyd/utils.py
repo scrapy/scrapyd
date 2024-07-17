@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import sys
 from subprocess import PIPE, Popen
 from urllib.parse import urlsplit
@@ -172,11 +171,3 @@ def sorted_versions(versions):
         return sorted(versions, key=Version)
     except InvalidVersion:
         return sorted(versions)
-
-
-def check_disallowed_characters(text):
-    # Allow the same characters as Setuptools. Setuptools uses underscores for replacement in filenames, and hyphens
-    # for replacement in distributions. Quotes and spaces are allowed in case a config sets `project = "my project"`.
-    # https://github.com/pypa/setuptools/blob/e304e4d/setuptools/_distutils/command/install_egg_info.py#L74
-    disallowed_characters_regex = r"""[^A-Za-z0-9."'\s_-]+"""
-    return not re.search(disallowed_characters_regex, text)
