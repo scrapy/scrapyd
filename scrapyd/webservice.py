@@ -63,6 +63,8 @@ class WsResource(JsonResource):
         try:
             return JsonResource.render(self, txrequest).encode('utf-8')
         except Exception as e:
+            if isinstance(e, error.Error):
+                txrequest.setResponseCode(int(e.status))
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
