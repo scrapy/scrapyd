@@ -80,6 +80,7 @@ def test_cancel_nonexistent():
         "/cancel.json",
         {"status": "error", "message": "project 'nonexistent' not found"},
         data={"project": "nonexistent", "job": "nojob"},
+        status=404,
     )
 
 
