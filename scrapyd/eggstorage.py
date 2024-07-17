@@ -1,12 +1,13 @@
+import os
 import re
+import shutil
 from glob import glob
-from os import path, makedirs, remove, listdir
-from shutil import copyfileobj, rmtree
-from distutils.version import LooseVersion
 
 from zope.interface import implementer
 
-from .interfaces import IEggStorage
+from scrapyd.interfaces import IEggStorage
+from scrapyd.utils import sorted_versions
+
 
 @implementer(IEggStorage)
 class FilesystemEggStorage(object):
@@ -16,11 +17,11 @@ class FilesystemEggStorage(object):
 
     def put(self, eggfile, project, version):
         eggpath = self._eggpath(project, version)
-        eggdir = path.dirname(eggpath)
-        if not path.exists(eggdir):
-            makedirs(eggdir)
+        eggdir = os.path.dirname(eggpath)
+        if not os.path.exists(eggdir):
+            os.makedirs(eggdir)
         with open(eggpath, 'wb') as f:
-            copyfileobj(eggfile, f)
+            shutil.copyfileobj(eggfile, f)
 
     def get(self, project, version=None):
         if version is None:
@@ -28,30 +29,28 @@ class FilesystemEggStorage(object):
                 version = self.list(project)[-1]
             except IndexError:
                 return None, None
-        return version, open(self._eggpath(project, version), 'rb')
+        return version, self._eggpath(project, version)
 
     def list(self, project):
-        eggdir = path.join(self.basedir, project)
-        versions = [path.splitext(path.basename(x))[0] \
-            for x in glob("%s/*.egg" % eggdir)]
-        return sorted(versions, key=LooseVersion)
+        versions = [
+            os.path.splitext(os.path.basename(path))[0]
+            for path in glob(os.path.join(self.basedir, project, "*.egg"))
+        ]
+        return sorted_versions(versions)
 
     def list_projects(self):
-        projects = []
-        if path.exists(self.basedir):
-            projects.extend(d for d in listdir(self.basedir)
-                            if path.isdir('%s/%s' % (self.basedir, d)))
-        return projects
+        if os.path.exists(self.basedir):
+            return [name for name in os.listdir(self.basedir) if os.path.isdir(os.path.join(self.basedir, name))]
+        return []
 
     def delete(self, project, version=None):
         if version is None:
-            rmtree(path.join(self.basedir, project))
+            shutil.rmtree(os.path.join(self.basedir, project))
         else:
-            remove(self._eggpath(project, version))
-            if not self.list(project): # remove project if no versions left
+            os.remove(self._eggpath(project, version))
+            if not self.list(project):  # remove project if no versions left
                 self.delete(project)
 
     def _eggpath(self, project, version):
         sanitized_version = re.sub(r'[^a-zA-Z0-9_-]', '_', version)
-        x = path.join(self.basedir, project, "%s.egg" % sanitized_version)
-        return x
+        return os.path.join(self.basedir, project, f"{sanitized_version}.egg")
