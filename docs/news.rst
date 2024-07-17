@@ -42,6 +42,7 @@ API
   - ``project 'myproject' not found``, instead of ``'myproject'``
   - ``exception class: message``, instead of ``message``
   - ``ValueError: Unknown or corrupt egg``, instead of ``TypeError: 'tuple' object is not an iterator``
+  - Unsupported method error messages no longer list ``object`` as an allowed HTTP method
 
 CLI
 ^^^
