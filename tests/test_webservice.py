@@ -167,33 +167,43 @@ class TestWebservice:
 
         with pytest.raises(Error) as e:
             site_with_egg.children[endpoint].render_POST(txrequest)
+
             assert e.args[0] == 400
 
         assert site_with_egg.scheduler.calls == []
 
     @pytest.mark.parametrize('endpoint,attach_egg,method', [
+        (b'schedule.json', False, 'render_POST'),
+        (b'cancel.json', False, 'render_POST'),
         (b'addversion.json', True, 'render_POST'),
+        (b'listversions.json', False, 'render_GET'),
+        (b'listspiders.json', False, 'render_GET'),
+        (b'status.json', False, 'render_GET'),
+        (b'listjobs.json', False, 'render_GET'),
         (b'delproject.json', False, 'render_POST'),
         (b'delversion.json', False, 'render_POST'),
-        (b'listspiders.json', False, 'render_GET'),
-        (b'listjobs.json', False, 'render_GET'),
-        (b'listprojects.json', False, 'render_GET')
     ])
     def test_bad_project_names(self, txrequest, site_no_egg, endpoint, attach_egg, method):
         txrequest.args = {
             b'project': [b'/home/pawel/hosts'],
             b'version': [b'0.1'],
+            b'job': [b'abc'],
         }
-        egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
+
         if attach_egg:
+            egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
             with open(egg_path, 'rb') as f:
                 txrequest.args[b'egg'] = [f.read()]
 
         with pytest.raises(Error) as e:
-            resource = site_no_egg.children[endpoint]
-            getattr(resource, method)(txrequest)
-            assert e.args[0] == 400
+            getattr(site_no_egg.children[endpoint], method)(txrequest)
+
+        assert e.value.status == b'400'
+        assert e.value.message == b"project '/home/pawel/hosts' is invalid"
 
         storage = site_no_egg.app.getComponent(IEggStorage)
-        egg = storage.get('quotesbot')
-        assert egg[0] is None
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
+
+        assert version is None
