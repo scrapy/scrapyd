@@ -65,7 +65,7 @@ class WsResource(JsonResource):
             else:
                 message = f"{type(e).__name__}: {str(e)}"
             r = self._error(message)
-            return self.render_object(r, txrequest).encode('utf-8')
+            return self.encode_object(r, txrequest).encode('utf-8')
 
     def render_OPTIONS(self, txrequest):
         methods = ['OPTIONS', 'HEAD']

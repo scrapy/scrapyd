@@ -20,9 +20,9 @@ class JsonResource(resource.Resource):
 
     def render(self, txrequest):
         r = resource.Resource.render(self, txrequest)
-        return self.render_object(r, txrequest)
+        return self.encode_object(r, txrequest)
 
-    def render_object(self, obj, txrequest):
+    def encode_object(self, obj, txrequest):
         if obj is None:
             r = ''
         else:
