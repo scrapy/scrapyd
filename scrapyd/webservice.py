@@ -76,7 +76,7 @@ class WsResource(JsonResource):
             if isinstance(e, error.UnsupportedMethod):
                 txrequest.setResponseCode(http.NOT_ALLOWED)
             elif isinstance(e, error.Error):
-                txrequest.setResponseCode(e.args[0])
+                txrequest.setResponseCode(int(e.status))
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')
             log.err()
