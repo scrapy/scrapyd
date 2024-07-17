@@ -160,8 +160,7 @@ class AddVersion(WsResource):
 
 
 class ListProjects(WsResource):
-    @with_safe_project_name
-    def render_GET(self, txrequest, project):
+    def render_GET(self, txrequest):
         projects = list(self.root.scheduler.list_projects())
         return {"node_name": self.root.nodename, "status": "ok",
                 "projects": projects}
@@ -217,8 +216,10 @@ class Status(WsResource):
 
 
 class ListJobs(WsResource):
-    @with_safe_project_name
-    def render_GET(self, txrequest, project):
+    def render_GET(self, txrequest):
+        args = native_stringify_dict(copy(txrequest.args), keys_only=False)
+        project = args.get('project', [None])[0]
+
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
 
