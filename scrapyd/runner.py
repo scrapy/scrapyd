@@ -1,5 +1,7 @@
 import os
+import shutil
 import sys
+import tempfile
 from contextlib import contextmanager
 
 from scrapy.utils.misc import load_object
@@ -18,12 +20,27 @@ def project_environment(project):
     eggstorage = eggstorage_cls(config)
 
     eggversion = os.environ.get('SCRAPYD_EGG_VERSION', None)
-    version, eggpath = eggstorage.get(project, eggversion)
-    if eggpath:
-        activate_egg(eggpath)
+    version, egg = eggstorage.get(project, eggversion)
 
-    assert 'scrapy.conf' not in sys.modules, "Scrapy settings already loaded"
-    yield
+    tmp = None
+    if egg:
+        try:
+            if hasattr(egg, 'name'):  # for example, FileIO
+                activate_egg(egg.name)
+            else:  # for example, BytesIO
+                tmp = tempfile.NamedTemporaryFile(suffix='.egg', prefix=f'{project}-{version}-', delete=False)
+                shutil.copyfileobj(egg, tmp)
+                tmp.close()
+                activate_egg(tmp.name)
+        finally:
+            egg.close()
+
+    try:
+        assert 'scrapy.conf' not in sys.modules, "Scrapy settings already loaded"
+        yield
+    finally:
+        if tmp:
+            os.remove(tmp.name)
 
 
 def main():

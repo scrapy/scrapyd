@@ -82,15 +82,19 @@ class TestWebservice:
         }
 
         storage = site_with_egg.app.getComponent(IEggStorage)
-        egg = storage.get('quotesbot')
-        content = site_with_egg.children[endpoint].render_POST(txrequest)
-        no_egg = storage.get('quotesbot')
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
 
-        assert egg[0] is not None
+        content = site_with_egg.children[endpoint].render_POST(txrequest)
+        no_version, no_egg = storage.get('quotesbot')
+        if no_egg:
+            no_egg.close()
+
+        assert version is not None
         assert content['status'] == 'ok'
         assert 'node_name' in content
-        assert storage.get('quotesbot')
-        assert no_egg[0] is None
+        assert no_version is None
 
     def test_delete_project(self, txrequest, site_with_egg):
         endpoint = b'delproject.json'
@@ -99,15 +103,19 @@ class TestWebservice:
         }
 
         storage = site_with_egg.app.getComponent(IEggStorage)
-        egg = storage.get('quotesbot')
-        content = site_with_egg.children[endpoint].render_POST(txrequest)
-        no_egg = storage.get('quotesbot')
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
 
-        assert egg[0] is not None
+        content = site_with_egg.children[endpoint].render_POST(txrequest)
+        no_version, no_egg = storage.get('quotesbot')
+        if no_egg:
+            no_egg.close()
+
+        assert version is not None
         assert content['status'] == 'ok'
         assert 'node_name' in content
-        assert storage.get('quotesbot')
-        assert no_egg[0] is None
+        assert no_version is None
 
     @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
     def test_addversion(self, txrequest, site_no_egg):
@@ -121,15 +129,19 @@ class TestWebservice:
             txrequest.args[b'egg'] = [f.read()]
 
         storage = site_no_egg.app.getComponent(IEggStorage)
-        egg = storage.get('quotesbot')
-        content = site_no_egg.children[endpoint].render_POST(txrequest)
-        no_egg = storage.get('quotesbot')
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
 
-        assert egg[0] is None
+        content = site_no_egg.children[endpoint].render_POST(txrequest)
+        no_version, no_egg = storage.get('quotesbot')
+        if no_egg:
+            no_egg.close()
+
+        assert version is None
         assert content['status'] == 'ok'
         assert 'node_name' in content
-        assert storage.get('quotesbot')
-        assert no_egg[0] == '0_1'
+        assert no_version == '0_1'
 
     @mock.patch('scrapyd.webservice.get_spider_list',
                 new=fake_list_spiders_other)

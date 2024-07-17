@@ -10,7 +10,7 @@ them in order with the latest one taking more priority:
 * ``c:\scrapyd\scrapyd.conf`` (Windows)
 * ``/etc/scrapyd/conf.d/*`` (in alphabetical order, Unix)
 * ``scrapyd.conf``
-* ``~/.scrapyd.conf`` (users home directory)
+* ``~/.scrapyd.conf`` (home directory of the user that invoked ``scrapyd``)
 
 The configuration file supports the options below (see default values in
 the :ref:`example <config-example>`).
@@ -153,6 +153,12 @@ Also used by
   -  :ref:`listjobs.json` webservice, to list the pending jobs
   -  :ref:`daemonstatus.json` webservice, to count the pending jobs
   -  :ref:`webui`, to list the pending jobs and, if queues are transient, to create the queues per project at startup
+
+..
+
+   Community PostgreSQL and RabbitMQ queues:
+
+   https://github.com/scrapy/scrapyd/pull/140/files#diff-c479470812a00776da54c3cefc15bb5bb244b4056996ae972f4daba7f6ec5bd5
 
 Launcher options
 ----------------
