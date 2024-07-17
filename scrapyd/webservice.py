@@ -111,8 +111,7 @@ class Schedule(WsResource):
         args['settings'] = settings
         jobid = args.pop('jobid', uuid.uuid1().hex)
         args['_job'] = jobid
-        self.root.scheduler.schedule(
-            project, spider, priority=priority, **args)
+        self.root.scheduler.schedule(project, spider, priority=priority, **args)
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
 
@@ -138,8 +137,7 @@ class Cancel(WsResource):
             if s.project == project and s.job == jobid:
                 s.transport.signalProcess(signal)
                 prevstate = "running"
-        return {"node_name": self.root.nodename, "status": "ok",
-                "prevstate": prevstate}
+        return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
 
 class AddVersion(WsResource):
@@ -162,16 +160,14 @@ class AddVersion(WsResource):
 class ListProjects(WsResource):
     def render_GET(self, txrequest):
         projects = list(self.root.scheduler.list_projects())
-        return {"node_name": self.root.nodename, "status": "ok",
-                "projects": projects}
+        return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
 
 
 class ListVersions(WsResource):
     @with_safe_project_name
     def render_GET(self, txrequest, project):
         versions = self.root.eggstorage.list(project)
-        return {"node_name": self.root.nodename, "status": "ok",
-                "versions": versions}
+        return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
 
 class ListSpiders(WsResource):
@@ -179,10 +175,8 @@ class ListSpiders(WsResource):
     def render_GET(self, txrequest, project):
         args = native_stringify_dict(copy(txrequest.args), keys_only=False)
         version = args.get('_version', [''])[0]
-        spiders = get_spider_list(
-            project, runner=self.root.runner, version=version)
-        return {"node_name": self.root.nodename, "status": "ok",
-                "spiders": spiders}
+        spiders = get_spider_list(project, runner=self.root.runner, version=version)
+        return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
 
 class Status(WsResource):
