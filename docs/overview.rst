@@ -20,9 +20,11 @@ How Scrapyd works
 
 Scrapyd is an application (typically run as a daemon) that listens to requests
 for spiders to run and spawns a process for each one, which basically
-executes::
+executes:
 
-    scrapy crawl myspider
+.. code-block:: shell
+
+   scrapy crawl myspider
 
 Scrapyd also runs multiple processes in parallel, allocating them in a fixed
 number of slots given by the :ref:`max_proc` and :ref:`max_proc_per_cpu` options,
@@ -42,19 +44,23 @@ Starting Scrapyd
 ================
 
 To start the service, use the ``scrapyd`` command provided in the Scrapy
-distribution::
+distribution:
 
-    scrapyd
+.. code-block:: shell
+
+   scrapyd
 
 That should get your Scrapyd started.
 
 Scheduling a spider run
 =======================
 
-To schedule a spider run::
+To schedule a spider run:
 
-    $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=spider2
-    {"status": "ok", "jobid": "26d1b1a6d6f111e0be5c001e648c57f8"}
+.. code-block:: shell-session
+
+   $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=spider2
+   {"status": "ok", "jobid": "26d1b1a6d6f111e0be5c001e648c57f8"}
 
 For more resources see: :ref:`api` for more available resources.
 

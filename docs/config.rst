@@ -43,9 +43,7 @@ If necessary, override this to fully control how Scrapyd works.
 Default
   ``scrapyd.app.application``
 
-.. seealso::
-
-   `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
+.. seealso:: `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
 
 .. _bind_address:
 
@@ -63,9 +61,7 @@ Options
   -  ``0.0.0.0`` to listen for all IPv4 connections
   -  ``::0`` to listen for all IPv4 and IPv6 connections
 
-     .. note::
-
-        If ``sysctl`` sets ``net.ipv6.bindv6only`` to true (default false), then ``::0`` listens for IPv6 connections only.
+     .. note:: If ``sysctl`` sets ``net.ipv6.bindv6only`` to true (default false), then ``::0`` listens for IPv6 connections only.
 
 .. _http_port:
 
@@ -128,9 +124,7 @@ Default
 Options
    Any floating-point number
 
-.. attention::
-
-   It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+.. attention:: It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
 
 .. _spiderqueue:
 

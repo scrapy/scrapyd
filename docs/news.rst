@@ -125,9 +125,7 @@ Changed
   - ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
   - ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
 
-  .. attention::
-
-    These are undocumented and unused, and may be removed in future versions. If you use these environment variables, please `report your use in an issue <https://github.com/scrapy/scrapyd/issues>`__.
+  .. attention:: These are undocumented and unused, and may be removed in future versions. If you use these environment variables, please `report your use in an issue <https://github.com/scrapy/scrapyd/issues>`__.
 
 Removed
 ~~~~~~~
