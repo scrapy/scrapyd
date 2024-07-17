@@ -88,7 +88,15 @@ For example:
 
    unix_socket_path = /var/run/scrapyd/web.socket
 
-The file's mode is set to 660 (owner and group, read and write).
+The file's mode is set to 660 (owner and group, read and write) to control access to Scrapyd.
+
+.. attention::
+
+   If :ref:`bind_address` and :ref:`http_port` are set, a TCP server will start, in addition to the Unix server. To disable the TCP server, set ``bind_address`` to empty:
+
+   .. code-block:: ini
+
+      bind_address =
 
 .. _username:
 
@@ -359,10 +367,6 @@ Options
   -  ``scrapyd.jobstorage.MemoryJobStorage`` stores jobs in memory, such that jobs are lost when the Scrapyd process ends
   -  ``scrapyd.jobstorage.SqliteJobStorage`` stores jobs in a SQLite database named ``jobs.db``, in the :ref:`dbs_dir` directory
   -  Implement your own, using the ``IJobStorage`` interface
-
-.. seealso::
-
-   :ref:`finished_to_keep`
 
 .. _finished_to_keep:
 
