@@ -89,7 +89,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``spiderqueue`` configuration option for custom spider queue.
+- Add ``spiderqueue`` configuration option for custom spider queue. Since this was not previously configurable, the changes below are considered backwards-compatible.
 - Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` configuration option.
 
 Changed
