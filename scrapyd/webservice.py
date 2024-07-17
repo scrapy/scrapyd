@@ -59,7 +59,9 @@ class WsResource(JsonResource):
         try:
             return JsonResource.render(self, txrequest).encode('utf-8')
         except Exception as e:
-            if isinstance(e, error.Error):
+            if isinstance(e, error.UnsupportedMethod):
+                txrequest.setResponseCode(http.NOT_ALLOWED)
+            elif isinstance(e, error.Error):
                 txrequest.setResponseCode(e.args[0])
             if self.root.debug:
                 return traceback.format_exc().encode('utf-8')

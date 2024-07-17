@@ -42,6 +42,7 @@ API
 - **BACKWARDS-INCOMPATIBLE CHANGE:** Use HTTP error status codes instead of 200 OK, if an error occurs.
 
   - Missing parameter: 400 Bad Request
+  - Unsupported method: 405 Method Not Allowed
 
 - Clarify error messages, for example:
 
