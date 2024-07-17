@@ -62,8 +62,7 @@ class TestEndpoint:
     def test_launch_spider_get(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin("schedule.json"))
 
-        assert resp.status_code == 200
-        # TODO scrapyd should return status 405 Method Not Allowed not 200
+        assert resp.status_code == 405
         assert resp.json()['status'] == 'error'
 
     def test_spider_list_no_project(self, mock_scrapyd):
@@ -78,8 +77,8 @@ class TestEndpoint:
         resp = requests.get(mock_scrapyd.urljoin('listprojects.json'))
         data = resp.json()
 
-        assert resp.status_code == 400
-        assert data['status'] == 'error'
+        assert resp.status_code == 200
+        assert data['status'] == 'ok'
 
     def test_addversion_and_delversion(self, mock_scrapyd, quotesbot_egg):
         resp = self._deploy(mock_scrapyd, quotesbot_egg)
