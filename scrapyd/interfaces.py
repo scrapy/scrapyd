@@ -9,8 +9,8 @@ class IEggStorage(Interface):
         version"""
 
     def get(project, version=None):
-        """Return a tuple (version, filename) for the egg matching the specified
-        project and version. If version is None, the latest version is
+        """Return a tuple (version, file or filename) for the egg matching the
+        specified project and version. If version is None, the latest version is
         returned. If no egg is found for the given project/version (None, None)
         should be returned."""
 
