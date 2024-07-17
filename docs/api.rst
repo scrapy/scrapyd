@@ -9,7 +9,7 @@ If basic authentication is enabled, you can use ``curl`` with the ``-u`` option,
 
 .. code-block:: shell
 
-    curl -u yourusername:yourpassword http://localhost:6800/daemonstatus.json
+   curl -u yourusername:yourpassword http://localhost:6800/daemonstatus.json
 
 .. _daemonstatus.json:
 
@@ -81,7 +81,7 @@ Parameters
 
     .. code-block:: shell
 
-        curl http://localhost:6800/schedule.json -d setting=DOWNLOAD_DELAY=2 -d project=myproject -d spider=somespider
+       curl http://localhost:6800/schedule.json -d setting=DOWNLOAD_DELAY=2 -d project=myproject -d spider=somespider
   Any other parameter
     a spider argument
 
@@ -101,15 +101,9 @@ Example:
    $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider
    {"node_name": "mynodename", "status": "ok", "jobid": "6487ec79947edab326d6db28a2d86511e8247444"}
 
-.. note::
+.. note:: Spiders scheduled with Scrapyd should allow for an arbitrary number of keyword arguments, as Scrapyd sends internally-generated spider arguments to the spider being scheduled.
 
-    Spiders scheduled with Scrapyd should allow for an arbitrary number of keyword arguments,
-    as Scrapyd sends internally-generated spider arguments to the spider being scheduled.
-
-.. note::
-
-    When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first
-    value is sent to the spider.
+.. note:: When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first value is sent to the spider.
 
 .. _status.json:
 
@@ -132,8 +126,8 @@ Example:
 
 .. code-block:: shell-session
 
-    $ curl http://localhost:6800/status.json?job=6487ec79947edab326d6db28a2d86511e8247444
-    {"node_name": "mynodename", "status": "ok", "currstate": "running"}
+   $ curl http://localhost:6800/status.json?job=6487ec79947edab326d6db28a2d86511e8247444
+   {"node_name": "mynodename", "status": "ok", "currstate": "running"}
 
 .. _cancel.json:
 

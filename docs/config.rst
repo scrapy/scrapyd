@@ -43,9 +43,7 @@ If necessary, override this to fully control how Scrapyd works.
 Default
   ``scrapyd.app.application``
 
-.. seealso::
-
-   `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
+.. seealso:: `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
 
 .. _bind_address:
 
@@ -63,9 +61,7 @@ Options
   -  ``0.0.0.0`` to listen for all IPv4 connections
   -  ``::0`` to listen for all IPv4 and IPv6 connections
 
-     .. note::
-
-        If ``sysctl`` sets ``net.ipv6.bindv6only`` to true (default false), then ``::0`` listens for IPv6 connections only.
+     .. note:: If ``sysctl`` sets ``net.ipv6.bindv6only`` to true (default false), then ``::0`` listens for IPv6 connections only.
 
 .. _http_port:
 
@@ -92,7 +88,15 @@ For example:
 
    unix_socket_path = /var/run/scrapyd/web.socket
 
-The file's mode is set to 660 (owner and group, read and write).
+The file's mode is set to 660 (owner and group, read and write) to control access to Scrapyd.
+
+.. attention::
+
+   If :ref:`bind_address` and :ref:`http_port` are set, a TCP server will start, in addition to the Unix server. To disable the TCP server, set ``bind_address`` to empty:
+
+   .. code-block:: ini
+
+      bind_address =
 
 .. _username:
 
@@ -128,9 +132,7 @@ Default
 Options
    Any floating-point number
 
-.. attention::
-
-   It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+.. attention:: It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
 
 .. _spiderqueue:
 
@@ -365,10 +367,6 @@ Options
   -  ``scrapyd.jobstorage.MemoryJobStorage`` stores jobs in memory, such that jobs are lost when the Scrapyd process ends
   -  ``scrapyd.jobstorage.SqliteJobStorage`` stores jobs in a SQLite database named ``jobs.db``, in the :ref:`dbs_dir` directory
   -  Implement your own, using the ``IJobStorage`` interface
-
-.. seealso::
-
-   :ref:`finished_to_keep`
 
 .. _finished_to_keep:
 

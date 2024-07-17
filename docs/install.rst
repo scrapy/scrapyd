@@ -20,6 +20,8 @@ Installing Scrapyd (generic way)
 --------------------------------
 
 How to install Scrapyd depends on the platform you're using. The generic way is
-to install it from PyPI::
+to install it from PyPI:
 
-    pip install scrapyd
+.. code-block:: shell
+
+   pip install scrapyd
