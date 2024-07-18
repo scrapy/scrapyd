@@ -1,10 +1,8 @@
 import os.path
-import sys
 from pathlib import Path
 
 import pytest
 import requests
-import scrapy
 
 from integration_tests import req
 
@@ -17,8 +15,6 @@ def assert_webservice(method, path, expected, **kwargs):
     response = req(method, path, **kwargs)
     data = response.json()
     data.pop("node_name")
-    if "message" in expected:
-        expected["message"] = expected["message"].replace("\n", os.linesep)
 
     assert data == expected
 
@@ -92,12 +88,9 @@ def test_project_directory_traversal_runner(webservice, method, params):
 
     data = response.json()
     data.pop("node_name")
-    message = data.pop("message")
 
     assert response.status_code == 200, f"200 != {response.status_code}"
-    assert data == {"status": "error"}
-    assert message.startswith("RunnerError: Traceback (most recent call last):"), message
-    assert message.endswith(f"scrapyd.exceptions.DirectoryTraversalError: ../p{os.linesep}"), message
+    assert data == {"status": "error", "message": "DirectoryTraversalError: ../p"}
 
 
 def test_daemonstatus():
@@ -114,11 +107,7 @@ def test_schedule():
         "/schedule.json",
         {
             "status": "error",
-            "message": (
-                f'RunnerError: Scrapy {scrapy.__version__} - no active project\n\n'
-                'Unknown command: list\n\n'
-                'Use "scrapy" to see available commands\n'
-            ),
+            "message": "project 'nonexistent' not found",
         },
         data={"project": "nonexistent", "spider": "nospider"},
     )
@@ -174,11 +163,7 @@ def test_listspiders_nonexistent_project():
         "/listspiders.json",
         {
             "status": "error",
-            "message": (
-                f'RunnerError: Scrapy {scrapy.__version__} - no active project\n\n'
-                'Unknown command: list\n\n'
-                'Use "scrapy" to see available commands\n'
-            ),
+            "message": "project 'nonexistent' not found",
         },
         params={"project": "nonexistent"},
     )
@@ -207,14 +192,9 @@ def test_delversion_nonexistent_project():
         "/delversion.json",
         {
             "status": "error",
-            "message": "FileNotFoundError: " + (
-                f"[Errno 2] No such file or directory: '{BASEDIR}/eggs/nonexistent/noegg.egg'"
-                if sys.platform != "win32" else
-                "[WinError 3] The system cannot find the path specified: "
-                f"'{BASEDIR}\\\\eggs\\\\nonexistent\\\\noegg.egg'"
-            ),
+            "message": "version 'nonexistent' not found",
         },
-        data={"project": "nonexistent", "version": "noegg"},
+        data={"project": "sample", "version": "nonexistent"},
     )
 
 
@@ -224,12 +204,7 @@ def test_delproject_nonexistent_project():
         "/delproject.json",
         {
             "status": "error",
-            "message": "FileNotFoundError: " + (
-                f"[Errno 2] No such file or directory: '{BASEDIR}/eggs/nonexistent'"
-                if sys.platform != "win32" else
-                "[WinError 3] The system cannot find the path specified: "
-                f"'{BASEDIR}\\\\eggs\\\\nonexistent'"
-            ),
+            "message": "project 'nonexistent' not found",
         },
         data={"project": "nonexistent"},
     )

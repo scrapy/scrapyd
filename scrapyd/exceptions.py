@@ -6,5 +6,13 @@ class DirectoryTraversalError(ScrapydError):
     """Raised if the resolved path is outside the expected directory"""
 
 
+class ProjectNotFoundError(ScrapydError):
+    """Raised if a project isn't found in an IEggStorage implementation"""
+
+
+class EggNotFoundError(ScrapydError):
+    """Raised if an egg isn't found in an IEggStorage implementation"""
+
+
 class RunnerError(ScrapydError):
     """Raised if the runner returns an error code"""

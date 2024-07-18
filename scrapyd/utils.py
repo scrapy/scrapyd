@@ -125,7 +125,7 @@ def get_crawl_args(message):
     return args
 
 
-def get_spider_list(project, runner=None, pythonpath=None, version=''):
+def get_spider_list(project, runner=None, pythonpath=None, version=None):
     """Return the spider list from the given project, using the given runner"""
     if "cache" not in get_spider_list.__dict__:
         get_spider_list.cache = UtilsCache()

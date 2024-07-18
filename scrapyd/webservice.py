@@ -10,6 +10,7 @@ from typing import Optional
 from twisted.python import log
 from twisted.web import error, http
 
+from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError
 from scrapyd.jobstorage import job_items_url, job_log_url
 from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
 
@@ -101,16 +102,23 @@ class DaemonStatus(WsResource):
 class Schedule(WsResource):
     @param('project')
     @param('spider')
-    @param('_version', dest='version', required=False, default='')
+    @param('_version', dest='version', required=False, default=None)
     # See https://github.com/scrapy/scrapyd/pull/215
     @param('jobid', required=False, default=lambda: uuid.uuid1().hex)
     @param('priority', required=False, default=0, type=float)
     @param('setting', required=False, default=list, multiple=True)
     def render_POST(self, txrequest, project, spider, version, jobid, priority, setting):
-        spider_arguments = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
-        spiders = get_spider_list(project, version=version)
+        if self.root.eggstorage.get(project, version) == (None, None):
+            if version:
+                raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+
+        spiders = get_spider_list(project, version=version, runner=self.root.runner)
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
+
+        spider_arguments = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
+
         self.root.scheduler.schedule(
             project,
             spider,
@@ -160,7 +168,7 @@ class AddVersion(WsResource):
             )
 
         self.root.eggstorage.put(BytesIO(egg), project, version)
-        spiders = get_spider_list(project, version=version)
+        spiders = get_spider_list(project, version=version, runner=self.root.runner)
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version,
@@ -182,9 +190,15 @@ class ListVersions(WsResource):
 
 class ListSpiders(WsResource):
     @param('project')
-    @param('_version', dest='version', required=False, default='')
+    @param('_version', dest='version', required=False, default=None)
     def render_GET(self, txrequest, project, version):
-        spiders = get_spider_list(project, runner=self.root.runner, version=version)
+        if self.root.eggstorage.get(project, version) == (None, None):
+            if version:
+                raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+
+        spiders = get_spider_list(project, version=version, runner=self.root.runner)
+
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
 
@@ -269,11 +283,14 @@ class DeleteProject(WsResource):
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
 
-    # Minor security note: Submitting a non-existent project or version when using the default eggstorage can produce
-    # an error message that discloses the resolved path to the eggs_dir.
     def _delete_version(self, project, version=None):
-        self.root.eggstorage.delete(project, version)
-        self.root.update_projects()
+        try:
+            self.root.eggstorage.delete(project, version)
+            self.root.update_projects()
+        except ProjectNotFoundError:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+        except EggNotFoundError:
+            raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
 
 
 class DeleteVersion(DeleteProject):

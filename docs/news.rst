@@ -38,8 +38,10 @@ API
 
 - Clarify error messages, for example:
 
-  - ``'project' parameter is required``, instead of ``'project'``
-  - ``project 'myproject' not found``, instead of ``'myproject'``
+  - ``'project' parameter is required``, instead of ``'project'`` (KeyError)
+  - ``project 'myproject' not found``, instead of ``'myproject'`` (KeyError)
+  - ``project 'myproject' not found``, instead of ``Scrapy VERSION - no active project``
+  - ``version 'myversion' not found``, instead of a traceback
   - ``exception class: message``, instead of ``message``
   - ``ValueError: Unknown or corrupt egg``, instead of ``TypeError: 'tuple' object is not an iterator``
   - Unsupported method error messages no longer list ``object`` as an allowed HTTP method
@@ -65,7 +67,7 @@ Security
 ^^^^^^^^
 
 - The ``FilesystemEggStorage`` class used by the :ref:`listversions.json` webservice escapes project names (used in glob patterns) before globbing, to disallow listing arbitrary directories.
-- The ``FilesystemEggStorage`` class used by the :ref:`runner` and the :ref:`addversion.json`,  :ref:`listversions.json`, :ref:`delversion.json` and :ref:`delproject.json` webservices raises a ``DirectoryTraversalError`` error if the project (used in file paths) would traverse directories.
+- The ``FilesystemEggStorage`` class used by the :ref:`runner` and the :ref:`addversion.json`,  :ref:`listversions.json`, :ref:`delversion.json` and :ref:`delproject.json` webservices raises a ``DirectoryTraversalError`` error if the project parameter (used in file paths) would traverse directories.
 - The ``Environment`` class used by the :ref:`launcher` raises a ``DirectoryTraversalError`` error if the project, spider or job parameters (used in file paths) would traverse directories.
 - The :ref:`webui` escapes user input (project names, spider names, and job IDs) to prevent cross-site scripting (XSS).
 

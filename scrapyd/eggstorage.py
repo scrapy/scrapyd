@@ -5,7 +5,7 @@ from glob import escape, glob
 
 from zope.interface import implementer
 
-from scrapyd.exceptions import DirectoryTraversalError
+from scrapyd.exceptions import DirectoryTraversalError, EggNotFoundError, ProjectNotFoundError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.utils import sorted_versions
 
@@ -32,7 +32,10 @@ class FilesystemEggStorage(object):
                 version = self.list(project)[-1]
             except IndexError:
                 return None, None
-        return version, open(self._egg_path(project, version), 'rb')
+        try:
+            return version, open(self._egg_path(project, version), 'rb')
+        except FileNotFoundError:
+            return None, None
 
     def list(self, project):
         return sorted_versions(
@@ -46,11 +49,17 @@ class FilesystemEggStorage(object):
 
     def delete(self, project, version=None):
         if version is None:
-            shutil.rmtree(self._get_path(project))
+            try:
+                shutil.rmtree(self._get_path(project))
+            except FileNotFoundError as e:
+                raise ProjectNotFoundError from e
         else:
-            os.remove(self._egg_path(project, version))
-            if not self.list(project):  # remove project if no versions left
-                self.delete(project)
+            try:
+                os.remove(self._egg_path(project, version))
+                if not self.list(project):  # remove project if no versions left
+                    self.delete(project)
+            except FileNotFoundError as e:
+                raise EggNotFoundError from e
 
     def _egg_path(self, project, version):
         sanitized_version = re.sub(r'[^A-Za-z0-9_-]', '_', version)
