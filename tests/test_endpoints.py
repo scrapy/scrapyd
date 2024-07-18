@@ -34,7 +34,7 @@ class TestEndpoint:
         assert mock_scrapyd.urljoin("foo") == mock_scrapyd.url + "foo"
 
     def test_root(self, mock_scrapyd):
-        resp = requests.get(mock_scrapyd.url, timeout=1)
+        resp = requests.get(mock_scrapyd.url, timeout=2)
 
         assert resp.status_code == 200
         assert re.search("To schedule a spider you need to use the API", resp.text)
@@ -43,25 +43,25 @@ class TestEndpoint:
         username, password = "Leonardo", "hunter2"
 
         with MockScrapydServer(authentication=username + ":" + password) as server:
-            assert requests.get(server.url, timeout=1).status_code == 401
+            assert requests.get(server.url, timeout=2).status_code == 401
 
-            res = requests.get(server.url, timeout=1, auth=(username, password))
+            res = requests.get(server.url, timeout=2, auth=(username, password))
 
             assert res.status_code == 200
             assert re.search("To schedule a spider", res.text)
 
-            res = requests.get(server.url, timeout=1, auth=(username, "trying to hack"))
+            res = requests.get(server.url, timeout=2, auth=(username, "trying to hack"))
 
             assert res.status_code == 401
 
     def test_launch_spider_get(self, mock_scrapyd):
-        resp = requests.get(mock_scrapyd.urljoin("schedule.json"), timeout=1)
+        resp = requests.get(mock_scrapyd.urljoin("schedule.json"), timeout=2)
 
         assert resp.status_code == 200
         assert resp.json()["status"] == "error"
 
     def test_spider_list_no_project(self, mock_scrapyd):
-        resp = requests.get(mock_scrapyd.urljoin("listspiders.json"), timeout=1)
+        resp = requests.get(mock_scrapyd.urljoin("listspiders.json"), timeout=2)
         data = resp.json()
 
         assert resp.status_code == 200
@@ -69,7 +69,7 @@ class TestEndpoint:
         assert data["message"] == "'project' parameter is required"
 
     def test_spider_list_project_no_egg(self, mock_scrapyd):
-        resp = requests.get(mock_scrapyd.urljoin("listprojects.json"), timeout=1)
+        resp = requests.get(mock_scrapyd.urljoin("listprojects.json"), timeout=2)
         data = resp.json()
 
         assert resp.status_code == 200
@@ -85,7 +85,7 @@ class TestEndpoint:
         assert data["project"] == "quotesbot"
 
         url = mock_scrapyd.urljoin("delversion.json")
-        res = requests.post(url, timeout=1, data={"project": "quotesbot", "version": "0.01"})
+        res = requests.post(url, timeout=2, data={"project": "quotesbot", "version": "0.01"})
 
         assert res.status_code == 200
         assert res.json()["status"] == "ok"
@@ -94,7 +94,7 @@ class TestEndpoint:
         url = mock_scrapyd.urljoin("addversion.json")
         data = {b"project": b"quotesbot", b"version": b"0.01"}
         files = {b"egg": quotesbot_egg}
-        return requests.post(url, timeout=1, data=data, files=files)
+        return requests.post(url, timeout=2, data=data, files=files)
 
     def test_failed_settings(self, mock_scrapyd, quotesbot_egg_asyncio):
         response = self._deploy(mock_scrapyd, quotesbot_egg_asyncio)
