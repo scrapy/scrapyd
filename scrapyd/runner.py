@@ -34,7 +34,6 @@ def project_environment(project):
             egg.close()
 
     try:
-        assert "scrapy.conf" not in sys.modules, "Scrapy settings already loaded"
         yield
     finally:
         if tmp:
