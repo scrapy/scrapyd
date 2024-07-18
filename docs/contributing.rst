@@ -15,7 +15,7 @@ Issues should be reported to the Scrapyd project `issue tracker <https://github.
 Tests
 -----
 
-Tests are implemented using the `Twisted unit-testing framework <http://twistedmatrix.com/documents/current/core/development/policy/test-standard.html>`__. Scrapyd uses ``trial`` as the test running application.
+Tests are implemented using the `Twisted unit-testing framework <https://docs.twisted.org/en/stable/development/test-standard.html>`__. Scrapyd uses ``trial`` as the test running application.
 
 Running tests
 -------------

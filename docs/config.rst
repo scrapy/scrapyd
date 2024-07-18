@@ -42,8 +42,8 @@ If necessary, override this to fully control how Scrapyd works.
 
 Default
   ``scrapyd.app.application``
-
-.. seealso:: `Twisted Application Framework <http://twistedmatrix.com/documents/current/core/howto/application.html>`__
+Options
+  Any Twisted `Application <https://docs.twisted.org/en/stable/core/howto/application.html>`__
 
 .. _bind_address:
 
@@ -122,18 +122,6 @@ Enable basic authentication by setting this and :ref:`username` to non-empty val
 Default
   ``""`` (empty)
 
-poll_interval
-~~~~~~~~~~~~~
-
-The number of seconds to wait between checking whether the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
-
-Default
-  ``5.0``
-Options
-   Any floating-point number
-
-.. attention:: It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
-
 .. _spiderqueue:
 
 spiderqueue
@@ -160,8 +148,27 @@ Also used by
 
    https://github.com/scrapy/scrapyd/pull/140/files#diff-c479470812a00776da54c3cefc15bb5bb244b4056996ae972f4daba7f6ec5bd5
 
+Poller options
+--------------
+
+.. _poll_interval:
+
+poll_interval
+~~~~~~~~~~~~~
+
+The number of seconds to wait between checking whether the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
+
+Default
+  ``5.0``
+Options
+   Any floating-point number
+
+.. attention:: It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
+
 Launcher options
 ----------------
+
+.. _launcher:
 
 launcher
 ~~~~~~~~
@@ -170,6 +177,8 @@ The class that starts Scrapy processes.
 
 Default
   ``scrapyd.launcher.Launcher``
+Options
+  Any Twisted `Service <https://docs.twisted.org/en/stable/api/twisted.application.service.Service.html>`__
 
 .. _max_proc:
 
@@ -265,15 +274,19 @@ To "disable" this feature, set this to an arbitrarily large value. For example, 
 Default
   ``5``
 
+.. _runner:
+
 runner
 ~~~~~~
 
-The Python `script <https://docs.python.org/3/tutorial/modules.html#executing-modules-as-scripts>`__ to run Scrapy's `CLI <https://docs.scrapy.org/en/latest/topics/commands.html>`__.
+The Python script to run Scrapy's `CLI <https://docs.scrapy.org/en/latest/topics/commands.html>`__.
 
 If necessary, override this to fully control how the Scrapy CLI is called.
 
 Default
   ``scrapyd.runner``
+Options
+  Any Python `script <https://docs.python.org/3/tutorial/modules.html#executing-modules-as-scripts>`__
 Also used by
   :ref:`listspiders.json` webservice, to run Scrapy's `list <https://docs.scrapy.org/en/latest/topics/commands.html#list>`__ command
 
@@ -291,6 +304,8 @@ If necessary, override this to fully control how the web UI and API work.
 
 Default
   ``scrapyd.website.Root``
+Options
+  Any Twisted `Resource <https://docs.twisted.org/en/stable/web/howto/using-twistedweb.html#resource-objects>`__
 
 .. _prefix_header:
 
@@ -307,6 +322,8 @@ A base path must have a leading slash and no trailing slash, e.g. ``/base/path``
 Default
   ``x-forwarded-prefix``
 
+.. _node_name:
+
 node_name
 ~~~~~~~~~
 
@@ -316,6 +333,8 @@ The node name, which appears in :doc:`api` responses.
 
 Default
   ``socket.gethostname()``
+
+.. _debug:
 
 debug
 ~~~~~
@@ -343,7 +362,6 @@ Options
   -  ``scrapyd.eggstorage.FilesystemEggStorage`` writes eggs in the :ref:`eggs_dir` directory
 
      .. note:: Eggs are named after the ``version``, replacing characters other than ``A-Za-z0-9_-`` with underscores. Therefore, if you frequently use non-word, non-hyphen characters, the eggs for different versions can collide.
-
   -  Implement your own, using the ``IEggStorage`` interface: for example, to store eggs remotely
 
 .. _eggs_dir:

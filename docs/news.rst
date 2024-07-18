@@ -99,15 +99,15 @@ Fixed
 Added
 ~~~~~
 
-- Add ``spiderqueue`` configuration option for custom spider queue. Since this was not previously configurable, the changes below are considered backwards-compatible.
+- Add a :ref:`spiderqueue` configuration option. Since this was not previously configurable, the changes below are considered backwards-compatible.
 - Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` configuration option.
 
 Changed
 ~~~~~~~
 
 - ``scrapyd.spiderqueue.SqliteSpiderQueue`` is initialized with a ``scrapyd.config.Config`` object and a project name, rather than a SQLite connection string (i.e. database file path).
-- If ``dbs_dir`` is set to ``:memory:`` or to a URL, it is passed through without modification and without creating a directory to ``scrapyd.jobstorage.SqliteJobStorage`` and ``scrapyd.spiderqueue.SqliteSpiderQueue``.
-- ``scrapyd.utils.get_spider_queues`` defers the creation of the ``dbs_dir`` directory to the spider queue implementation.
+- If :ref:`dbs_dir` is set to ``:memory:`` or to a URL, it is passed through without modification and without creating a directory to ``scrapyd.jobstorage.SqliteJobStorage`` and ``scrapyd.spiderqueue.SqliteSpiderQueue``.
+- ``scrapyd.utils.get_spider_queues`` defers the creation of the :ref:`dbs_dir` directory to the spider queue implementation.
 
 1.4.1 (2023-02-10)
 ------------------
@@ -189,7 +189,7 @@ Fixed
 ~~~~~
 
 - Fix HTTP header types for newer Twisted versions.
-- ``DeferredQueue`` no longer hides a pending job when reaching ``max_proc``.
+- ``DeferredQueue`` no longer hides a pending job when reaching :ref:`max_proc`.
 - The :ref:`addversion.json` webservice now works on Windows.
 - test: Update binary eggs to be compatible with Scrapy 1.x.
 
@@ -215,7 +215,7 @@ Added
 
 - Website
 
-  - Add ``webroot`` configuration option for website root class.
+  - Add a :ref:`webroot` configuration option for website root class.
   - Add start and finish times to jobs page.
 
 - Make console script executable.
@@ -226,7 +226,7 @@ Added
 Changed
 ~~~~~~~
 
-- Change ``bind_address`` default to 127.0.0.1, instead of 0.0.0.0, to listen only for connections from localhost.
+- Change :ref:`bind_address` default to 127.0.0.1, instead of 0.0.0.0, to listen only for connections from localhost.
 
 Removed
 ~~~~~~~
@@ -282,7 +282,7 @@ Changed
 ~~~~~~~
 
 - Move scrapyd-deploy command to `scrapyd-client <https://pypi.org/project/scrapyd-client/>`__ package. (:commit:`c1358dc`, :commit:`c9d66ca`, :commit:`191353e`)
-- Allow remote ``items_dir`` configuration. (:commit:`e261591`, :commit:`35a21db`)
+- Allow remote :ref:`items_dir` configuration. (:commit:`e261591`, :commit:`35a21db`)
 - Look for a ``~/.scrapyd.conf`` file in the user's home directory. (:commit:`1fce99b`)
 
 Fixed
