@@ -13,16 +13,19 @@ from scrapyd.scheduler import SpiderScheduler
 from scrapyd.spiderqueue import SqliteSpiderQueue
 
 
-@pytest.mark.parametrize('cls,interface', [
-    (PublicHTMLRealm, IRealm),
-    (StringCredentialsChecker, ICredentialsChecker),
-    (FilesystemEggStorage, IEggStorage),
-    (Environment, IEnvironment),
-    (MemoryJobStorage, IJobStorage),
-    (SqliteJobStorage, IJobStorage),
-    (QueuePoller, IPoller),
-    (SpiderScheduler, ISpiderScheduler),
-    (SqliteSpiderQueue, ISpiderQueue),
-])
+@pytest.mark.parametrize(
+    "cls,interface",
+    [
+        (PublicHTMLRealm, IRealm),
+        (StringCredentialsChecker, ICredentialsChecker),
+        (FilesystemEggStorage, IEggStorage),
+        (Environment, IEnvironment),
+        (MemoryJobStorage, IJobStorage),
+        (SqliteJobStorage, IJobStorage),
+        (QueuePoller, IPoller),
+        (SpiderScheduler, ISpiderScheduler),
+        (SqliteSpiderQueue, ISpiderQueue),
+    ],
+)
 def test_interface(cls, interface):
     verifyClass(interface, cls)

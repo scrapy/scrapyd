@@ -14,7 +14,6 @@ from scrapyd.sqlite import JsonSqliteDict
 
 
 class JsonResource(resource.Resource):
-
     json_encoder = json.JSONEncoder()
 
     def render(self, txrequest):
@@ -23,14 +22,14 @@ class JsonResource(resource.Resource):
 
     def encode_object(self, obj, txrequest):
         if obj is None:
-            r = ''
+            r = ""
         else:
             r = self.json_encoder.encode(obj) + "\n"
-        txrequest.setHeader('Content-Type', 'application/json')
-        txrequest.setHeader('Access-Control-Allow-Origin', '*')
-        txrequest.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        txrequest.setHeader('Access-Control-Allow-Headers', ' X-Requested-With')
-        txrequest.setHeader('Content-Length', str(len(r)))
+        txrequest.setHeader("Content-Type", "application/json")
+        txrequest.setHeader("Access-Control-Allow-Origin", "*")
+        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
+        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
+        txrequest.setHeader("Content-Length", str(len(r)))
         return r
 
 
@@ -59,7 +58,7 @@ class UtilsCache:
 
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
-    spiderqueue_path = config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue')
+    spiderqueue_path = config.get("spiderqueue", "scrapyd.spiderqueue.SqliteSpiderQueue")
     spiderqueue_cls = load_object(spiderqueue_path)
     return {project: spiderqueue_cls(config, project) for project in get_project_list(config)}
 
@@ -68,28 +67,28 @@ def get_spider_queues(config):
 # which gets projects from get_project_list(), which gets projects from egg storage. We check for directory traversal
 # in egg storage, instead.
 def sqlite_connection_string(config, database):
-    dbs_dir = config.get('dbs_dir', 'dbs')
-    if dbs_dir == ':memory:' or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
+    dbs_dir = config.get("dbs_dir", "dbs")
+    if dbs_dir == ":memory:" or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
         return dbs_dir
     if not os.path.exists(dbs_dir):
         os.makedirs(dbs_dir)
-    return os.path.join(dbs_dir, f'{database}.db')
+    return os.path.join(dbs_dir, f"{database}.db")
 
 
 def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
-    eggstorage_path = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstorage_path = config.get("eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
     eggstorage_cls = load_object(eggstorage_path)
     eggstorage = eggstorage_cls(config)
 
     projects = eggstorage.list_projects()
-    projects.extend(x[0] for x in config.items('settings', default=[]))
+    projects.extend(x[0] for x in config.items("settings", default=[]))
     return projects
 
 
-def native_stringify_dict(dct_or_tuples, encoding='utf-8', keys_only=True):
+def native_stringify_dict(dct_or_tuples, encoding="utf-8", keys_only=True):
     """Return a (new) dict with unicode keys (and values when "keys_only" is
     False) of the given dict converted to strings. `dct_or_tuples` can be a
     dict or a list of tuples, like any dict constructor supports.
@@ -113,15 +112,15 @@ def get_crawl_args(message):
     that will be started for this message
     """
     msg = message.copy()
-    args = [_to_native_str(msg['_spider'])]
-    del msg['_project'], msg['_spider']
-    settings = msg.pop('settings', {})
+    args = [_to_native_str(msg["_spider"])]
+    del msg["_project"], msg["_spider"]
+    settings = msg.pop("settings", {})
     for k, v in native_stringify_dict(msg, keys_only=False).items():
-        args += ['-a']
-        args += ['{}={}'.format(k, v)]
+        args += ["-a"]
+        args += ["{}={}".format(k, v)]
     for k, v in native_stringify_dict(settings, keys_only=False).items():
-        args += ['-s']
-        args += ['{}={}'.format(k, v)]
+        args += ["-s"]
+        args += ["{}={}".format(k, v)]
     return args
 
 
@@ -135,26 +134,26 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
         pass
 
     if runner is None:
-        runner = Config().get('runner')
+        runner = Config().get("runner")
 
     env = os.environ.copy()
-    env['PYTHONIOENCODING'] = 'UTF-8'
-    env['SCRAPY_PROJECT'] = project
+    env["PYTHONIOENCODING"] = "UTF-8"
+    env["SCRAPY_PROJECT"] = project
     if pythonpath:
-        env['PYTHONPATH'] = pythonpath
+        env["PYTHONPATH"] = pythonpath
     if version:
-        env['SCRAPYD_EGG_VERSION'] = version
-    pargs = [sys.executable, '-m', runner, 'list', '-s', 'LOG_STDOUT=0']
+        env["SCRAPYD_EGG_VERSION"] = version
+    pargs = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
     if proc.returncode:
-        msg = err or out or ''
-        msg = msg.decode('utf8')
+        msg = err or out or ""
+        msg = msg.decode("utf8")
         raise RunnerError(msg)
 
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
-    spiders = out.decode('utf-8').splitlines()
+    spiders = out.decode("utf-8").splitlines()
     try:
         project_cache = get_spider_list.cache[project]
         project_cache[version] = spiders
@@ -165,12 +164,11 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
     return spiders
 
 
-def _to_native_str(text, encoding='utf-8', errors='strict'):
+def _to_native_str(text, encoding="utf-8", errors="strict"):
     if isinstance(text, str):
         return text
     if not isinstance(text, (bytes, str)):
-        raise TypeError('_to_native_str must receive a bytes, str or unicode '
-                        'object, got %s' % type(text).__name__)
+        raise TypeError("_to_native_str must receive a bytes, str or unicode " "object, got %s" % type(text).__name__)
 
     return text.decode(encoding, errors)
 

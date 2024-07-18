@@ -6,10 +6,15 @@ from scrapyd.sqlite import JsonSqliteDict, JsonSqlitePriorityQueue, SqliteFinish
 
 
 class JsonSqliteDictTest(unittest.TestCase):
-
     dict_class = JsonSqliteDict
-    test_dict = {'hello': 'world', 'int': 1, 'float': 1.5, 'null': None,
-                 'list': ['a', 'word'], 'dict': {'some': 'dict'}}
+    test_dict = {
+        "hello": "world",
+        "int": 1,
+        "float": 1.5,
+        "null": None,
+        "list": ["a", "word"],
+        "dict": {"some": "dict"},
+    }
 
     def test_basic_types(self):
         test = self.test_dict
@@ -25,33 +30,32 @@ class JsonSqliteDictTest(unittest.TestCase):
     def test_in(self):
         d = self.dict_class()
 
-        self.assertNotIn('test', d)
+        self.assertNotIn("test", d)
 
-        d['test'] = 123
+        d["test"] = 123
 
-        self.assertIn('test', d)
+        self.assertIn("test", d)
 
     def test_keyerror(self):
         d = self.dict_class()
 
-        self.assertRaises(KeyError, d.__getitem__, 'test')
+        self.assertRaises(KeyError, d.__getitem__, "test")
 
     def test_replace(self):
         d = self.dict_class()
 
-        self.assertEqual(d.get('test'), None)
+        self.assertEqual(d.get("test"), None)
 
-        d['test'] = 123
+        d["test"] = 123
 
-        self.assertEqual(d.get('test'), 123)
+        self.assertEqual(d.get("test"), 123)
 
-        d['test'] = 456
+        d["test"] = 456
 
-        self.assertEqual(d.get('test'), 456)
+        self.assertEqual(d.get("test"), 456)
 
 
 class JsonSqlitePriorityQueueTest(unittest.TestCase):
-
     queue_class = JsonSqlitePriorityQueue
 
     supported_values = [
@@ -120,8 +124,7 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         self.q.put(msg4, priority=2.0)
 
         self.assertEqual(len(self.q), 4)
-        self.assertEqual(list(self.q),
-                         [(msg2, 5.0), (msg3, 3.0), (msg4, 2.0), (msg1, 1.0)])
+        self.assertEqual(list(self.q), [(msg2, 5.0), (msg3, 3.0), (msg4, 2.0), (msg1, 1.0)])
 
         self.q.clear()
 
@@ -152,12 +155,11 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
 
 
 class SqliteFinishedJobsTest(unittest.TestCase):
-
     def setUp(self):
-        self.q = SqliteFinishedJobs(':memory:')
-        self.j1 = Job('p1', 's1', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
-        self.j2 = Job('p2', 's2', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8))
-        self.j3 = Job('p3', 's3', end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9))
+        self.q = SqliteFinishedJobs(":memory:")
+        self.j1 = Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
+        self.j2 = Job("p2", "s2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8))
+        self.j3 = Job("p3", "s3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9))
         self.q.add(self.j1)
         self.q.add(self.j2)
         self.q.add(self.j3)
@@ -178,6 +180,6 @@ class SqliteFinishedJobsTest(unittest.TestCase):
     def test__iter__(self):
         actual = list(self.q)
 
-        self.assertEqual((actual[0][0], actual[0][1]), ('p3', 's3'))
-        self.assertEqual((actual[1][0], actual[1][1]), ('p2', 's2'))
-        self.assertEqual((actual[2][0], actual[2][1]), ('p1', 's1'))
+        self.assertEqual((actual[0][0], actual[0][1]), ("p3", "s3"))
+        self.assertEqual((actual[1][0], actual[1][1]), ("p2", "s2"))
+        self.assertEqual((actual[2][0], actual[2][1]), ("p1", "s1"))

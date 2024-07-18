@@ -7,13 +7,12 @@ from scrapyd.utils import sqlite_connection_string
 
 @implementer(ISpiderQueue)
 class SqliteSpiderQueue:
-
-    def __init__(self, config, project, table='spider_queue'):
+    def __init__(self, config, project, table="spider_queue"):
         self.q = JsonSqlitePriorityQueue(sqlite_connection_string(config, project), table)
 
     def add(self, name, priority=0.0, **spider_args):
         d = spider_args.copy()
-        d['name'] = name
+        d["name"] = name
         self.q.put(d, priority=priority)
 
     def pop(self):

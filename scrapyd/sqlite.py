@@ -12,7 +12,7 @@ class JsonSqliteDict(MutableMapping):
     """SQLite-backed dictionary"""
 
     def __init__(self, database=None, table="dict"):
-        self.database = database or ':memory:'
+        self.database = database or ":memory:"
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
@@ -68,10 +68,10 @@ class JsonSqliteDict(MutableMapping):
         return list(self.iteritems())
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
+        return sqlite3.Binary(json.dumps(obj).encode("ascii"))
 
     def decode(self, obj):
-        return json.loads(bytes(obj).decode('ascii'))
+        return json.loads(bytes(obj).decode("ascii"))
 
 
 class JsonSqlitePriorityQueue:
@@ -80,7 +80,7 @@ class JsonSqlitePriorityQueue:
     """
 
     def __init__(self, database=None, table="queue"):
-        self.database = database or ':memory:'
+        self.database = database or ":memory:"
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
@@ -134,22 +134,24 @@ class JsonSqlitePriorityQueue:
         return ((self.decode(message), priority) for message, priority in self.conn.execute(sql))
 
     def encode(self, obj):
-        return sqlite3.Binary(json.dumps(obj).encode('ascii'))
+        return sqlite3.Binary(json.dumps(obj).encode("ascii"))
 
     def decode(self, text):
-        return json.loads(bytes(text).decode('ascii'))
+        return json.loads(bytes(text).decode("ascii"))
 
 
 class SqliteFinishedJobs:
-    """SQLite finished jobs. """
+    """SQLite finished jobs."""
 
     def __init__(self, database=None, table="finished_jobs"):
-        self.database = database or ':memory:'
+        self.database = database or ":memory:"
         self.table = table
         # about check_same_thread: http://twistedmatrix.com/trac/ticket/4040
         self.conn = sqlite3.connect(self.database, check_same_thread=False)
-        sql = "CREATE TABLE IF NOT EXISTS %s (id integer PRIMARY KEY, " \
+        sql = (
+            "CREATE TABLE IF NOT EXISTS %s (id integer PRIMARY KEY, "
             "project text, spider text, job text, start_time datetime, end_time datetime)" % table
+        )
         self.conn.execute(sql)
 
     def add(self, job):
@@ -164,8 +166,10 @@ class SqliteFinishedJobs:
             limit = len(self) - finished_to_keep
             if limit <= 0:
                 return  # nothing to delete
-            w = "WHERE id <= " \
-                "(SELECT max(id) FROM (SELECT id FROM %s ORDER BY end_time LIMIT %d))" % (self.table, limit)
+            w = "WHERE id <= " "(SELECT max(id) FROM (SELECT id FROM %s ORDER BY end_time LIMIT %d))" % (
+                self.table,
+                limit,
+            )
         sql = "DELETE FROM {} {}".format(self.table, w)
         self.conn.execute(sql)
         self.conn.commit()
@@ -176,6 +180,13 @@ class SqliteFinishedJobs:
 
     def __iter__(self):
         sql = "SELECT project, spider, job, start_time, end_time FROM %s ORDER BY end_time DESC" % self.table
-        return ((j[0], j[1], j[2],
+        return (
+            (
+                j[0],
+                j[1],
+                j[2],
                 datetime.strptime(j[3], "%Y-%m-%d %H:%M:%S.%f"),
-                datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f")) for j in self.conn.execute(sql))
+                datetime.strptime(j[4], "%Y-%m-%d %H:%M:%S.%f"),
+            )
+            for j in self.conn.execute(sql)
+        )

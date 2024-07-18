@@ -5,14 +5,13 @@ from scrapyd.config import Config
 from scrapyd.interfaces import IJobStorage
 from scrapyd.jobstorage import Job, MemoryJobStorage, SqliteJobStorage
 
-j1, j2, j3 = Job('p1', 's1'), Job('p2', 's2'), Job('p3', 's3')
+j1, j2, j3 = Job("p1", "s1"), Job("p2", "s2"), Job("p3", "s3")
 
 
 class MemoryJobStorageTest(unittest.TestCase):
-
     def setUp(self):
         d = self.mktemp()
-        config = Config(values={'dbs_dir': d, 'finished_to_keep': '2'})
+        config = Config(values={"dbs_dir": d, "finished_to_keep": "2"})
         self.jobst = MemoryJobStorage(config)
         self.j1, self.j2, self.j3 = j1, j2, j3
         self.jobst.add(self.j1)
@@ -37,10 +36,9 @@ class MemoryJobStorageTest(unittest.TestCase):
 
 
 class SqliteJobsStorageTest(unittest.TestCase):
-
     def setUp(self):
         d = self.mktemp()
-        config = Config(values={'dbs_dir': d, 'finished_to_keep': '2'})
+        config = Config(values={"dbs_dir": d, "finished_to_keep": "2"})
         self.jobst = SqliteJobStorage(config)
         self.j1, self.j2, self.j3 = j1, j2, j3
 

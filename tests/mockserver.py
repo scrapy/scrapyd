@@ -21,15 +21,10 @@ class MockScrapydServer:
         self.authentication = authentication
 
     def __enter__(self, authentication=None):
-        """Launch Scrapyd application object with ephemeral port
-        """
-        command = [
-            sys.executable, '-m',
-            "tests.start_mock_app",
-            get_ephemeral_port()
-        ]
+        """Launch Scrapyd application object with ephemeral port"""
+        command = [sys.executable, "-m", "tests.start_mock_app", get_ephemeral_port()]
         if self.authentication is not None:
-            command.append('--auth=' + self.authentication)
+            command.append("--auth=" + self.authentication)
 
         self.proc = Popen(command, stdout=PIPE)
         for x in range(10):

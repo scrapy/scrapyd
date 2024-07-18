@@ -19,7 +19,7 @@ class IEggStorage(Interface):
         project) in order (the latest version is the currently used)."""
 
     def list_projects():
-        """Return the list of projects from the stored eggs """
+        """Return the list of projects from the stored eggs"""
 
     def delete(project, version=None):
         """Delete the egg stored for the given project and version. If should
@@ -57,30 +57,29 @@ class IPoller(Interface):
 
 
 class ISpiderQueue(Interface):
-
     def add(name, priority, **spider_args):
         """Add a spider to the queue given its name a some spider arguments.
 
-        This method can return a deferred. """
+        This method can return a deferred."""
 
     def pop():
         """Pop the next message from the queue. The messages is a dict
         containing a key 'name' with the spider name and other keys as spider
         attributes.
 
-        This method can return a deferred. """
+        This method can return a deferred."""
 
     def list():
         """Return a list with the messages in the queue. Each message is a dict
         which must have a 'name' key (with the spider name), and other optional
         keys that will be used as spider arguments, to create the spider.
 
-        This method can return a deferred. """
+        This method can return a deferred."""
 
     def count():
         """Return the number of spiders in the queue.
 
-        This method can return a deferred. """
+        This method can return a deferred."""
 
     def remove(func):
         """Remove all elements from the queue for which func(element) is true,
@@ -90,7 +89,7 @@ class ISpiderQueue(Interface):
     def clear():
         """Clear the queue.
 
-        This method can return a deferred. """
+        This method can return a deferred."""
 
 
 class ISpiderScheduler(Interface):
@@ -125,16 +124,16 @@ class IEnvironment(Interface):
 
 
 class IJobStorage(Interface):
-    """A component that handles storing and retrieving finished jobs. """
+    """A component that handles storing and retrieving finished jobs."""
 
     def add(job):
-        """Add a finished job in the storage. """
+        """Add a finished job in the storage."""
 
     def list():
-        """Return a list of the finished jobs. """
+        """Return a list of the finished jobs."""
 
     def __len__():
-        """Return a number of the finished jobs. """
+        """Return a number of the finished jobs."""
 
     def __iter__():
-        """Iterate over the finished jobs. """
+        """Iterate over the finished jobs."""

@@ -6,7 +6,6 @@ from scrapyd.utils import get_spider_queues
 
 @implementer(ISpiderScheduler)
 class SpiderScheduler:
-
     def __init__(self, config):
         self.config = config
         self.update_projects()

@@ -12,9 +12,8 @@ from scrapyd.utils import sorted_versions
 
 @implementer(IEggStorage)
 class FilesystemEggStorage:
-
     def __init__(self, config):
-        self.basedir = config.get('eggs_dir', 'eggs')
+        self.basedir = config.get("eggs_dir", "eggs")
 
     def put(self, eggfile, project, version):
         path = self._egg_path(project, version)
@@ -23,7 +22,7 @@ class FilesystemEggStorage:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             shutil.copyfileobj(eggfile, f)
 
     def get(self, project, version=None):
@@ -33,7 +32,7 @@ class FilesystemEggStorage:
             except IndexError:
                 return None, None
         try:
-            return version, open(self._egg_path(project, version), 'rb')
+            return version, open(self._egg_path(project, version), "rb")
         except FileNotFoundError:
             return None, None
 
@@ -62,7 +61,7 @@ class FilesystemEggStorage:
                 raise EggNotFoundError from e
 
     def _egg_path(self, project, version):
-        sanitized_version = re.sub(r'[^A-Za-z0-9_-]', '_', version)
+        sanitized_version = re.sub(r"[^A-Za-z0-9_-]", "_", version)
         return self._get_path(project, f"{sanitized_version}.egg")
 
     def _get_path(self, project, *trusted):

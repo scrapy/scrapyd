@@ -26,14 +26,13 @@ class Job:
 
 @implementer(IJobStorage)
 class MemoryJobStorage:
-
     def __init__(self, config):
         self.jobs = []
-        self.finished_to_keep = config.getint('finished_to_keep', 100)
+        self.finished_to_keep = config.getint("finished_to_keep", 100)
 
     def add(self, job):
         self.jobs.append(job)
-        del self.jobs[:-self.finished_to_keep]  # keep last x finished jobs
+        del self.jobs[: -self.finished_to_keep]  # keep last x finished jobs
 
     def list(self):
         return self.jobs
@@ -47,10 +46,9 @@ class MemoryJobStorage:
 
 @implementer(IJobStorage)
 class SqliteJobStorage:
-
     def __init__(self, config):
-        self.jstorage = SqliteFinishedJobs(sqlite_connection_string(config, 'jobs'), "finished_jobs")
-        self.finished_to_keep = config.getint('finished_to_keep', 100)
+        self.jstorage = SqliteFinishedJobs(sqlite_connection_string(config, "jobs"), "finished_jobs")
+        self.finished_to_keep = config.getint("finished_to_keep", 100)
 
     def add(self, job):
         self.jstorage.add(job)
@@ -64,5 +62,4 @@ class SqliteJobStorage:
 
     def __iter__(self):
         for j in self.jstorage:
-            yield Job(project=j[0], spider=j[1], job=j[2],
-                      start_time=j[3], end_time=j[4])
+            yield Job(project=j[0], spider=j[1], job=j[2], start_time=j[3], end_time=j[4])

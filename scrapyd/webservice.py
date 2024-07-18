@@ -60,27 +60,27 @@ class WsResource(JsonResource):
 
     def render(self, txrequest):
         try:
-            return JsonResource.render(self, txrequest).encode('utf-8')
+            return JsonResource.render(self, txrequest).encode("utf-8")
         except Exception as e:
             if isinstance(e, error.Error):
                 txrequest.setResponseCode(int(e.status))
             if self.root.debug:
-                return traceback.format_exc().encode('utf-8')
+                return traceback.format_exc().encode("utf-8")
             log.err()
             if isinstance(e, error.Error):
                 message = e.message.decode()
             else:
                 message = f"{type(e).__name__}: {str(e)}"
             r = {"node_name": self.root.nodename, "status": "error", "message": message}
-            return self.encode_object(r, txrequest).encode('utf-8')
+            return self.encode_object(r, txrequest).encode("utf-8")
 
     def render_OPTIONS(self, txrequest):
-        methods = ['OPTIONS', 'HEAD']
-        if hasattr(self, 'render_GET'):
-            methods.append('GET')
-        if hasattr(self, 'render_POST'):
-            methods.append('POST')
-        txrequest.setHeader('Allow', ', '.join(methods))
+        methods = ["OPTIONS", "HEAD"]
+        if hasattr(self, "render_GET"):
+            methods.append("GET")
+        if hasattr(self, "render_POST"):
+            methods.append("POST")
+        txrequest.setHeader("Allow", ", ".join(methods))
         txrequest.setResponseCode(http.NO_CONTENT)
 
 
@@ -100,13 +100,13 @@ class DaemonStatus(WsResource):
 
 
 class Schedule(WsResource):
-    @param('project')
-    @param('spider')
-    @param('_version', dest='version', required=False, default=None)
+    @param("project")
+    @param("spider")
+    @param("_version", dest="version", required=False, default=None)
     # See https://github.com/scrapy/scrapyd/pull/215
-    @param('jobid', required=False, default=lambda: uuid.uuid1().hex)
-    @param('priority', required=False, default=0, type=float)
-    @param('setting', required=False, default=list, multiple=True)
+    @param("jobid", required=False, default=lambda: uuid.uuid1().hex)
+    @param("priority", required=False, default=0, type=float)
+    @param("setting", required=False, default=list, multiple=True)
     def render_POST(self, txrequest, project, spider, version, jobid, priority, setting):
         if self.root.eggstorage.get(project, version) == (None, None):
             if version:
@@ -123,7 +123,7 @@ class Schedule(WsResource):
             project,
             spider,
             priority=priority,
-            settings=dict(s.split('=', 1) for s in setting),
+            settings=dict(s.split("=", 1) for s in setting),
             version=version,
             _job=jobid,
             **spider_arguments,
@@ -132,12 +132,12 @@ class Schedule(WsResource):
 
 
 class Cancel(WsResource):
-    @param('project')
-    @param('job')
+    @param("project")
+    @param("job")
     # Instead of os.name, use sys.platform, which disambiguates Cygwin, which implements SIGINT not SIGBREAK.
     # https://cygwin.com/cygwin-ug-net/kill.html
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
-    @param('signal', required=False, default='INT' if sys.platform != 'win32' else 'BREAK')
+    @param("signal", required=False, default="INT" if sys.platform != "win32" else "BREAK")
     def render_POST(self, txrequest, project, job, signal):
         if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
@@ -158,9 +158,9 @@ class Cancel(WsResource):
 
 
 class AddVersion(WsResource):
-    @param('project')
-    @param('version')
-    @param('egg', type=bytes)
+    @param("project")
+    @param("version")
+    @param("egg", type=bytes)
     def render_POST(self, txrequest, project, version, egg):
         if not zipfile.is_zipfile(BytesIO(egg)):
             raise error.Error(
@@ -171,8 +171,13 @@ class AddVersion(WsResource):
         spiders = get_spider_list(project, version=version, runner=self.root.runner)
         self.root.update_projects()
         UtilsCache.invalid_cache(project)
-        return {"node_name": self.root.nodename, "status": "ok", "project": project, "version": version,
-                "spiders": len(spiders)}
+        return {
+            "node_name": self.root.nodename,
+            "status": "ok",
+            "project": project,
+            "version": version,
+            "spiders": len(spiders),
+        }
 
 
 class ListProjects(WsResource):
@@ -182,15 +187,15 @@ class ListProjects(WsResource):
 
 
 class ListVersions(WsResource):
-    @param('project')
+    @param("project")
     def render_GET(self, txrequest, project):
         versions = self.root.eggstorage.list(project)
         return {"node_name": self.root.nodename, "status": "ok", "versions": versions}
 
 
 class ListSpiders(WsResource):
-    @param('project')
-    @param('_version', dest='version', required=False, default=None)
+    @param("project")
+    @param("_version", dest="version", required=False, default=None)
     def render_GET(self, txrequest, project, version):
         if self.root.eggstorage.get(project, version) == (None, None):
             if version:
@@ -203,8 +208,8 @@ class ListSpiders(WsResource):
 
 
 class Status(WsResource):
-    @param('job')
-    @param('project', required=False)
+    @param("job")
+    @param("project", required=False)
     def render_GET(self, txrequest, job, project):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
@@ -224,7 +229,7 @@ class Status(WsResource):
                 result["currstate"] = "running"
                 return result
 
-        for qname in (queues if project is None else [project]):
+        for qname in queues if project is None else [project]:
             for x in queues[qname].list():
                 if x["_job"] == job:
                     result["currstate"] = "pending"
@@ -234,7 +239,7 @@ class Status(WsResource):
 
 
 class ListJobs(WsResource):
-    @param('project', required=False)
+    @param("project", required=False)
     def render_GET(self, txrequest, project):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
@@ -272,12 +277,17 @@ class ListJobs(WsResource):
             if project is None or s.project == project
         ]
 
-        return {"node_name": self.root.nodename, "status": "ok",
-                "pending": pending, "running": running, "finished": finished}
+        return {
+            "node_name": self.root.nodename,
+            "status": "ok",
+            "pending": pending,
+            "running": running,
+            "finished": finished,
+        }
 
 
 class DeleteProject(WsResource):
-    @param('project')
+    @param("project")
     def render_POST(self, txrequest, project):
         self._delete_version(project)
         UtilsCache.invalid_cache(project)
@@ -294,8 +304,8 @@ class DeleteProject(WsResource):
 
 
 class DeleteVersion(DeleteProject):
-    @param('project')
-    @param('version')
+    @param("project")
+    @param("version")
     def render_POST(self, txrequest, project, version):
         self._delete_version(project, version)
         UtilsCache.invalid_cache(project)

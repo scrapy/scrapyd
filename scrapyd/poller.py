@@ -7,7 +7,6 @@ from scrapyd.utils import get_spider_queues
 
 @implementer(IPoller)
 class QueuePoller:
-
     def __init__(self, config):
         self.config = config
         self.update_projects()
@@ -38,6 +37,6 @@ class QueuePoller:
 
     def _message(self, message, project):
         new = message.copy()
-        new['_project'] = project
-        new['_spider'] = new.pop('name')
+        new["_project"] = project
+        new["_spider"] = new.pop("name")
         return new

@@ -8,7 +8,6 @@ from zope.interface import implementer
 
 @implementer(IRealm)
 class PublicHTMLRealm:
-
     def __init__(self, resource):
         self.resource = resource
 
@@ -23,8 +22,8 @@ class StringCredentialsChecker:
     credentialInterfaces = (credentials.IUsernamePassword,)
 
     def __init__(self, username, password):
-        self.username = username.encode('utf-8')
-        self.password = password.encode('utf-8')
+        self.username = username.encode("utf-8")
+        self.password = password.encode("utf-8")
 
     def requestAvatarId(self, credentials):
         if credentials.username == self.username and credentials.password == self.password:

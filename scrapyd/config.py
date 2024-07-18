@@ -10,12 +10,12 @@ class Config:
     """A ConfigParser wrapper to support defaults when calling instance
     methods, and also tied to a single section"""
 
-    SECTION = 'scrapyd'
+    SECTION = "scrapyd"
 
     def __init__(self, values=None, extra_sources=()):
         if values is None:
             sources = self._getsources()
-            default_config = get_data(__package__, 'default_scrapyd.conf').decode('utf8')
+            default_config = get_data(__package__, "default_scrapyd.conf").decode("utf8")
             self.cp = ConfigParser()
             self.cp.read_string(default_config)
             sources.extend(extra_sources)
@@ -30,10 +30,10 @@ class Config:
             self.cp.add_section(self.SECTION)
 
     def _getsources(self):
-        sources = ['/etc/scrapyd/scrapyd.conf', r'c:\scrapyd\scrapyd.conf']
-        sources += sorted(glob.glob('/etc/scrapyd/conf.d/*'))
-        sources += ['scrapyd.conf']
-        sources += [expanduser('~/.scrapyd.conf')]
+        sources = ["/etc/scrapyd/scrapyd.conf", r"c:\scrapyd\scrapyd.conf"]
+        sources += sorted(glob.glob("/etc/scrapyd/conf.d/*"))
+        sources += ["scrapyd.conf"]
+        sources += [expanduser("~/.scrapyd.conf")]
         scrapy_cfg = closest_scrapy_cfg()
         if scrapy_cfg:
             sources.append(scrapy_cfg)

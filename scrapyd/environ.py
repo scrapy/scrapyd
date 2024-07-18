@@ -11,14 +11,13 @@ from scrapyd.interfaces import IEnvironment
 
 @implementer(IEnvironment)
 class Environment:
-
     def __init__(self, config, initenv=os.environ):
-        self.dbs_dir = config.get('dbs_dir', 'dbs')
-        self.logs_dir = config.get('logs_dir', 'logs')
-        self.items_dir = config.get('items_dir', '')
-        self.jobs_to_keep = config.getint('jobs_to_keep', 5)
-        if config.cp.has_section('settings'):
-            self.settings = dict(config.cp.items('settings'))
+        self.dbs_dir = config.get("dbs_dir", "dbs")
+        self.logs_dir = config.get("logs_dir", "logs")
+        self.items_dir = config.get("items_dir", "")
+        self.jobs_to_keep = config.getint("jobs_to_keep", 5)
+        if config.cp.has_section("settings"):
+            self.settings = dict(config.cp.items("settings"))
         else:
             self.settings = {}
         self.initenv = initenv
@@ -26,46 +25,47 @@ class Environment:
     def get_settings(self, message):
         settings = {}
         if self.logs_dir:
-            settings['LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
+            settings["LOG_FILE"] = self._get_file(message, self.logs_dir, "log")
         if self.items_dir:
-            settings['FEEDS'] = json.dumps({self._get_feed_uri(message, 'jl'): {'format': 'jsonlines'}})
+            settings["FEEDS"] = json.dumps({self._get_feed_uri(message, "jl"): {"format": "jsonlines"}})
         return settings
 
     def get_environment(self, message, slot):
-        project = message['_project']
+        project = message["_project"]
         env = self.initenv.copy()
-        env['SCRAPY_PROJECT'] = project
-        env['SCRAPYD_SLOT'] = str(slot)
-        env['SCRAPYD_SPIDER'] = message['_spider']
-        env['SCRAPYD_JOB'] = message['_job']
-        if '_version' in message:
-            env['SCRAPYD_EGG_VERSION'] = message['_version']
+        env["SCRAPY_PROJECT"] = project
+        env["SCRAPYD_SLOT"] = str(slot)
+        env["SCRAPYD_SPIDER"] = message["_spider"]
+        env["SCRAPYD_JOB"] = message["_job"]
+        if "_version" in message:
+            env["SCRAPYD_EGG_VERSION"] = message["_version"]
         if project in self.settings:
-            env['SCRAPY_SETTINGS_MODULE'] = self.settings[project]
+            env["SCRAPY_SETTINGS_MODULE"] = self.settings[project]
         if self.logs_dir:
-            env['SCRAPYD_LOG_FILE'] = self._get_file(message, self.logs_dir, 'log')
+            env["SCRAPYD_LOG_FILE"] = self._get_file(message, self.logs_dir, "log")
         if self.items_dir:
-            env['SCRAPYD_FEED_URI'] = self._get_feed_uri(message, 'jl')
+            env["SCRAPYD_FEED_URI"] = self._get_feed_uri(message, "jl")
         return env
 
     def _get_feed_uri(self, message, extension):
         url = urlparse(self.items_dir)
-        if url.scheme.lower() in ['', 'file']:
+        if url.scheme.lower() in ["", "file"]:
             return path_to_file_uri(self._get_file(message, url.path, extension))
-        return urlunparse((url.scheme,
-                           url.netloc,
-                           '/'.join([url.path,
-                                     message['_project'],
-                                     message['_spider'],
-                                     f"{message['_job']}.{extension}"]),
-                           url.params,
-                           url.query,
-                           url.fragment))
+        return urlunparse(
+            (
+                url.scheme,
+                url.netloc,
+                "/".join([url.path, message["_project"], message["_spider"], f"{message['_job']}.{extension}"]),
+                url.params,
+                url.query,
+                url.fragment,
+            )
+        )
 
     def _get_file(self, message, directory, extension):
         resolvedir = os.path.realpath(directory)
-        projectdir = os.path.realpath(os.path.join(resolvedir, message['_project']))
-        spiderdir = os.path.realpath(os.path.join(projectdir, message['_spider']))
+        projectdir = os.path.realpath(os.path.join(resolvedir, message["_project"]))
+        spiderdir = os.path.realpath(os.path.join(projectdir, message["_spider"]))
         jobfile = os.path.realpath(os.path.join(spiderdir, f"{message['_job']}.{extension}"))
 
         if (
@@ -74,7 +74,7 @@ class Environment:
             or os.path.commonprefix((jobfile, spiderdir)) != spiderdir
         ):
             raise DirectoryTraversalError(
-                os.path.join(message['_project'], message['_spider'], f"{message['_job']}.{extension}")
+                os.path.join(message["_project"], message["_spider"], f"{message['_job']}.{extension}")
             )
 
         if not os.path.exists(spiderdir):
@@ -83,7 +83,7 @@ class Environment:
         to_delete = sorted(
             (os.path.join(spiderdir, name) for name in os.listdir(spiderdir)),
             key=os.path.getmtime,
-        )[:-self.jobs_to_keep]
+        )[: -self.jobs_to_keep]
 
         for path in to_delete:
             try:

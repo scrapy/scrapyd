@@ -42,8 +42,8 @@ def test_options(webservice, method):
     )
 
     assert response.status_code == 204, f"204 != {response.status_code}"
-    assert response.content == b''
-    assert response.headers['Allow'] == f"OPTIONS, HEAD, {method}"
+    assert response.content == b""
+    assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
 
 
 # cancel.json, status.json and listjobs.json will error with "project '%b' not found" on directory traversal attempts.
@@ -94,11 +94,7 @@ def test_project_directory_traversal_runner(webservice, method, params):
 
 
 def test_daemonstatus():
-    assert_webservice(
-        "get",
-        "/daemonstatus.json",
-        {"status": "ok", "running": 0, "pending": 0, "finished": 0}
-    )
+    assert_webservice("get", "/daemonstatus.json", {"status": "ok", "running": 0, "pending": 0, "finished": 0})
 
 
 def test_schedule():
