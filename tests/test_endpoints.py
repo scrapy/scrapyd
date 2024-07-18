@@ -63,7 +63,6 @@ class TestEndpoint:
         resp = requests.get(mock_scrapyd.urljoin("schedule.json"))
 
         assert resp.status_code == 200
-        # TODO scrapyd should return status 405 Method Not Allowed not 200
         assert resp.json()['status'] == 'error'
 
     def test_spider_list_no_project(self, mock_scrapyd):
@@ -72,6 +71,7 @@ class TestEndpoint:
 
         assert resp.status_code == 200
         assert data['status'] == 'error'
+        assert data['message'] == "'project' parameter is required"
 
     def test_spider_list_project_no_egg(self, mock_scrapyd):
         resp = requests.get(mock_scrapyd.urljoin('listprojects.json'))

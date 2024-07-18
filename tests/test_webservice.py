@@ -165,7 +165,7 @@ class TestWebservice:
         (b'delproject.json', False, 'render_POST'),
         (b'delversion.json', False, 'render_POST'),
     ])
-    def test_bad_project_names(self, txrequest, site_no_egg, endpoint, attach_egg, method):
+    def test_project_directory_traversal(self, txrequest, site_no_egg, endpoint, attach_egg, method):
         txrequest.args = {
             b'project': [b'../p'],
             b'version': [b'0.1'],
@@ -192,7 +192,7 @@ class TestWebservice:
         (b'schedule.json', False, 'render_POST'),
         (b'listspiders.json', False, 'render_GET'),
     ])
-    def test_bad_project_names_runner(self, txrequest, site_no_egg, endpoint, attach_egg, method):
+    def test_project_directory_traversal_runner(self, txrequest, site_no_egg, endpoint, attach_egg, method):
         txrequest.args = {
             b'project': [b'../p'],
             b'spider': [b's'],
