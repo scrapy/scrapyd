@@ -52,9 +52,9 @@ class GetSpiderListTest(unittest.TestCase):
         os.chdir(path)
         with open("scrapyd.conf", "w") as f:
             f.write("[scrapyd]\n")
-            f.write("eggs_dir = %s\n" % eggs_dir)
-            f.write("dbs_dir = %s\n" % dbs_dir)
-            f.write("logs_dir = %s\n" % logs_dir)
+            f.write(f"eggs_dir = {eggs_dir}\n")
+            f.write(f"dbs_dir = {dbs_dir}\n")
+            f.write(f"logs_dir = {logs_dir}\n")
         self.app = get_application()
 
     def add_test_version(self, file, project, version):
@@ -101,7 +101,7 @@ class GetSpiderListTest(unittest.TestCase):
         spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
         self.assertEqual(sorted(spiders), ["spider1", "spider2"])
 
-    @pytest.mark.skipif(os.name == "nt", reason="get_spider_list() unicode " "fails on windows")
+    @pytest.mark.skipif(os.name == "nt", reason="get_spider_list() unicode fails on windows")
     def test_get_spider_list_unicode(self):
         # mybotunicode.egg has two spiders, araña1 and araña2
         self.add_test_version("mybotunicode.egg", "mybotunicode", "r1")
@@ -126,7 +126,7 @@ class GetSpiderListTest(unittest.TestCase):
 
 
 @pytest.mark.parametrize(
-    "versions,expected",
+    ("versions", "expected"),
     [
         (["zzz", "b", "ddd", "a", "x"], ["a", "b", "ddd", "x", "zzz"]),
         (["10", "1", "9"], ["1", "9", "10"]),

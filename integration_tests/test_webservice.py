@@ -20,7 +20,7 @@ def assert_webservice(method, path, expected, **kwargs):
 
 
 @pytest.mark.parametrize(
-    "webservice,method",
+    ("webservice", "method"),
     [
         ("daemonstatus", "GET"),
         ("addversion", "POST"),
@@ -38,6 +38,7 @@ def assert_webservice(method, path, expected, **kwargs):
 def test_options(webservice, method):
     response = requests.options(
         f"http://127.0.0.1:6800/{webservice}.json",
+        timeout=1,
         auth=("hello12345", "67890world"),
     )
 
@@ -50,7 +51,7 @@ def test_options(webservice, method):
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
-    "webservice,method,params",
+    ("webservice", "method", "params"),
     [
         ("addversion", "post", {"version": "v", "egg": EGG}),
         ("listversions", "get", {}),
@@ -61,6 +62,7 @@ def test_options(webservice, method):
 def test_project_directory_traversal(webservice, method, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{webservice}.json",
+        timeout=1,
         auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )
@@ -73,7 +75,7 @@ def test_project_directory_traversal(webservice, method, params):
 
 
 @pytest.mark.parametrize(
-    "webservice,method,params",
+    ("webservice", "method", "params"),
     [
         ("schedule", "post", {"spider": "s"}),
         ("listspiders", "get", {}),
@@ -82,6 +84,7 @@ def test_project_directory_traversal(webservice, method, params):
 def test_project_directory_traversal_runner(webservice, method, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{webservice}.json",
+        timeout=1,
         auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )

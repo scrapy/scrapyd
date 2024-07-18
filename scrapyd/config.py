@@ -1,5 +1,6 @@
 import glob
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from contextlib import suppress
 from os.path import expanduser
 from pkgutil import get_data
 
@@ -20,11 +21,8 @@ class Config:
             self.cp.read_string(default_config)
             sources.extend(extra_sources)
             for fname in sources:
-                try:
-                    with open(fname) as fp:
-                        self.cp.read_file(fp)
-                except OSError:
-                    pass
+                with suppress(OSError), open(fname) as fp:
+                    self.cp.read_file(fp)
         else:
             self.cp = ConfigParser(values)
             self.cp.add_section(self.SECTION)

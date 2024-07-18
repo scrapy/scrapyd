@@ -2,6 +2,10 @@ class ScrapydError(Exception):
     """Base class for exceptions from within this package"""
 
 
+class BadEggError(ScrapydError):
+    """Raised if the egg is invalid"""
+
+
 class DirectoryTraversalError(ScrapydError):
     """Raised if the resolved path is outside the expected directory"""
 

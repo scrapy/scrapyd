@@ -4,12 +4,12 @@ import unittest
 
 class SettingsSafeModulesTest(unittest.TestCase):
     # these modules must not load scrapy.conf
-    SETTINGS_SAFE_MODULES = [
+    SETTINGS_SAFE_MODULES = (
         "scrapy.utils.project",
         "scrapy.utils.conf",
         "scrapyd.interfaces",
         "scrapyd.eggutils",
-    ]
+    )
 
     def test_modules_that_shouldnt_load_settings(self):
         sys.modules.pop("scrapy.conf", None)
@@ -17,7 +17,7 @@ class SettingsSafeModulesTest(unittest.TestCase):
             __import__(m)
 
             self.assertNotIn(
-                "scrapy.conf", sys.modules, "Module %r must not cause the scrapy.conf module to be loaded" % m
+                "scrapy.conf", sys.modules, f"Module {m!r} must not cause the scrapy.conf module to be loaded"
             )
 
 

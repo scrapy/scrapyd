@@ -27,7 +27,7 @@ class MockScrapydServer:
             command.append("--auth=" + self.authentication)
 
         self.proc = Popen(command, stdout=PIPE)
-        for x in range(10):
+        for _ in range(10):
             msg = self.proc.stdout.readline().strip().decode("ascii")
             addr_line = re.search("available at (.+/)", msg)
             if addr_line:
@@ -48,6 +48,5 @@ class MockScrapydServer:
 
 if __name__ == "__main__":
     with MockScrapydServer() as server:
-        print(f"Listening at {server.url}")
         while True:
             pass

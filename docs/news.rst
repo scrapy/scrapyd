@@ -43,7 +43,7 @@ API
   - ``project 'myproject' not found``, instead of ``Scrapy VERSION - no active project``
   - ``version 'myversion' not found``, instead of a traceback
   - ``exception class: message``, instead of ``message``
-  - ``ValueError: Unknown or corrupt egg``, instead of ``TypeError: 'tuple' object is not an iterator``
+  - ``BadEggError``, instead of ``TypeError: 'tuple' object is not an iterator``
   - Unsupported method error messages no longer list ``object`` as an allowed HTTP method
 
 CLI

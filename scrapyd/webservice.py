@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import sys
 import traceback
@@ -5,7 +7,6 @@ import uuid
 import zipfile
 from copy import copy
 from io import BytesIO
-from typing import Optional
 
 from twisted.python import log
 from twisted.web import error, http
@@ -17,11 +18,12 @@ from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stri
 
 def param(
     decoded: str,
-    dest: Optional[str] = None,
+    *,
+    dest: str | None = None,
     required: bool = True,
     default=None,
     multiple: bool = False,
-    type=str,
+    type=str,  # noqa: A002 like Click
 ):
     encoded = decoded.encode()
     if dest is None:
@@ -39,10 +41,7 @@ def param(
                 value = default
             else:
                 values = (value.decode() if type is str else type(value) for value in txrequest.args.pop(encoded))
-                if multiple:
-                    value = list(values)
-                else:
-                    value = next(values)
+                value = list(values) if multiple else next(values)
 
             kwargs[dest] = value
 
@@ -61,16 +60,13 @@ class WsResource(JsonResource):
     def render(self, txrequest):
         try:
             return JsonResource.render(self, txrequest).encode("utf-8")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if isinstance(e, error.Error):
                 txrequest.setResponseCode(int(e.status))
             if self.root.debug:
                 return traceback.format_exc().encode("utf-8")
             log.err()
-            if isinstance(e, error.Error):
-                message = e.message.decode()
-            else:
-                message = f"{type(e).__name__}: {str(e)}"
+            message = e.message.decode() if isinstance(e, error.Error) else f"{type(e).__name__}: {e}"
             r = {"node_name": self.root.nodename, "status": "error", "message": message}
             return self.encode_object(r, txrequest).encode("utf-8")
 
@@ -297,10 +293,10 @@ class DeleteProject(WsResource):
         try:
             self.root.eggstorage.delete(project, version)
             self.root.update_projects()
-        except ProjectNotFoundError:
-            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
-        except EggNotFoundError:
-            raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+        except ProjectNotFoundError as e:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode()) from e
+        except EggNotFoundError as e:
+            raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode()) from e
 
 
 class DeleteVersion(DeleteProject):

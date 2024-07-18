@@ -86,17 +86,17 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 
         for path in directory:
             if isinstance(path, bytes):
-                path = path.decode("utf8")
+                path = path.decode("utf8")  # noqa: PLW2901 from Twisted
 
             url = quote(path, "/")
-            escapedPath = escape(path)
-            childPath = filepath.FilePath(self.path).child(path)
-            modified = datetime.fromtimestamp(childPath.getModificationTime()).strftime("%Y-%m-%d %H:%M")  # NEW
+            escaped_path = escape(path)
+            child_path = filepath.FilePath(self.path).child(path)
+            modified = datetime.fromtimestamp(child_path.getModificationTime()).strftime("%Y-%m-%d %H:%M")  # NEW
 
-            if childPath.isdir():
+            if child_path.isdir():
                 dirs.append(
                     {
-                        "text": escapedPath + "/",
+                        "text": escaped_path + "/",
                         "href": url + "/",
                         "size": "",
                         "type": "[Directory]",
@@ -109,15 +109,15 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
                     path, self.contentTypes, self.contentEncodings, self.defaultType
                 )
                 try:
-                    size = childPath.getsize()
+                    size = child_path.getsize()
                 except OSError:
                     continue
                 files.append(
                     {
-                        "text": escapedPath,
+                        "text": escaped_path,
                         "href": url,
-                        "type": "[%s]" % mimetype,
-                        "encoding": (encoding and "[%s]" % encoding or ""),
+                        "type": f"[{mimetype}]",
+                        "encoding": (encoding and f"[{encoding}]" or ""),
                         "size": static.formatFileSize(size),
                         "modified": modified,  # NEW
                     }
@@ -143,9 +143,9 @@ class Root(resource.Resource):
             self.putChild(b"items", File(itemsdir, "text/plain"))
         self.putChild(b"jobs", Jobs(self, self.local_items))
         services = config.items("services", ())
-        for servName, servClsName in services:
-            servCls = load_object(servClsName)
-            self.putChild(servName.encode("utf-8"), servCls(self))
+        for service_name, service_cls_name in services:
+            service_cls = load_object(service_cls_name)
+            self.putChild(service_name.encode("utf-8"), service_cls(self))
         self.update_projects()
 
     def update_projects(self):
@@ -178,27 +178,23 @@ class Home(PrefixHeaderMixin, resource.Resource):
         self.prefix_header = root.prefix_header
 
     def render_GET(self, txrequest):
-        vars = {
-            "base_path": self.get_base_path(txrequest),
-        }
-        s = """\
+        base_path = self.get_base_path(txrequest)
+
+        s = f"""\
 <html>
 <head><title>Scrapyd</title></head>
 <body>
 <h1>Scrapyd</h1>
 <ul>
-<li><a href="%(base_path)s/jobs">Jobs</a></li>
+<li><a href="{base_path}/jobs">Jobs</a></li>
 """
         if self.local_items:
-            s += '<li><a href="%(base_path)s/items/">Items</a></li>\n'
-        s += (
-            """\
-<li><a href="%(base_path)s/logs/">Logs</a></li>
+            s += f'<li><a href="{base_path}/items/">Items</a></li>\n'
+        s += f"""\
+<li><a href="{base_path}/logs/">Logs</a></li>
 <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
 """
-            % vars
-        )
         if self.root.scheduler.list_projects():
             s += "<p>Available projects:<p>\n<ul>\n"
             for project_name in sorted(self.root.scheduler.list_projects()):
@@ -221,16 +217,14 @@ monitoring)</p>
 </html>
 """
         txrequest.setHeader("Content-Type", "text/html; charset=utf-8")
-        s = (s % vars).encode("utf8")
+        s = s.encode("utf8")
         txrequest.setHeader("Content-Length", str(len(s)))
         return s
 
 
 def microsec_trunc(timelike):
-    if hasattr(timelike, "microsecond"):
-        ms = timelike.microsecond
-    else:
-        ms = timelike.microseconds
+    # microsecond for datetime, microseconds for timedelta.
+    ms = timelike.microsecond if hasattr(timelike, "microsecond") else timelike.microseconds
     return timelike - timedelta(microseconds=ms)
 
 
@@ -251,7 +245,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         self.local_items = local_items
         self.prefix_header = root.prefix_header
 
-    header_cols = [
+    header_cols = (
         "Project",
         "Spider",
         "Job",
@@ -262,7 +256,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         "Log",
         "Items",
         "Cancel",
-    ]
+    )
 
     def gen_css(self):
         css = [
@@ -271,19 +265,17 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         ]
         if not self.local_items:
             col_idx = self.header_cols.index("Items") + 1
-            css.append("#jobs>*>tr>*:nth-child(%d) {display: none}" % col_idx)
+            css.append(f"#jobs>*>tr>*:nth-child({col_idx}) {{display: none}}")
         if b"cancel.json" not in self.root.children:
             col_idx = self.header_cols.index("Cancel") + 1
-            css.append("#jobs>*>tr>*:nth-child(%d) {display: none}" % col_idx)
+            css.append(f"#jobs>*>tr>*:nth-child({col_idx}) {{display: none}}")
         return "\n".join(css)
 
     def prep_row(self, cells):
-        if not isinstance(cells, dict):
-            assert len(cells) == len(self.header_cols)
-        else:
+        if isinstance(cells, dict):
             cells = [cells.get(k) for k in self.header_cols]
-        cells = ["<td>%s</td>" % ("" if c is None else c) for c in cells]
-        return "<tr>%s</tr>" % "".join(cells)
+        cells = [f"<td>{'' if c is None else c}</td>" for c in cells]
+        return f"<tr>{''.join(cells)}</tr>"
 
     def prep_doc(self):
         return (
@@ -302,15 +294,15 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             '<table id="jobs" border="1">'
             "<thead>" + self.prep_row(self.header_cols) + "</thead>"
             "<tbody>"
-            + '<tr><th colspan="%d">Pending</th></tr>' % len(self.header_cols)
+            + f'<tr><th colspan="{len(self.header_cols)}">Pending</th></tr>'
             + self.prep_tab_pending()
             + "</tbody>"
             "<tbody>"
-            + '<tr><th colspan="%d">Running</th></tr>' % len(self.header_cols)
+            + f'<tr><th colspan="{len(self.header_cols)}">Running</th></tr>'
             + self.prep_tab_running()
             + "</tbody>"
             "<tbody>"
-            + '<tr><th colspan="%d">Finished</th></tr>' % len(self.header_cols)
+            + f'<tr><th colspan="{len(self.header_cols)}">Finished</th></tr>'
             + self.prep_tab_finished()
             + "</tbody>"
             "</table>"

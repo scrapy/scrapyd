@@ -1,5 +1,6 @@
 import json
 import os
+from contextlib import suppress
 from urllib.parse import urlparse, urlunparse
 
 from w3lib.url import path_to_file_uri
@@ -86,9 +87,7 @@ class Environment:
         )[: -self.jobs_to_keep]
 
         for path in to_delete:
-            try:
+            with suppress(OSError):
                 os.remove(path)
-            except OSError:
-                pass
 
         return jobfile

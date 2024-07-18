@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 from zope.interface import implementer
 
@@ -20,8 +20,8 @@ class Job:
         self.project = project
         self.spider = spider
         self.job = job
-        self.start_time = start_time if start_time else datetime.now()
-        self.end_time = end_time if end_time else datetime.now()
+        self.start_time = start_time if start_time else datetime.datetime.now()
+        self.end_time = end_time if end_time else datetime.datetime.now()
 
 
 @implementer(IJobStorage)

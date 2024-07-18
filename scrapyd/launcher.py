@@ -1,5 +1,5 @@
+import datetime
 import sys
-from datetime import datetime
 from multiprocessing import cpu_count
 
 from twisted.application.service import Service
@@ -53,7 +53,7 @@ class Launcher(Service):
 
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)
-        process.end_time = datetime.now()
+        process.end_time = datetime.datetime.now()
         self.finished.add(process)
         self._wait_for_project(slot)
 
@@ -74,17 +74,17 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.project = project
         self.spider = spider
         self.job = job
-        self.start_time = datetime.now()
+        self.start_time = datetime.datetime.now()
         self.end_time = None
         self.env = env
         self.args = args
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
-        log.msg(data.rstrip(), system="Launcher,%d/stdout" % self.pid)
+        log.msg(data.rstrip(), system=f"Launcher,{self.pid}/stdout")
 
     def errReceived(self, data):
-        log.msg(data.rstrip(), system="Launcher,%d/stderr" % self.pid)
+        log.msg(data.rstrip(), system=f"Launcher,{self.pid}/stderr")
 
     def connectionMade(self):
         self.pid = self.transport.pid
@@ -94,7 +94,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         if isinstance(status.value, error.ProcessDone):
             self.log("Process finished: ")
         else:
-            self.log("Process died: exitstatus=%r " % status.value.exitCode)
+            self.log(f"Process died: exitstatus={status.value.exitCode!r} ")
         self.deferred.callback(self)
 
     def log(self, action):

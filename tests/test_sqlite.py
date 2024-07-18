@@ -7,21 +7,21 @@ from scrapyd.sqlite import JsonSqliteDict, JsonSqlitePriorityQueue, SqliteFinish
 
 class JsonSqliteDictTest(unittest.TestCase):
     dict_class = JsonSqliteDict
-    test_dict = {
-        "hello": "world",
-        "int": 1,
-        "float": 1.5,
-        "null": None,
-        "list": ["a", "word"],
-        "dict": {"some": "dict"},
-    }
+    test_dict = (
+        ("hello", "world"),
+        ("int", 1),
+        ("float", 1.5),
+        ("null", None),
+        ("list", ["a", "word"]),
+        ("dict", {"some": "dict"}),
+    )
 
     def test_basic_types(self):
         test = self.test_dict
         d = self.dict_class()
         d.update(test)
 
-        self.assertEqual(list(d.items()), list(test.items()))
+        self.assertEqual(list(d.items()), list(test))
 
         d.clear()
 
@@ -58,7 +58,7 @@ class JsonSqliteDictTest(unittest.TestCase):
 class JsonSqlitePriorityQueueTest(unittest.TestCase):
     queue_class = JsonSqlitePriorityQueue
 
-    supported_values = [
+    supported_values = (
         "native ascii str",
         "\xa3",
         123,
@@ -66,7 +66,7 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
         True,
         ["a", "list", 1],
         {"a": "dict"},
-    ]
+    )
 
     def setUp(self):
         self.q = self.queue_class()

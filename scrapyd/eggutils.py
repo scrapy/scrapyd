@@ -2,6 +2,8 @@ import os
 
 import pkg_resources
 
+from scrapyd.exceptions import BadEggError
+
 
 def activate_egg(eggpath):
     """Activate a Scrapy egg file. This is meant to be used from egg runners
@@ -10,11 +12,11 @@ def activate_egg(eggpath):
     """
     distributions = pkg_resources.find_distributions(eggpath)
     if isinstance(distributions, tuple):
-        raise ValueError("Unknown or corrupt egg")
+        raise BadEggError
     try:
         d = next(distributions)
     except StopIteration:
-        raise ValueError("Unknown or corrupt egg")
+        raise BadEggError from None
     d.activate()
     settings_module = d.get_entry_info("scrapy", "settings").module_name
     os.environ.setdefault("SCRAPY_SETTINGS_MODULE", settings_module)

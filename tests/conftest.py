@@ -36,7 +36,7 @@ def delete_eggs(storage, project, version, config):
         shutil.rmtree(eggdir)
 
 
-@pytest.fixture
+@pytest.fixture()
 def txrequest():
     tcp_channel = DummyChannel.TCP()
     http_channel = http.HTTPChannel()
@@ -67,13 +67,13 @@ def common_app_fixture(request, config):
     return Root(config, app), storage
 
 
-@pytest.fixture
+@pytest.fixture()
 def site_no_egg(request, fxt_config):
     root, storage = common_app_fixture(request, fxt_config)
     return root
 
 
-@pytest.fixture
+@pytest.fixture()
 def site_with_egg(request, fxt_config):
     root, storage = common_app_fixture(request, fxt_config)
 

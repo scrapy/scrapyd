@@ -30,5 +30,5 @@ if __name__ == "__main__":
     log.startLogging(sys.stdout)
     conf = _get_config(args)
     application = application(config=conf)
-    app.startApplication(application, False)
+    app.startApplication(application, save=False)
     reactor.run()

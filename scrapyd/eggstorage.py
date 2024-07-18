@@ -32,7 +32,7 @@ class FilesystemEggStorage:
             except IndexError:
                 return None, None
         try:
-            return version, open(self._egg_path(project, version), "rb")
+            return version, open(self._egg_path(project, version), "rb")  # noqa: SIM115
         except FileNotFoundError:
             return None, None
 

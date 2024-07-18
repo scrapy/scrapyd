@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from subprocess import PIPE, Popen
+from typing import ClassVar
 from urllib.parse import urlsplit
 
 from packaging.version import InvalidVersion, Version
@@ -21,10 +22,7 @@ class JsonResource(resource.Resource):
         return self.encode_object(r, txrequest)
 
     def encode_object(self, obj, txrequest):
-        if obj is None:
-            r = ""
-        else:
-            r = self.json_encoder.encode(obj) + "\n"
+        r = "" if obj is None else self.json_encoder.encode(obj) + "\n"
         txrequest.setHeader("Content-Type", "application/json")
         txrequest.setHeader("Access-Control-Allow-Origin", "*")
         txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
@@ -35,7 +33,7 @@ class JsonResource(resource.Resource):
 
 class UtilsCache:
     # array of project name that need to be invalided
-    invalid_cached_projects = []
+    invalid_cached_projects: ClassVar = []
 
     def __init__(self):
         self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
@@ -88,22 +86,23 @@ def get_project_list(config):
     return projects
 
 
-def native_stringify_dict(dct_or_tuples, encoding="utf-8", keys_only=True):
+def native_stringify_dict(dct_or_tuples, encoding="utf-8", *, keys_only=True):
     """Return a (new) dict with unicode keys (and values when "keys_only" is
     False) of the given dict converted to strings. `dct_or_tuples` can be a
     dict or a list of tuples, like any dict constructor supports.
     """
     d = {}
     for k, v in dct_or_tuples.items():
-        k = _to_native_str(k, encoding)
-        if not keys_only:
-            if isinstance(v, dict):
-                v = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
-            elif isinstance(v, list):
-                v = [_to_native_str(e, encoding) for e in v]
-            else:
-                v = _to_native_str(v, encoding)
-        d[k] = v
+        key = _to_native_str(k, encoding)
+        if keys_only:
+            value = v
+        elif isinstance(v, dict):
+            value = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
+        elif isinstance(v, list):
+            value = [_to_native_str(e, encoding) for e in v]
+        else:
+            value = _to_native_str(v, encoding)
+        d[key] = value
     return d
 
 
@@ -117,10 +116,10 @@ def get_crawl_args(message):
     settings = msg.pop("settings", {})
     for k, v in native_stringify_dict(msg, keys_only=False).items():
         args += ["-a"]
-        args += ["{}={}".format(k, v)]
+        args += [f"{k}={v}"]
     for k, v in native_stringify_dict(settings, keys_only=False).items():
         args += ["-s"]
-        args += ["{}={}".format(k, v)]
+        args += [f"{k}={v}"]
     return args
 
 
@@ -151,8 +150,6 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
         msg = msg.decode("utf8")
         raise RunnerError(msg)
 
-    # FIXME: can we reliably decode as UTF-8?
-    # scrapy list does `print(list)`
     spiders = out.decode("utf-8").splitlines()
     try:
         project_cache = get_spider_list.cache[project]
@@ -167,9 +164,6 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
 def _to_native_str(text, encoding="utf-8", errors="strict"):
     if isinstance(text, str):
         return text
-    if not isinstance(text, (bytes, str)):
-        raise TypeError("_to_native_str must receive a bytes, str or unicode " "object, got %s" % type(text).__name__)
-
     return text.decode(encoding, errors)
 
 

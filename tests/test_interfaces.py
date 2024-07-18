@@ -14,7 +14,7 @@ from scrapyd.spiderqueue import SqliteSpiderQueue
 
 
 @pytest.mark.parametrize(
-    "cls,interface",
+    ("cls", "interface"),
     [
         (PublicHTMLRealm, IRealm),
         (StringCredentialsChecker, ICredentialsChecker),

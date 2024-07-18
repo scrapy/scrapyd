@@ -24,15 +24,16 @@ def create_wrapped_resource(webroot_cls, config, app):
             "The `username` option contains illegal character ':', "
             "check and update the configuration file of Scrapyd"
         )
+
     resource = webroot_cls(config, app)
     if username and password:
         log.msg("Basic authentication enabled")
         portal = Portal(PublicHTMLRealm(resource), [StringCredentialsChecker(username, password)])
         credential_factory = BasicCredentialFactory("Auth")
         return HTTPAuthSessionWrapper(portal, [credential_factory])
-    else:
-        log.msg("Basic authentication disabled as either `username` or `password` is unset")
-        return resource
+
+    log.msg("Basic authentication disabled as either `username` or `password` is unset")
+    return resource
 
 
 def application(config):

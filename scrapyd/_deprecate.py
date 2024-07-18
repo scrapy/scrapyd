@@ -6,19 +6,17 @@ class ScrapydDeprecationWarning(Warning):
     DeprecationWarning is silenced on Python 2.7+
     """
 
-    pass
-
 
 class WarningMeta(type):
     def __init__(cls, name, bases, clsdict):
-        offending_wrapper_classes = tuple(c.__bases__ for c in bases if isinstance(c, WarningMeta))
-        offending_classes = tuple(c for (c,) in offending_wrapper_classes)
-        if offending_classes:
+        wrapper_classes = tuple(c.__bases__ for c in bases if isinstance(c, WarningMeta))
+        classes = tuple(c for (c,) in wrapper_classes)
+        if classes:
             warnings.warn(
-                "%r inherits from %r which %s deprecated"
-                " and will be removed from a later scrapyd release"
-                % (cls, offending_classes, ["is", "are"][min(2, len(offending_classes)) - 1]),
+                f"{cls!r} inherits from {classes!r} which {['is', 'are'][min(2, len(classes)) - 1]} "
+                "deprecated and will be removed from a later scrapyd release",
                 ScrapydDeprecationWarning,
+                stacklevel=2,
             )
         super().__init__(name, bases, clsdict)
 
@@ -32,7 +30,7 @@ def deprecate_class(cls):
             WarningMeta2.__bases__ += (type(b),)
 
     def new_init(*args, **kwargs):
-        warnings.warn("%r will be removed from a later scrapyd release" % cls, ScrapydDeprecationWarning)
+        warnings.warn(f"{cls!r} will be removed from a later scrapyd release", ScrapydDeprecationWarning, stacklevel=2)
         return cls.__init__(*args, **kwargs)
 
     return WarningMeta2(cls.__name__, (cls,), {"__init__": new_init})

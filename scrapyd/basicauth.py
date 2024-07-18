@@ -14,7 +14,7 @@ class PublicHTMLRealm:
     def requestAvatar(self, avatarId, mind, *interfaces):
         if IResource in interfaces:
             return (IResource, self.resource, lambda: None)
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 @implementer(ICredentialsChecker)
@@ -28,5 +28,4 @@ class StringCredentialsChecker:
     def requestAvatarId(self, credentials):
         if credentials.username == self.username and credentials.password == self.password:
             return defer.succeed(credentials.username)
-        else:
-            return defer.fail(error.UnauthorizedLogin())
+        return defer.fail(error.UnauthorizedLogin())

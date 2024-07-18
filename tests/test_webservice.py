@@ -17,16 +17,15 @@ def fake_list_spiders(*args, **kwargs):
     return []
 
 
-def fake_list_spiders_other(*args, **kwarsg):
+def fake_list_spiders_other(*args, **kwargs):
     return ["quotesbot", "toscrape-css"]
 
 
 class TestWebservice:
     def add_test_version(self, root, basename, version):
         egg_path = Path(__file__).absolute().parent / f"{basename}.egg"
-        project, version = "myproject", version
         with open(egg_path, "rb") as f:
-            root.eggstorage.put(f, project, version)
+            root.eggstorage.put(f, "myproject", version)
 
     def test_list_spiders(self, txrequest, site_no_egg):
         self.add_test_version(site_no_egg, "mybot", "r1")
@@ -266,7 +265,7 @@ class TestWebservice:
         assert exc.value.message == b"spider 'nonexistent' not found"
 
     @pytest.mark.parametrize(
-        "endpoint,attach_egg,method",
+        ("endpoint", "attach_egg", "method"),
         [
             (b"addversion.json", True, "render_POST"),
             (b"listversions.json", False, "render_GET"),
@@ -298,7 +297,7 @@ class TestWebservice:
         assert version is None
 
     @pytest.mark.parametrize(
-        "endpoint,attach_egg,method",
+        ("endpoint", "attach_egg", "method"),
         [
             (b"schedule.json", False, "render_POST"),
             (b"listspiders.json", False, "render_GET"),
