@@ -53,6 +53,9 @@ class UtilsCache:
     def __setitem__(self, key, value):
         self.cache_manager[key] = value
 
+    def __repr__(self):
+        return f"UtilsCache(cache_manager={self.cache_manager!r})"
+
 
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
@@ -125,6 +128,12 @@ def get_crawl_args(message):
 
 def get_spider_list(project, runner=None, pythonpath=None, version=None):
     """Return the spider list from the given project, using the given runner"""
+
+    # UtilsCache uses JsonSqliteDict, which encodes the project's value as JSON, but JSON allows only string keys,
+    # so the stored dict will have a "null" key, instead of a None key.
+    if version is None:
+        version = ""
+
     if "cache" not in get_spider_list.__dict__:
         get_spider_list.cache = UtilsCache()
     try:

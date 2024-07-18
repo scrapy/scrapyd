@@ -46,6 +46,9 @@ class JsonSqliteDict(MutableMapping):
     def __iter__(self):
         yield from self.iterkeys()
 
+    def __repr__(self):
+        return f"JsonSqliteDict({dict(self.iteritems())})"
+
     def iterkeys(self):
         sql = f"SELECT key FROM {self.table}"
         return (self.decode(row[0]) for row in self.conn.execute(sql))
