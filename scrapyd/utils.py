@@ -133,8 +133,10 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         return get_spider_list.cache[project][version]
     except KeyError:
         pass
+
     if runner is None:
         runner = Config().get('runner')
+
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'UTF-8'
     env['SCRAPY_PROJECT'] = project
@@ -149,16 +151,18 @@ def get_spider_list(project, runner=None, pythonpath=None, version=''):
         msg = err or out or ''
         msg = msg.decode('utf8')
         raise RunnerError(msg)
+
     # FIXME: can we reliably decode as UTF-8?
     # scrapy list does `print(list)`
-    tmp = out.decode('utf-8').splitlines()
+    spiders = out.decode('utf-8').splitlines()
     try:
         project_cache = get_spider_list.cache[project]
-        project_cache[version] = tmp
+        project_cache[version] = spiders
     except KeyError:
-        project_cache = {version: tmp}
+        project_cache = {version: spiders}
     get_spider_list.cache[project] = project_cache
-    return tmp
+
+    return spiders
 
 
 def _to_native_str(text, encoding='utf-8', errors='strict'):
