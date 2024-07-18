@@ -64,8 +64,9 @@ Fixed
 Security
 ^^^^^^^^
 
-- The ``FilesystemEggStorage`` class used by the :ref:`listversions.json` webservice escapes project names before globbing, to disallow listing arbitrary directories.
-- The ``Environment`` class used by the Twisted :ref:`application` raises a ``DirectoryTraversalError`` error if the project, spider or job parameters would traverse directories.
+- The ``FilesystemEggStorage`` class used by the :ref:`listversions.json` webservice escapes project names (used in glob patterns) before globbing, to disallow listing arbitrary directories.
+- The ``FilesystemEggStorage`` class used by the :ref:`runner` and the :ref:`addversion.json`,  :ref:`listversions.json`, :ref:`delversion.json` and :ref:`delproject.json` webservices raises a ``DirectoryTraversalError`` error if the project (used in file paths) would traverse directories.
+- The ``Environment`` class used by the :ref:`launcher` raises a ``DirectoryTraversalError`` error if the project, spider or job parameters (used in file paths) would traverse directories.
 - The :ref:`webui` escapes user input (project names, spider names, and job IDs) to prevent cross-site scripting (XSS).
 
 Platform support
