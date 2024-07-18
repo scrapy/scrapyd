@@ -1,5 +1,4 @@
 import glob
-import io
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from os.path import expanduser
 from pkgutil import get_data
@@ -7,7 +6,7 @@ from pkgutil import get_data
 from scrapy.utils.conf import closest_scrapy_cfg
 
 
-class Config(object):
+class Config:
     """A ConfigParser wrapper to support defaults when calling instance
     methods, and also tied to a single section"""
 
@@ -22,9 +21,9 @@ class Config(object):
             sources.extend(extra_sources)
             for fname in sources:
                 try:
-                    with io.open(fname) as fp:
+                    with open(fname) as fp:
                         self.cp.read_file(fp)
-                except (IOError, OSError):
+                except OSError:
                     pass
         else:
             self.cp = ConfigParser(values)

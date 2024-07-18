@@ -7,7 +7,7 @@ from zope.interface import implementer
 
 
 @implementer(IRealm)
-class PublicHTMLRealm(object):
+class PublicHTMLRealm:
 
     def __init__(self, resource):
         self.resource = resource
@@ -19,7 +19,7 @@ class PublicHTMLRealm(object):
 
 
 @implementer(ICredentialsChecker)
-class StringCredentialsChecker(object):
+class StringCredentialsChecker:
     credentialInterfaces = (credentials.IUsernamePassword,)
 
     def __init__(self, username, password):

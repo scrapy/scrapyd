@@ -5,7 +5,7 @@ from datetime import datetime
 try:
     from collections.abc import MutableMapping
 except ImportError:
-    from collections import MutableMapping
+    from collections.abc import MutableMapping
 
 
 class JsonSqliteDict(MutableMapping):
@@ -44,8 +44,7 @@ class JsonSqliteDict(MutableMapping):
         return self.conn.execute(sql).fetchone()[0]
 
     def __iter__(self):
-        for key in self.iterkeys():
-            yield key
+        yield from self.iterkeys()
 
     def iterkeys(self):
         sql = "SELECT key FROM %s" % self.table
@@ -75,7 +74,7 @@ class JsonSqliteDict(MutableMapping):
         return json.loads(bytes(obj).decode('ascii'))
 
 
-class JsonSqlitePriorityQueue(object):
+class JsonSqlitePriorityQueue:
     """SQLite priority queue. It relies on SQLite concurrency support for
     providing atomic inter-process operations.
     """
@@ -141,7 +140,7 @@ class JsonSqlitePriorityQueue(object):
         return json.loads(bytes(text).decode('ascii'))
 
 
-class SqliteFinishedJobs(object):
+class SqliteFinishedJobs:
     """SQLite finished jobs. """
 
     def __init__(self, database=None, table="finished_jobs"):
@@ -167,7 +166,7 @@ class SqliteFinishedJobs(object):
                 return  # nothing to delete
             w = "WHERE id <= " \
                 "(SELECT max(id) FROM (SELECT id FROM %s ORDER BY end_time LIMIT %d))" % (self.table, limit)
-        sql = "DELETE FROM %s %s" % (self.table, w)
+        sql = "DELETE FROM {} {}".format(self.table, w)
         self.conn.execute(sql)
         self.conn.commit()
 

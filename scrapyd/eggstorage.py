@@ -11,7 +11,7 @@ from scrapyd.utils import sorted_versions
 
 
 @implementer(IEggStorage)
-class FilesystemEggStorage(object):
+class FilesystemEggStorage:
 
     def __init__(self, config):
         self.basedir = config.get('eggs_dir', 'eggs')

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 from io import BytesIO
 from pkgutil import get_data
@@ -27,14 +26,14 @@ class UtilsTest(unittest.TestCase):
 
         self.assertEqual(get_crawl_args(msg), ['lala'])
 
-        msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': u'val1'}
+        msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': 'val1'}
         cargs = get_crawl_args(msg)
 
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1'])
         self.assertTrue(all(isinstance(x, str) for x in cargs), cargs)
 
     def test_get_crawl_args_with_settings(self):
-        msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': u'val1', 'settings': {'ONE': 'two'}}
+        msg = {'_project': 'lolo', '_spider': 'lala', 'arg1': 'val1', 'settings': {'ONE': 'two'}}
         cargs = get_crawl_args(msg)
 
         self.assertEqual(cargs, ['lala', '-a', 'arg1=val1', '-s', 'ONE=two'])
@@ -110,7 +109,7 @@ class GetSpiderListTest(unittest.TestCase):
         self.add_test_version('mybotunicode.egg', 'mybotunicode', 'r1')
         spiders = get_spider_list('mybotunicode', pythonpath=get_pythonpath_scrapyd())
 
-        self.assertEqual(sorted(spiders), [u'araña1', u'araña2'])
+        self.assertEqual(sorted(spiders), ['araña1', 'araña2'])
 
     def test_failed_spider_list(self):
         self.add_test_version('mybot3.egg', 'mybot3', 'r1')

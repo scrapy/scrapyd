@@ -18,7 +18,7 @@ class SpiderQueueTest(unittest.TestCase):
         self.args = {
             'arg1': 'val1',
             'arg2': 2,
-            'arg3': u'\N{SNOWMAN}',
+            'arg3': '\N{SNOWMAN}',
         }
         self.msg = self.args.copy()
         self.msg['name'] = self.name

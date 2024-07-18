@@ -118,10 +118,10 @@ def get_crawl_args(message):
     settings = msg.pop('settings', {})
     for k, v in native_stringify_dict(msg, keys_only=False).items():
         args += ['-a']
-        args += ['%s=%s' % (k, v)]
+        args += ['{}={}'.format(k, v)]
     for k, v in native_stringify_dict(settings, keys_only=False).items():
         args += ['-s']
-        args += ['%s=%s' % (k, v)]
+        args += ['{}={}'.format(k, v)]
     return args
 
 

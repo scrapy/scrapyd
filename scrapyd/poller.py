@@ -6,7 +6,7 @@ from scrapyd.utils import get_spider_queues
 
 
 @implementer(IPoller)
-class QueuePoller(object):
+class QueuePoller:
 
     def __init__(self, config):
         self.config = config

@@ -10,7 +10,7 @@ from scrapyd.interfaces import IEnvironment
 
 
 @implementer(IEnvironment)
-class Environment(object):
+class Environment:
 
     def __init__(self, config, initenv=os.environ):
         self.dbs_dir = config.get('dbs_dir', 'dbs')

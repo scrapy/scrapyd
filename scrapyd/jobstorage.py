@@ -15,7 +15,7 @@ def job_items_url(job):
     return f"/items/{job.project}/{job.spider}/{job.job}.jl"
 
 
-class Job(object):
+class Job:
     def __init__(self, project, spider, job=None, start_time=None, end_time=None):
         self.project = project
         self.spider = spider
@@ -25,7 +25,7 @@ class Job(object):
 
 
 @implementer(IJobStorage)
-class MemoryJobStorage(object):
+class MemoryJobStorage:
 
     def __init__(self, config):
         self.jobs = []
@@ -42,12 +42,11 @@ class MemoryJobStorage(object):
         return len(self.jobs)
 
     def __iter__(self):
-        for j in self.jobs:
-            yield j
+        yield from self.jobs
 
 
 @implementer(IJobStorage)
-class SqliteJobStorage(object):
+class SqliteJobStorage:
 
     def __init__(self, config):
         self.jstorage = SqliteFinishedJobs(sqlite_connection_string(config, 'jobs'), "finished_jobs")

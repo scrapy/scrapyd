@@ -56,7 +56,7 @@ class JsonSqlitePriorityQueueTest(unittest.TestCase):
 
     supported_values = [
         "native ascii str",
-        u"\xa3",
+        "\xa3",
         123,
         1.2,
         True,

@@ -21,7 +21,7 @@ class WarningMeta(type):
                    ['is', 'are'][min(2, len(offending_classes))-1]),
                 ScrapydDeprecationWarning,
             )
-        super(WarningMeta, cls).__init__(name, bases, clsdict)
+        super().__init__(name, bases, clsdict)
 
 
 def deprecate_class(cls):

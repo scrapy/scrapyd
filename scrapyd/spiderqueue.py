@@ -6,7 +6,7 @@ from scrapyd.utils import sqlite_connection_string
 
 
 @implementer(ISpiderQueue)
-class SqliteSpiderQueue(object):
+class SqliteSpiderQueue:
 
     def __init__(self, config, project, table='spider_queue'):
         self.q = JsonSqlitePriorityQueue(sqlite_connection_string(config, project), table)
