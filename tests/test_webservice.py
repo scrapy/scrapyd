@@ -2,14 +2,9 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
-<<<<<<< HEAD
 from twisted.web.error import Error
 
-||||||| parent of 9e4eccd (test: Add tests to tests/test_webservice.py for directory traversal)
-=======
-
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
->>>>>>> 9e4eccd (test: Add tests to tests/test_webservice.py for directory traversal)
 from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 
