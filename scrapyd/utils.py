@@ -63,6 +63,9 @@ def get_spider_queues(config):
     return {project: spiderqueue(config, project) for project in get_project_list(config)}
 
 
+# The database argument is "jobs" (in SqliteJobStorage) or a project (in SqliteSpiderQueue) from get_spider_queues(),
+# which gets projects from get_project_list(), which gets projects from egg storage. We check for directory traversal
+# in egg storage, instead.
 def sqlite_connection_string(config, database):
     dbs_dir = config.get('dbs_dir', 'dbs')
     if dbs_dir == ':memory:' or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
