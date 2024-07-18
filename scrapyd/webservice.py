@@ -148,6 +148,8 @@ class Cancel(WsResource):
         if project not in self.root.poller.queues:
             raise error.Error(code=http.NOT_FOUND, message=b"project '%b' not found" % project.encode())
 
+        prevstate = None
+
         if self.root.poller.queues[project].remove(lambda x: x["_job"] == job):
             prevstate = "pending"
 
