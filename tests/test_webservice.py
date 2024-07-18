@@ -2,8 +2,14 @@ from pathlib import Path
 from unittest import mock
 
 import pytest
+<<<<<<< HEAD
 from twisted.web.error import Error
 
+||||||| parent of 9e4eccd (test: Add tests to tests/test_webservice.py for directory traversal)
+=======
+
+from scrapyd.exceptions import DirectoryTraversalError, RunnerError
+>>>>>>> 9e4eccd (test: Add tests to tests/test_webservice.py for directory traversal)
 from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 
@@ -183,7 +189,7 @@ class TestWebservice:
         (b'delproject.json', False, 'render_POST'),
         (b'delversion.json', False, 'render_POST'),
     ])
-    def test_bad_project_names(self, txrequest, site_no_egg, endpoint, attach_egg, method):
+    def test_bad_project_names_invalid(self, txrequest, site_no_egg, endpoint, attach_egg, method):
         txrequest.args = {
             b'project': [b'/home/pawel/hosts'],
             b'version': [b'0.1'],
@@ -200,6 +206,63 @@ class TestWebservice:
 
         assert e.value.status == b'400'
         assert e.value.message == b"project '/home/pawel/hosts' is invalid"
+
+        storage = site_no_egg.app.getComponent(IEggStorage)
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
+
+        assert version is None
+
+    @pytest.mark.parametrize('endpoint,attach_egg,method', [
+        (b'addversion.json', True, 'render_POST'),
+        (b'listversions.json', False, 'render_GET'),
+        (b'delproject.json', False, 'render_POST'),
+        (b'delversion.json', False, 'render_POST'),
+    ])
+    def test_bad_project_names(self, txrequest, site_no_egg, endpoint, attach_egg, method):
+        txrequest.args = {
+            b'project': [b'../p'],
+            b'version': [b'0.1'],
+        }
+
+        if attach_egg:
+            egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
+            with open(egg_path, 'rb') as f:
+                txrequest.args[b'egg'] = [f.read()]
+
+        with pytest.raises(DirectoryTraversalError) as exc:
+            getattr(site_no_egg.children[endpoint], method)(txrequest)
+
+        assert str(exc.value) == "../p"
+
+        storage = site_no_egg.app.getComponent(IEggStorage)
+        version, egg = storage.get('quotesbot')
+        if egg:
+            egg.close()
+
+        assert version is None
+
+    @pytest.mark.parametrize('endpoint,attach_egg,method', [
+        (b'schedule.json', False, 'render_POST'),
+        (b'listspiders.json', False, 'render_GET'),
+    ])
+    def test_bad_project_names_runner(self, txrequest, site_no_egg, endpoint, attach_egg, method):
+        txrequest.args = {
+            b'project': [b'../p'],
+            b'spider': [b's'],
+        }
+
+        if attach_egg:
+            egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
+            with open(egg_path, 'rb') as f:
+                txrequest.args[b'egg'] = [f.read()]
+
+        with pytest.raises(RunnerError) as exc:
+            getattr(site_no_egg.children[endpoint], method)(txrequest)
+
+        assert str(exc.value).startswith("Traceback (most recent call last):"), str(exc.value)
+        assert str(exc.value).endswith("scrapyd.exceptions.DirectoryTraversalError: ../p\n"), str(exc.value)
 
         storage = site_no_egg.app.getComponent(IEggStorage)
         version, egg = storage.get('quotesbot')
