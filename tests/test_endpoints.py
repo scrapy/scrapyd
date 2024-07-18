@@ -5,12 +5,12 @@ import pytest
 import requests
 from requests.models import Response
 
-from tests.mockserver import MockScrapyDServer
+from tests.mockserver import MockScrapydServer
 
 
 @pytest.fixture
 def mock_scrapyd():
-    with MockScrapyDServer() as server:
+    with MockScrapydServer() as server:
         yield server
 
 
@@ -45,7 +45,7 @@ class TestEndpoint:
     def test_auth(self):
         username, password = "Leonardo", "hunter2"
 
-        with MockScrapyDServer(
+        with MockScrapydServer(
                 authentication=username + ":" + password
         ) as server:
             assert requests.get(server.url).status_code == 401

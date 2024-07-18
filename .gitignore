@@ -13,12 +13,14 @@ venv
 
 # Tests
 /.coverage
-/_trial_temp
-/dbs
 /htmlcov
+/_trial_temp
 /tests.test_*
+
+# CLI
 /scrapyd.conf
 /twistd.pid
+/dbs
 /eggs
 /items
 /logs

@@ -16,12 +16,12 @@ def get_ephemeral_port():
     return str(s.getsockname()[1])
 
 
-class MockScrapyDServer:
+class MockScrapydServer:
     def __init__(self, authentication=None):
         self.authentication = authentication
 
     def __enter__(self, authentication=None):
-        """Launch ScrapyD application object with ephemeral port
+        """Launch Scrapyd application object with ephemeral port
         """
         command = [
             sys.executable, '-m',
@@ -44,7 +44,6 @@ class MockScrapyDServer:
     def __exit__(self, exc_type, exc_value, traceback):
         self.proc.kill()
         self.proc.communicate()
-        # TODO create eggs in temporary directory
         if os.path.isdir("eggs") and os.listdir("eggs") != []:
             shutil.rmtree("eggs")
 
@@ -53,7 +52,7 @@ class MockScrapyDServer:
 
 
 if __name__ == "__main__":
-    with MockScrapyDServer() as server:
+    with MockScrapydServer() as server:
         print(f"Listening at {server.url}")
         while True:
             pass
