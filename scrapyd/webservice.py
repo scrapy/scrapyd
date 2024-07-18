@@ -51,9 +51,9 @@ def param(
                         raise error.Error(code=http.BAD_REQUEST, message=b"%b '%b' is invalid" % (encoded, value))
                     values.append(value.decode() if type is str else type(value))
                 if multiple:
-                    value = list(values)
+                    value = values
                 else:
-                    value = next(values)
+                    value = values[0]
 
             kwargs[dest] = value
 
