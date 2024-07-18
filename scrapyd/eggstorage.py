@@ -61,6 +61,6 @@ class FilesystemEggStorage(object):
         projectdir = os.path.realpath(os.path.join(resolvedir, project))
 
         if os.path.commonprefix((projectdir, resolvedir)) != resolvedir:
-            raise DirectoryTraversalError(f"{projectdir} is not under the {self.basedir} ({resolvedir}) directory")
+            raise DirectoryTraversalError(project)
 
         return os.path.join(projectdir, *trusted)

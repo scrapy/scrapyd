@@ -1,5 +1,4 @@
 import os.path
-import re
 import sys
 from pathlib import Path
 
@@ -73,11 +72,9 @@ def test_project_directory_traversal(webservice, method, params):
 
     data = response.json()
     data.pop("node_name")
-    message = data.pop("message")
 
     assert response.status_code == 200, f"200 != {response.status_code}"
-    assert data == {"status": "error"}
-    assert re.search(r"^DirectoryTraversalError: \S+ is not under the eggs \(\S+\) directory$", message), message
+    assert data == {"status": "error", "message": "DirectoryTraversalError: ../p"}
 
 
 @pytest.mark.parametrize(
@@ -100,8 +97,8 @@ def test_project_directory_traversal_runner(webservice, method, params):
 
     assert response.status_code == 200, f"200 != {response.status_code}"
     assert data == {"status": "error"}
-    assert re.search(r"DirectoryTraversalError: \S+ is not under the eggs \(\S+\) directory$", message), message
     assert message.startswith("RunnerError: Traceback (most recent call last):"), message
+    assert message.endswith("scrapyd.exceptions.DirectoryTraversalError: ../p\n"), message
 
 
 def test_daemonstatus():

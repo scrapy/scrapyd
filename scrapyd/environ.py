@@ -73,7 +73,9 @@ class Environment(object):
             or os.path.commonprefix((spiderdir, projectdir)) != projectdir
             or os.path.commonprefix((jobfile, spiderdir)) != spiderdir
         ):
-            raise DirectoryTraversalError(f"{jobfile} is not under the {directory} ({resolvedir}) directory")
+            raise DirectoryTraversalError(
+                os.path.join(message['_project'], message['_spider'], f"{message['_job']}.{extension}")
+            )
 
         if not os.path.exists(spiderdir):
             os.makedirs(spiderdir)
