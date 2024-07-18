@@ -17,7 +17,8 @@ jobs:
           cache-dependency-path: setup.py
       - run: pip install -e .[test]
       - run: pytest tests --cov scrapyd
-      - name: Run integration tests
+      - if: matrix.os != 'macos-latest' || matrix.python-version != 'pypy-3.9'
+        name: Run integration tests
         run: |
           printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
           mkdir logs

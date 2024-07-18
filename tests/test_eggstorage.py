@@ -1,6 +1,7 @@
 from io import BytesIO
 from unittest.mock import patch
 
+import pytest
 from twisted.trial import unittest
 from zope.interface import implementer
 from zope.interface.verify import verifyObject
@@ -8,6 +9,7 @@ from zope.interface.verify import verifyObject
 from scrapyd.app import application
 from scrapyd.config import Config
 from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.exceptions import DirectoryTraversalError
 from scrapyd.interfaces import IEggStorage
 
 
@@ -53,6 +55,37 @@ class EggStorageTest(unittest.TestCase):
 
     def test_interface(self):
         verifyObject(IEggStorage, self.eggst)
+
+    def test_put_secure(self):
+        with pytest.raises(DirectoryTraversalError) as exc:
+            self.eggst.put(BytesIO(b"egg01"), "../p", "v")  # version is sanitized
+
+        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+
+    def test_get_secure(self):
+        with pytest.raises(DirectoryTraversalError) as exc:
+            self.eggst.get("../p", "v")  # version is sanitized
+
+        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+
+    def test_list_secure_join(self):
+        with pytest.raises(DirectoryTraversalError) as exc:
+            self.eggst.list('../p')
+
+        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+
+    def test_list_secure_glob(self):
+        self.eggst.put(BytesIO(b"egg01"), 'mybot', '01')
+        versions = self.eggst.list('*')
+
+        self.eggst.delete('mybot')
+        self.assertEqual(versions, [])  # ['01'] if * not escaped
+
+    def test_delete(self):
+        with pytest.raises(DirectoryTraversalError) as exc:
+            self.eggst.delete("../p", "v")  # version is sanitized
+
+        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
 
     @patch('scrapyd.eggstorage.glob', new=lambda x: ['ddd', 'abc', 'bcaa'])
     def test_list_hashes(self):

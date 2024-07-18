@@ -1,11 +1,16 @@
 import os
 
+import pytest
 from twisted.trial import unittest
 from zope.interface.verify import verifyObject
 
 from scrapyd.config import Config
 from scrapyd.environ import Environment
+from scrapyd.exceptions import DirectoryTraversalError
 from scrapyd.interfaces import IEnvironment
+
+msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
+slot = 3
 
 
 class EnvironmentTest(unittest.TestCase):
@@ -16,14 +21,13 @@ class EnvironmentTest(unittest.TestCase):
         config = Config(values={'eggs_dir': d, 'logs_dir': d})
         config.cp.add_section('settings')
         config.cp.set('settings', 'newbot', 'newbot.settings')
+
         self.environ = Environment(config, initenv={})
 
     def test_interface(self):
         verifyObject(IEnvironment, self.environ)
 
     def test_get_environment_with_eggfile(self):
-        msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
-        slot = 3
         env = self.environ.get_environment(msg, slot)
 
         self.assertEqual(env['SCRAPY_PROJECT'], 'mybot')
@@ -40,10 +44,22 @@ class EnvironmentTest(unittest.TestCase):
         config = Config(values={'items_dir': '', 'logs_dir': ''})
         config.cp.add_section('settings')
         config.cp.set('settings', 'newbot', 'newbot.settings')
-        msg = {'_project': 'mybot', '_spider': 'myspider', '_job': 'ID'}
-        slot = 3
+
         environ = Environment(config, initenv={})
         env = environ.get_environment(msg, slot)
 
         self.assertNotIn('SCRAPYD_FEED_URI', env)
         self.assertNotIn('SCRAPYD_LOG_FILE', env)
+
+    def test_get_environment_secure(self):
+        for values in ({'items_dir': '../items'}, {'logs_dir': '../logs'}):
+            with self.subTest(values=values):
+                config = Config(values=values)
+
+                environ = Environment(config, initenv={})
+                for k, v in (('_project', '../p'), ('_spider', '../s'), ('_job', '../j')):
+                    with self.subTest(key=k, value=v):
+                        with pytest.raises(DirectoryTraversalError) as exc:
+                            environ.get_environment({**msg, k: v}, slot)
+
+                        self.assertRegex(str(exc.value), r'^\S+ is not under the \S+ \(\S+\) directory$')

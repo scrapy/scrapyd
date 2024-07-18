@@ -145,15 +145,10 @@ class Cancel(WsResource):
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
     @param('signal', required=False, default='INT' if sys.platform != 'win32' else 'BREAK')
     def render_POST(self, txrequest, project, job, signal):
-        prevstate = None
+        if project not in self.root.poller.queues:
+            raise error.Error(code=http.NOT_FOUND, message=b"project '%b' not found" % project.encode())
 
-        try:
-            queue = self.root.poller.queues[project]
-        except KeyError as e:
-            raise error.Error(code=http.NOT_FOUND, message=b"project %b not found" % str(e).encode())
-
-        c = queue.remove(lambda x: x["_job"] == job)
-        if c:
+        if self.root.poller.queues[project].remove(lambda x: x["_job"] == job):
             prevstate = "pending"
 
         spiders = self.root.launcher.processes.values()
@@ -212,7 +207,10 @@ class Status(WsResource):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
 
-        result = {"node_name": self.root.nodename, "status": "ok", "currstate": "unknown"}
+        if project is not None and project not in queues:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+
+        result = {"node_name": self.root.nodename, "status": "ok", "currstate": None}
 
         for s in self.root.launcher.finished:
             if (project is None or s.project == project) and s.job == job:
@@ -238,6 +236,9 @@ class ListJobs(WsResource):
     def render_GET(self, txrequest, project):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
+
+        if project is not None and project not in queues:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         pending = [
             {"project": qname, "spider": x["name"], "id": x["_job"]}

@@ -59,10 +59,14 @@ class UtilsCache:
 
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
-    spiderqueue = load_object(config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue'))
-    return {project: spiderqueue(config, project) for project in get_project_list(config)}
+    spiderqueue_path = config.get('spiderqueue', 'scrapyd.spiderqueue.SqliteSpiderQueue')
+    spiderqueue_cls = load_object(spiderqueue_path)
+    return {project: spiderqueue_cls(config, project) for project in get_project_list(config)}
 
 
+# The database argument is "jobs" (in SqliteJobStorage) or a project (in SqliteSpiderQueue) from get_spider_queues(),
+# which gets projects from get_project_list(), which gets projects from egg storage. We check for directory traversal
+# in egg storage, instead.
 def sqlite_connection_string(config, database):
     dbs_dir = config.get('dbs_dir', 'dbs')
     if dbs_dir == ':memory:' or (urlsplit(dbs_dir).scheme and not os.path.splitdrive(dbs_dir)[0]):
@@ -76,9 +80,10 @@ def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
-    eggstorage = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
-    eggstoragecls = load_object(eggstorage)
-    eggstorage = eggstoragecls(config)
+    eggstorage_path = config.get('eggstorage', 'scrapyd.eggstorage.FilesystemEggStorage')
+    eggstorage_cls = load_object(eggstorage_path)
+    eggstorage = eggstorage_cls(config)
+
     projects = eggstorage.list_projects()
     projects.extend(x[0] for x in config.items('settings', default=[]))
     return projects

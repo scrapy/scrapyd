@@ -341,6 +341,9 @@ Default
   ``scrapyd.eggstorage.FilesystemEggStorage``
 Options
   -  ``scrapyd.eggstorage.FilesystemEggStorage`` writes eggs in the :ref:`eggs_dir` directory
+
+     .. note:: Eggs are named after the ``version``, replacing characters other than ``A-Za-z0-9_-`` with underscores. Therefore, if you frequently use non-word, non-hyphen characters, the eggs for different versions can collide.
+
   -  Implement your own, using the ``IEggStorage`` interface: for example, to store eggs remotely
 
 .. _eggs_dir:

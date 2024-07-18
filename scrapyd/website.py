@@ -203,7 +203,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
         if self.root.scheduler.list_projects():
             s += '<p>Available projects:<p>\n<ul>\n'
             for project_name in sorted(self.root.scheduler.list_projects()):
-                s += f'<li>{project_name}</li>\n'
+                s += f'<li>{escape(project_name)}</li>\n'
             s += '</ul>\n'
         else:
             s += '<p>No projects available.</p>\n'
@@ -235,6 +235,16 @@ def microsec_trunc(timelike):
     return timelike - timedelta(microseconds=ms)
 
 
+def cancel_button(project, jobid, base_path):
+    return f"""
+    <form method="post" onsubmit="return confirm('Are you sure?');" action="{base_path}/cancel.json">
+    <input type="hidden" name="project" value="{escape(project)}"/>
+    <input type="hidden" name="job" value="{escape(jobid)}"/>
+    <input type="submit" style="float: left;" value="Cancel"/>
+    </form>
+    """
+
+
 class Jobs(PrefixHeaderMixin, resource.Resource):
 
     def __init__(self, root, local_items):
@@ -242,14 +252,6 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         self.root = root
         self.local_items = local_items
         self.prefix_header = root.prefix_header
-
-    cancel_button = """
-    <form method="post" onsubmit="return confirm('Are you sure?');" action="{base_path}/cancel.json">
-    <input type="hidden" name="project" value="{project}"/>
-    <input type="hidden" name="job" value="{jobid}"/>
-    <input type="submit" style="float: left;" value="Cancel"/>
-    </form>
-    """.format
 
     header_cols = [
         'Project', 'Spider',
@@ -316,9 +318,9 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
     def prep_tab_pending(self):
         return '\n'.join(
             self.prep_row({
-                "Project": project,
-                "Spider": m['name'],
-                "Job": m['_job'],
+                "Project": escape(project),
+                "Spider": escape(m['name']),
+                "Job": escape(m['_job']),
                 "Cancel": self.cancel_button(project=project, jobid=m['_job'], base_path=self.base_path),
             })
             for project, queue in self.root.poller.queues.items()
@@ -328,9 +330,9 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
     def prep_tab_running(self):
         return '\n'.join(
             self.prep_row({
-                "Project": p.project,
-                "Spider": p.spider,
-                "Job": p.job,
+                "Project": escape(p.project),
+                "Spider": escape(p.spider),
+                "Job": escape(p.job),
                 "PID": p.pid,
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(datetime.now() - p.start_time),
@@ -344,9 +346,9 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
     def prep_tab_finished(self):
         return '\n'.join(
             self.prep_row({
-                "Project": p.project,
-                "Spider": p.spider,
-                "Job": p.job,
+                "Project": escape(p.project),
+                "Spider": escape(p.spider),
+                "Job": escape(p.job),
                 "Start": microsec_trunc(p.start_time),
                 "Runtime": microsec_trunc(p.end_time - p.start_time),
                 "Finish": microsec_trunc(p.end_time),

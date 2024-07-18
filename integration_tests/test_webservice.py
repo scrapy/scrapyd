@@ -1,4 +1,7 @@
+import os.path
+import re
 import sys
+from pathlib import Path
 
 import pytest
 import requests
@@ -6,16 +9,20 @@ import scrapy
 
 from integration_tests import req
 
+BASEDIR = os.path.realpath(".")
+with (Path(__file__).absolute().parent.parent / "tests" / "quotesbot.egg").open("rb") as f:
+    EGG = f.read()
+
 
 def assert_webservice(method, path, expected, **kwargs):
     response = req(method, path, **kwargs)
-    json = response.json()
-    json.pop("node_name")
+    data = response.json()
+    data.pop("node_name")
     if "message" in expected:
         if sys.platform == 'win32':
             expected["message"] = expected["message"].replace("\n", "\r\n")
 
-    assert json == expected
+    assert data == expected
 
 
 @pytest.mark.parametrize(
@@ -35,10 +42,66 @@ def assert_webservice(method, path, expected, **kwargs):
     ],
 )
 def test_options(webservice, method):
-    response = requests.options(f"http://127.0.0.1:6800/{webservice}.json", auth=("hello12345", "67890world"))
-    assert response.status_code == 204, response.status_code
+    response = requests.options(
+        f"http://127.0.0.1:6800/{webservice}.json",
+        auth=("hello12345", "67890world"),
+    )
+
+    assert response.status_code == 204, f"204 != {response.status_code}"
     assert response.content == b''
     assert response.headers['Allow'] == f"OPTIONS, HEAD, {method}"
+
+
+# cancel.json, status.json and listjobs.json will error with "project '%b' not found" on directory traversal attempts.
+# The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
+# would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
+@pytest.mark.parametrize(
+    "webservice,method,params",
+    [
+        ("addversion", "post", {"version": "v", "egg": EGG}),
+        ("listversions", "get", {}),
+        ("delversion", "post", {"version": "v"}),
+        ("delproject", "post", {}),
+    ],
+)
+def test_project_directory_traversal(webservice, method, params):
+    response = getattr(requests, method)(
+        f"http://127.0.0.1:6800/{webservice}.json",
+        auth=("hello12345", "67890world"),
+        **{"params" if method == "get" else "data": {"project": "../p", **params}},
+    )
+
+    data = response.json()
+    data.pop("node_name")
+    message = data.pop("message")
+
+    assert response.status_code == 200, f"200 != {response.status_code}"
+    assert data == {"status": "error"}
+    assert re.search(r"^DirectoryTraversalError: \S+ is not under the eggs \(\S+\) directory$", message), message
+
+
+@pytest.mark.parametrize(
+    "webservice,method,params",
+    [
+        ("schedule", "post", {"spider": "s"}),
+        ("listspiders", "get", {}),
+    ],
+)
+def test_project_directory_traversal_runner(webservice, method, params):
+    response = getattr(requests, method)(
+        f"http://127.0.0.1:6800/{webservice}.json",
+        auth=("hello12345", "67890world"),
+        **{"params" if method == "get" else "data": {"project": "../p", **params}},
+    )
+
+    data = response.json()
+    data.pop("node_name")
+    message = data.pop("message")
+
+    assert response.status_code == 200, f"200 != {response.status_code}"
+    assert data == {"status": "error"}
+    assert re.search(r"DirectoryTraversalError: \S+ is not under the eggs \(\S+\) directory$", message), message
+    assert message.startswith("RunnerError: Traceback (most recent call last):"), message
 
 
 def test_daemonstatus():
@@ -65,16 +128,25 @@ def test_schedule():
     )
 
 
-def test_status_nonexistent():
+def test_status_nonexistent_job():
     assert_webservice(
         "get",
         "/status.json",
-        {"status": "ok", "currstate": "unknown"},
+        {"status": "ok", "currstate": None},
         params={"job": "sample"},
     )
 
 
-def test_cancel_nonexistent():
+def test_status_nonexistent_project():
+    assert_webservice(
+        "get",
+        "/status.json",
+        {"status": "error", "message": "project 'nonexistent' not found"},
+        params={"job": "sample", "project": "nonexistent"},
+    )
+
+
+def test_cancel_nonexistent_project():
     assert_webservice(
         "post",
         "/cancel.json",
@@ -101,7 +173,7 @@ def test_listversions():
     )
 
 
-def test_listspiders_nonexistent():
+def test_listspiders_nonexistent_project():
     assert_webservice(
         "get",
         "/listspiders.json",
@@ -125,30 +197,43 @@ def test_listjobs():
     )
 
 
-def test_delversion_nonexistent():
+def test_listjobs_nonexistent_project():
+    assert_webservice(
+        "get",
+        "/listjobs.json",
+        {"status": "error", "message": "project 'nonexistent' not found"},
+        params={"project": "nonexistent"},
+    )
+
+
+def test_delversion_nonexistent_project():
     assert_webservice(
         "post",
         "/delversion.json",
         {
             "status": "error",
             "message": "FileNotFoundError: " + (
-                "[Errno 2] No such file or directory: 'eggs/nonexistent/noegg.egg'" if sys.platform != 'win32'
-                else "[WinError 3] The system cannot find the path specified: 'eggs\\\\nonexistent\\\\noegg.egg'"
+                f"[Errno 2] No such file or directory: '{BASEDIR}/eggs/nonexistent/noegg.egg'"
+                if sys.platform != "win32" else
+                "[WinError 3] The system cannot find the path specified: "
+                f"{BASEDIR}\\\\eggs\\\\nonexistent\\\\noegg.egg'"
             ),
         },
         data={"project": "nonexistent", "version": "noegg"},
     )
 
 
-def test_delproject_nonexistent():
+def test_delproject_nonexistent_project():
     assert_webservice(
         "post",
         "/delproject.json",
         {
             "status": "error",
             "message": "FileNotFoundError: " + (
-                "[Errno 2] No such file or directory: 'eggs/nonexistent'" if sys.platform != 'win32'
-                else "[WinError 3] The system cannot find the path specified: 'eggs\\\\nonexistent'"
+                f"[Errno 2] No such file or directory: '{BASEDIR}/eggs/nonexistent'"
+                if sys.platform != "win32" else
+                "[WinError 3] The system cannot find the path specified: "
+                f"'{BASEDIR}\\\\eggs\\\\nonexistent'"
             ),
         },
         data={"project": "nonexistent"},

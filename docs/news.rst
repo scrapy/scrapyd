@@ -55,7 +55,11 @@ API
 CLI
 ^^^
 
-- Correct the usage message and long description, remove all ``twistd`` subcommands, and remove the ``--nodaemon`` and ``--python=`` options, which are overridden.
+- Correct the usage message and long description.
+- Remove the ``--rundir`` option, which only works if ``*_dir`` settings are absolute paths.
+- Remove the ``--nodaemon`` option, which Scrapyd enables.
+- Remove the ``--python=`` option, which Scrapyd needs to set to its application.
+- Remove all ``twistd`` subcommands (FTP servers, etc.). Run ``twistd``, if needed.
 - Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
 Fixed
@@ -64,6 +68,14 @@ Fixed
 - The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
 - The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
+
+Security
+^^^^^^^^
+
+- The ``FilesystemEggStorage`` class used by the :ref:`listversions.json` webservice escapes project names (used in glob patterns) before globbing, to disallow listing arbitrary directories.
+- The ``FilesystemEggStorage`` class used by the :ref:`runner` and the :ref:`addversion.json`,  :ref:`listversions.json`, :ref:`delversion.json` and :ref:`delproject.json` webservices raises a ``DirectoryTraversalError`` error if the project (used in file paths) would traverse directories.
+- The ``Environment`` class used by the :ref:`launcher` raises a ``DirectoryTraversalError`` error if the project, spider or job parameters (used in file paths) would traverse directories.
+- The :ref:`webui` escapes user input (project names, spider names, and job IDs) to prevent cross-site scripting (XSS).
 
 Platform support
 ^^^^^^^^^^^^^^^^
@@ -93,7 +105,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``spiderqueue`` configuration option for custom spider queue.
+- Add ``spiderqueue`` configuration option for custom spider queue. Since this was not previously configurable, the changes below are considered backwards-compatible.
 - Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` configuration option.
 
 Changed
