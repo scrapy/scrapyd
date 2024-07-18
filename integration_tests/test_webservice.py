@@ -9,13 +9,13 @@ from integration_tests import req
 
 def assert_webservice(method, path, expected, **kwargs):
     response = req(method, path, **kwargs)
-    json = response.json()
-    json.pop("node_name")
+    data = response.json()
+    data.pop("node_name")
     if "message" in expected:
         if sys.platform == 'win32':
             expected["message"] = expected["message"].replace("\n", "\r\n")
 
-    assert json == expected
+    assert data == expected
 
 
 @pytest.mark.parametrize(
@@ -35,8 +35,12 @@ def assert_webservice(method, path, expected, **kwargs):
     ],
 )
 def test_options(webservice, method):
-    response = requests.options(f"http://127.0.0.1:6800/{webservice}.json", auth=("hello12345", "67890world"))
-    assert response.status_code == 204, response.status_code
+    response = requests.options(
+        f"http://127.0.0.1:6800/{webservice}.json",
+        auth=("hello12345", "67890world"),
+    )
+
+    assert response.status_code == 204, f"204 != {response.status_code}"
     assert response.content == b''
     assert response.headers['Allow'] == f"OPTIONS, HEAD, {method}"
 
@@ -65,7 +69,7 @@ def test_schedule():
     )
 
 
-def test_status_nonexistent():
+def test_status_nonexistent_job():
     assert_webservice(
         "get",
         "/status.json",
@@ -74,7 +78,16 @@ def test_status_nonexistent():
     )
 
 
-def test_cancel_nonexistent():
+def test_status_nonexistent_project():
+    assert_webservice(
+        "get",
+        "/status.json",
+        {"status": "error", "message": "project 'nonexistent' not found"},
+        params={"job": "sample", "project": "nonexistent"},
+    )
+
+
+def test_cancel_nonexistent_project():
     assert_webservice(
         "post",
         "/cancel.json",
@@ -100,7 +113,7 @@ def test_listversions():
     )
 
 
-def test_listspiders_nonexistent():
+def test_listspiders_nonexistent_project():
     assert_webservice(
         "get",
         "/listspiders.json",
@@ -124,7 +137,16 @@ def test_listjobs():
     )
 
 
-def test_delversion_nonexistent():
+def test_listjobs_nonexistent_project():
+    assert_webservice(
+        "get",
+        "/listjobs.json",
+        {"status": "error", "message": "project 'nonexistent' not found"},
+        params={"project": "nonexistent"},
+    )
+
+
+def test_delversion_nonexistent_project():
     assert_webservice(
         "post",
         "/delversion.json",
@@ -139,7 +161,7 @@ def test_delversion_nonexistent():
     )
 
 
-def test_delproject_nonexistent():
+def test_delproject_nonexistent_project():
     assert_webservice(
         "post",
         "/delproject.json",

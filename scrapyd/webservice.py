@@ -200,6 +200,9 @@ class Status(WsResource):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
 
+        if project is not None and project not in queues:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+
         result = {"node_name": self.root.nodename, "status": "ok", "currstate": "unknown"}
 
         for s in self.root.launcher.finished:
@@ -226,6 +229,9 @@ class ListJobs(WsResource):
     def render_GET(self, txrequest, project):
         spiders = self.root.launcher.processes.values()
         queues = self.root.poller.queues
+
+        if project is not None and project not in queues:
+            raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         pending = [
             {"project": qname, "spider": x["name"], "id": x["_job"]}
