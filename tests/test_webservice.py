@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from unittest import mock
 
@@ -206,7 +207,7 @@ class TestWebservice:
             getattr(site_no_egg.children[endpoint], method)(txrequest)
 
         assert str(exc.value).startswith("Traceback (most recent call last):"), str(exc.value)
-        assert str(exc.value).endswith("scrapyd.exceptions.DirectoryTraversalError: ../p\n"), str(exc.value)
+        assert str(exc.value).endswith(f"scrapyd.exceptions.DirectoryTraversalError: ../p{os.linesep}"), str(exc.value)
 
         storage = site_no_egg.app.getComponent(IEggStorage)
         version, egg = storage.get('quotesbot')

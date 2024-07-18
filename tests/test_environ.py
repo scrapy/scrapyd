@@ -64,7 +64,7 @@ class EnvironmentTest(unittest.TestCase):
 
                         self.assertEqual(
                             str(exc.value),
-                            f"{v if k == '_project' else 'mybot'}/"
-                            f"{v if k == '_spider' else 'myspider'}/"
+                            f"{v if k == '_project' else 'mybot'}{os.sep}"
+                            f"{v if k == '_spider' else 'myspider'}{os.sep}"
                             f"{v if k == '_job' else 'ID'}.log"
                         )
