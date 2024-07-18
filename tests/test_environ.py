@@ -62,4 +62,9 @@ class EnvironmentTest(unittest.TestCase):
                         with pytest.raises(DirectoryTraversalError) as exc:
                             environ.get_environment({**msg, k: v}, slot)
 
-                        self.assertRegex(str(exc.value), r'^\S+ is not under the \S+ \(\S+\) directory$')
+                        self.assertEqual(
+                            str(exc.value),
+                            f"{v if k == '_project' else 'mybot'}/"
+                            f"{v if k == '_spider' else 'myspider'}/"
+                            f"{v if k == '_job' else 'ID'}.log"
+                        )

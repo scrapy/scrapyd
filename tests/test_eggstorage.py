@@ -60,19 +60,19 @@ class EggStorageTest(unittest.TestCase):
         with pytest.raises(DirectoryTraversalError) as exc:
             self.eggst.put(BytesIO(b"egg01"), "../p", "v")  # version is sanitized
 
-        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+        self.assertEqual(str(exc.value), "../p")
 
     def test_get_secure(self):
         with pytest.raises(DirectoryTraversalError) as exc:
             self.eggst.get("../p", "v")  # version is sanitized
 
-        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+        self.assertEqual(str(exc.value), "../p")
 
     def test_list_secure_join(self):
         with pytest.raises(DirectoryTraversalError) as exc:
             self.eggst.list('../p')
 
-        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+        self.assertEqual(str(exc.value), "../p")
 
     def test_list_secure_glob(self):
         self.eggst.put(BytesIO(b"egg01"), 'mybot', '01')
@@ -85,7 +85,7 @@ class EggStorageTest(unittest.TestCase):
         with pytest.raises(DirectoryTraversalError) as exc:
             self.eggst.delete("../p", "v")  # version is sanitized
 
-        self.assertRegex(str(exc.value), r"^\S+ is not under the \S+ \(\S+\) directory$")
+        self.assertEqual(str(exc.value), "../p")
 
     @patch('scrapyd.eggstorage.glob', new=lambda x: ['ddd', 'abc', 'bcaa'])
     def test_list_hashes(self):
