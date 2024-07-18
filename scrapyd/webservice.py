@@ -37,13 +37,11 @@ def param(
 
                 value = default
             else:
-                values = []
-                for value in txrequest.args.pop(encoded):
-                    values.append(value.decode() if type is str else type(value))
+                values = (value.decode() if type is str else type(value) for value in txrequest.args.pop(encoded))
                 if multiple:
-                    value = values
+                    value = list(values)
                 else:
-                    value = values[0]
+                    value = next(values)
 
             kwargs[dest] = value
 
