@@ -211,7 +211,7 @@ def test_delversion_nonexistent_project():
                 f"[Errno 2] No such file or directory: '{BASEDIR}/eggs/nonexistent/noegg.egg'"
                 if sys.platform != "win32" else
                 "[WinError 3] The system cannot find the path specified: "
-                f"{BASEDIR}\\\\eggs\\\\nonexistent\\\\noegg.egg'"
+                f"'{BASEDIR}\\\\eggs\\\\nonexistent\\\\noegg.egg'"
             ),
         },
         data={"project": "nonexistent", "version": "noegg"},

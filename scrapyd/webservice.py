@@ -269,6 +269,8 @@ class DeleteProject(WsResource):
         UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
 
+    # Minor security note: Submitting a non-existent project or version when using the default eggstorage can produce
+    # an error message that discloses the resolved path to the eggs_dir.
     def _delete_version(self, project, version=None):
         self.root.eggstorage.delete(project, version)
         self.root.update_projects()
