@@ -18,8 +18,7 @@ def assert_webservice(method, path, expected, **kwargs):
     data = response.json()
     data.pop("node_name")
     if "message" in expected:
-        if sys.platform == 'win32':
-            expected["message"] = expected["message"].replace("\n", "\r\n")
+        expected["message"] = expected["message"].replace("\n", os.linesep)
 
     assert data == expected
 
@@ -98,7 +97,7 @@ def test_project_directory_traversal_runner(webservice, method, params):
     assert response.status_code == 200, f"200 != {response.status_code}"
     assert data == {"status": "error"}
     assert message.startswith("RunnerError: Traceback (most recent call last):"), message
-    assert message.endswith("scrapyd.exceptions.DirectoryTraversalError: ../p\n"), message
+    assert message.endswith(f"scrapyd.exceptions.DirectoryTraversalError: ../p{os.linesep}"), message
 
 
 def test_daemonstatus():
