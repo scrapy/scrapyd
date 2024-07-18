@@ -73,7 +73,7 @@ def test_status_nonexistent_job():
     assert_webservice(
         "get",
         "/status.json",
-        {"status": "ok", "currstate": "unknown"},
+        {"status": "ok", "currstate": None},
         params={"job": "sample"},
     )
 
