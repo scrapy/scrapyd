@@ -22,19 +22,14 @@ def fake_list_spiders_other(*args, **kwarsg):
 
 
 class TestWebservice:
-    @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
-    def test_list_spiders(self, txrequest, site_no_egg):
-        # TODO Test with actual egg requires to write better mock runner
-        # scrapyd webservice calls subprocess with command
-        # "python -m scrapyd.runner list", need to write code to mock this
-        # and test it
+    def test_list_spiders(self, txrequest, site_with_egg):
         txrequest.args = {
             b'project': [b'quotesbot']
         }
         endpoint = b'listspiders.json'
-        content = site_no_egg.children[endpoint].render_GET(txrequest)
+        content = site_with_egg.children[endpoint].render_GET(txrequest)
 
-        assert content['spiders'] == []
+        assert content['spiders'] == ['toscrape-css', 'toscrape-xpath']
         assert content['status'] == 'ok'
 
     def test_list_versions(self, txrequest, site_with_egg):
@@ -118,7 +113,6 @@ class TestWebservice:
         assert 'node_name' in content
         assert no_version is None
 
-    @mock.patch('scrapyd.webservice.get_spider_list', new=fake_list_spiders)
     def test_addversion(self, txrequest, site_no_egg):
         endpoint = b'addversion.json'
         txrequest.args = {
@@ -144,8 +138,6 @@ class TestWebservice:
         assert 'node_name' in content
         assert no_version == '0_1'
 
-    @mock.patch('scrapyd.webservice.get_spider_list',
-                new=fake_list_spiders_other)
     def test_schedule(self, txrequest, site_with_egg):
         endpoint = b'schedule.json'
         txrequest.args = {
