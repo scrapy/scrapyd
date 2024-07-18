@@ -38,7 +38,6 @@ def assert_webservice(method, path, expected, **kwargs):
 def test_options(webservice, method):
     response = requests.options(
         f"http://127.0.0.1:6800/{webservice}.json",
-        timeout=2,
         auth=("hello12345", "67890world"),
     )
 
@@ -62,7 +61,6 @@ def test_options(webservice, method):
 def test_project_directory_traversal(webservice, method, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{webservice}.json",
-        timeout=2,
         auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )
@@ -84,7 +82,6 @@ def test_project_directory_traversal(webservice, method, params):
 def test_project_directory_traversal_runner(webservice, method, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{webservice}.json",
-        timeout=2,
         auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )

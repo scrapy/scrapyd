@@ -42,6 +42,7 @@ builtins-ignorelist = ["copyright"]
 "{tests,integration_tests}/*" = [
   "D",  # docstring
   "S101",  # assert
+  "S113",  # requests timeout
   "PLR2004",  # magic value
   "ARG001", "ARG002", "ARG005",  # mocks
   "PT009", "PT027",  # Scrapyd mixes unittest with pytest
