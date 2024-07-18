@@ -66,14 +66,14 @@ class Environment(object):
         resolvedir = os.path.realpath(directory)
         projectdir = os.path.realpath(os.path.join(resolvedir, message['_project']))
         spiderdir = os.path.realpath(os.path.join(projectdir, message['_spider']))
-        filepath = os.path.realpath(os.path.join(spiderdir, f"{message['_job']}.{extension}"))
+        jobfile = os.path.realpath(os.path.join(spiderdir, f"{message['_job']}.{extension}"))
 
         if (
             os.path.commonprefix((projectdir, resolvedir)) != resolvedir
             or os.path.commonprefix((spiderdir, projectdir)) != projectdir
-            or os.path.commonprefix((filepath, spiderdir)) != spiderdir
+            or os.path.commonprefix((jobfile, spiderdir)) != spiderdir
         ):
-            raise DirectoryTraversalError(f"{filepath} is not under the {directory} ({resolvedir}) directory")
+            raise DirectoryTraversalError(f"{jobfile} is not under the {directory} ({resolvedir}) directory")
 
         if not os.path.exists(spiderdir):
             os.makedirs(spiderdir)
@@ -89,4 +89,4 @@ class Environment(object):
             except OSError:
                 pass
 
-        return filepath
+        return jobfile
