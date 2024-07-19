@@ -18,13 +18,15 @@ def activate_egg(eggpath):
     distributions = pkg_resources.find_distributions(eggpath)
     if isinstance(distributions, tuple):
         raise BadEggError
+
     try:
-        d = next(distributions)
+        distribution = next(distributions)
     except StopIteration:
         raise BadEggError from None
-    d.activate()
-    settings_module = d.get_entry_info("scrapy", "settings").module_name
-    os.environ.setdefault("SCRAPY_SETTINGS_MODULE", settings_module)
+
+    distribution.activate()
+
+    os.environ.setdefault("SCRAPY_SETTINGS_MODULE", distribution.get_entry_info("scrapy", "settings").module_name)
 
 
 @contextmanager
