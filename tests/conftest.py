@@ -18,6 +18,7 @@ class FakeScheduler:
     def __init__(self, config):
         self.config = config
         self.calls = []
+        self.queues = {}
 
     def schedule(self, project, spider_name, priority=0.0, **spider_args):
         self.calls.append([project, spider_name])

@@ -82,7 +82,7 @@ class WsResource(JsonResource):
 
 class DaemonStatus(WsResource):
     def render_GET(self, txrequest):
-        pending = sum(q.count() for q in self.root.poller.queues.values())
+        pending = sum(q.count() for q in self.root.scheduler.queues.values())
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
 
@@ -135,12 +135,12 @@ class Cancel(WsResource):
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
     @param("signal", required=False, default="INT" if sys.platform != "win32" else "BREAK")
     def render_POST(self, txrequest, project, job, signal):
-        if project not in self.root.poller.queues:
+        if project not in self.root.scheduler.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         prevstate = None
 
-        if self.root.poller.queues[project].remove(lambda x: x["_job"] == job):
+        if self.root.scheduler.queues[project].remove(lambda x: x["_job"] == job):
             prevstate = "pending"
 
         spiders = self.root.launcher.processes.values()
@@ -208,7 +208,7 @@ class Status(WsResource):
     @param("project", required=False)
     def render_GET(self, txrequest, job, project):
         spiders = self.root.launcher.processes.values()
-        queues = self.root.poller.queues
+        queues = self.root.scheduler.queues
 
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
@@ -238,7 +238,7 @@ class ListJobs(WsResource):
     @param("project", required=False)
     def render_GET(self, txrequest, project):
         spiders = self.root.launcher.processes.values()
-        queues = self.root.poller.queues
+        queues = self.root.scheduler.queues
 
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
