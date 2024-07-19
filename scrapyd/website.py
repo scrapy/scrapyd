@@ -146,7 +146,6 @@ class Root(resource.Resource):
         for service_name, service_cls_name in services:
             service_cls = load_object(service_cls_name)
             self.putChild(service_name.encode("utf-8"), service_cls(self))
-        self.update_projects()
 
     def update_projects(self):
         self.poller.update_projects()
