@@ -1,4 +1,4 @@
-from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred, returnValue
+from twisted.internet.defer import DeferredQueue, inlineCallbacks, maybeDeferred
 from zope.interface import implementer
 
 from scrapyd.interfaces import IPoller
@@ -23,8 +23,8 @@ class QueuePoller:
                 message = yield maybeDeferred(queue.pop)
                 # The message can be None if, for example, two Scrapyd instances share a spider queue database.
                 if message is not None:
-                    # Pop a dummy item from the "waiting" backlog. and fire the message.
-                    returnValue(self.dq.put(self._message(message, project)))
+                    # Pop a dummy item from the "waiting" backlog. and fire the message's callbacks.
+                    return self.dq.put(self._message(message, project))
 
     def next(self):
         """
