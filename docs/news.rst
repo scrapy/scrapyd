@@ -13,6 +13,7 @@ Added
 
 - Add a :ref:`status.json` webservice, to get the status of a job.
 - Add a :ref:`unix_socket_path` setting, to listen on a Unix socket.
+- Add a :ref:`poller` setting.
 - Respond to HTTP ``OPTIONS`` method requests.
 - Add environment variables to override common options. See :doc:`config`.
 

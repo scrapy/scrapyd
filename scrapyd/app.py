@@ -12,7 +12,6 @@ from twisted.web.guard import BasicCredentialFactory, HTTPAuthSessionWrapper
 from scrapyd.basicauth import PublicHTMLRealm, StringCredentialsChecker
 from scrapyd.environ import Environment
 from scrapyd.interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
-from scrapyd.poller import QueuePoller
 from scrapyd.scheduler import SpiderScheduler
 
 
@@ -43,13 +42,16 @@ def application(config):
     unix_socket_path = os.getenv("SCRAPYD_UNIX_SOCKET_PATH") or config.get("unix_socket_path", "")
     poll_interval = config.getfloat("poll_interval", 5)
 
-    poller = QueuePoller(config)
     scheduler = SpiderScheduler(config)
-    environment = Environment(config)
-
-    app.setComponent(IPoller, poller)
     app.setComponent(ISpiderScheduler, scheduler)
+
+    environment = Environment(config)
     app.setComponent(IEnvironment, environment)
+
+    poller_path = config.get("poller", "scrapyd.poller.QueuePoller")
+    poller_cls = load_object(poller_path)
+    poller = poller_cls(config)
+    app.setComponent(IPoller, poller)
 
     jobstorage_path = config.get("jobstorage", "scrapyd.jobstorage.MemoryJobStorage")
     jobstorage_cls = load_object(jobstorage_path)
