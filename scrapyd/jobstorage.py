@@ -7,14 +7,6 @@ from scrapyd.sqlite import SqliteFinishedJobs
 from scrapyd.utils import sqlite_connection_string
 
 
-def job_log_url(job):
-    return f"/logs/{job.project}/{job.spider}/{job.job}.log"
-
-
-def job_items_url(job):
-    return f"/items/{job.project}/{job.spider}/{job.job}.jl"
-
-
 class Job:
     def __init__(self, project, spider, job=None, start_time=None, end_time=None):
         self.project = project

@@ -9,7 +9,7 @@ from twisted.python import filepath
 from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
-from scrapyd.jobstorage import job_items_url, job_log_url
+from scrapyd.utils import job_items_url, job_log_url
 
 
 class PrefixHeaderMixin:

@@ -17,9 +17,8 @@ from twisted.web import error, http, resource
 
 from scrapyd.config import Config
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
-from scrapyd.jobstorage import job_items_url, job_log_url
 from scrapyd.sqlite import JsonSqliteDict
-from scrapyd.utils import native_stringify_dict
+from scrapyd.utils import job_items_url, job_log_url, native_stringify_dict
 
 
 def param(

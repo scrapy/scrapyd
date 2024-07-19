@@ -60,13 +60,14 @@ CLI
 Utils
 ^^^^^
 
-Move functions from ``scrapyd.utils`` into their callers:
+-  Move functions from ``scrapyd.utils`` into their callers:
 
--  ``sorted_versions`` to ``scrapyd.eggstorage``
--  ``get_crawl_args`` to ``scrapyd.launcher``
--  ``JsonResource``, ``get_spider_list`` and ``UtilsCache`` to ``scrapyd.webservice``
+  -  ``sorted_versions`` to ``scrapyd.eggstorage``
+  -  ``get_crawl_args`` to ``scrapyd.launcher``
+  -  ``JsonResource``, ``get_spider_list`` and ``UtilsCache`` to ``scrapyd.webservice``
 
-Move ``activate_egg`` from ``scrapyd.eggutils`` to ``scrapyd.runner``
+-  Move ``activate_egg`` from ``scrapyd.eggutils`` to its caller, ``scrapyd.runner``.
+-  Move ``job_items_url`` and ``job_log_url`` from ``scrapyd.jobstorage`` to ``scrapyd.utils``. :ref:`jobstorage` is not responsible for URLs.
 
 Fixed
 ~~~~~

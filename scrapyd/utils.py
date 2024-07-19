@@ -4,6 +4,14 @@ from urllib.parse import urlsplit
 from scrapy.utils.misc import load_object
 
 
+def job_log_url(job):
+    return f"/logs/{job.project}/{job.spider}/{job.job}.log"
+
+
+def job_items_url(job):
+    return f"/items/{job.project}/{job.spider}/{job.job}.jl"
+
+
 def get_spider_queues(config):
     """Return a dict of Spider Queues keyed by project name"""
     spiderqueue_path = config.get("spiderqueue", "scrapyd.spiderqueue.SqliteSpiderQueue")
