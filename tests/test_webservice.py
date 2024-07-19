@@ -216,13 +216,13 @@ def test_delete_version(txrequest, site_with_egg):
     endpoint = b"delversion.json"
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
 
-    storage = site_with_egg.app.getComponent(IEggStorage)
-    version, egg = storage.get("quotesbot")
+    eggstorage = site_with_egg.app.getComponent(IEggStorage)
+    version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
     content = site_with_egg.children[endpoint].render_POST(txrequest)
-    no_version, no_egg = storage.get("quotesbot")
+    no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
 
@@ -260,13 +260,13 @@ def test_delete_project(txrequest, site_with_egg):
         b"project": [b"quotesbot"],
     }
 
-    storage = site_with_egg.app.getComponent(IEggStorage)
-    version, egg = storage.get("quotesbot")
+    eggstorage = site_with_egg.app.getComponent(IEggStorage)
+    version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
     content = site_with_egg.children[endpoint].render_POST(txrequest)
-    no_version, no_egg = storage.get("quotesbot")
+    no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
 
@@ -294,13 +294,13 @@ def test_addversion(txrequest, site_no_egg):
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
     txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
-    storage = site_no_egg.app.getComponent(IEggStorage)
-    version, egg = storage.get("quotesbot")
+    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
     content = site_no_egg.children[endpoint].render_POST(txrequest)
-    no_version, no_egg = storage.get("quotesbot")
+    no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
 
@@ -377,8 +377,8 @@ def test_project_directory_traversal(txrequest, site_no_egg, endpoint, attach_eg
 
     assert str(exc.value) == "../p"
 
-    storage = site_no_egg.app.getComponent(IEggStorage)
-    version, egg = storage.get("quotesbot")
+    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
@@ -406,8 +406,8 @@ def test_project_directory_traversal_runner(txrequest, site_no_egg, endpoint, at
 
     assert str(exc.value) == "../p"
 
-    storage = site_no_egg.app.getComponent(IEggStorage)
-    version, egg = storage.get("quotesbot")
+    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
