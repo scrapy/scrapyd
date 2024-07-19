@@ -57,8 +57,8 @@ CLI
 - Remove all ``twistd`` subcommands (FTP servers, etc.). Run ``twistd``, if needed.
 - Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
-Utils
-^^^^^
+Library
+^^^^^^^
 
 -  Move functions from ``scrapyd.utils`` into their callers:
 
@@ -68,6 +68,7 @@ Utils
 
 -  Move ``activate_egg`` from ``scrapyd.eggutils`` to its caller, ``scrapyd.runner``.
 -  Move ``job_items_url`` and ``job_log_url`` from ``scrapyd.jobstorage`` to ``scrapyd.utils``. :ref:`jobstorage` is not responsible for URLs.
+-  Change ``scrapyd.app.create_wrapped_resource`` to ``scrapyd.basicauth.wrap_resource``.
 
 Fixed
 ~~~~~
