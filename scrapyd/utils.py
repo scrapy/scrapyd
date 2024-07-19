@@ -5,7 +5,6 @@ from subprocess import PIPE, Popen
 from typing import ClassVar
 from urllib.parse import urlsplit
 
-from packaging.version import InvalidVersion, Version
 from scrapy.utils.misc import load_object
 from twisted.web import resource
 
@@ -174,10 +173,3 @@ def _to_native_str(text, encoding="utf-8", errors="strict"):
     if isinstance(text, str):
         return text
     return text.decode(encoding, errors)
-
-
-def sorted_versions(versions):
-    try:
-        return sorted(versions, key=Version)
-    except InvalidVersion:
-        return sorted(versions)

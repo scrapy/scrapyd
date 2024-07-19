@@ -8,9 +8,21 @@ from zope.interface.verify import verifyObject
 
 from scrapyd.app import application
 from scrapyd.config import Config
-from scrapyd.eggstorage import FilesystemEggStorage
+from scrapyd.eggstorage import FilesystemEggStorage, sorted_versions
 from scrapyd.exceptions import DirectoryTraversalError
 from scrapyd.interfaces import IEggStorage
+
+
+@pytest.mark.parametrize(
+    ("versions", "expected"),
+    [
+        (["zzz", "b", "ddd", "a", "x"], ["a", "b", "ddd", "x", "zzz"]),
+        (["10", "1", "9"], ["1", "9", "10"]),
+        (["2.11", "2.01", "2.9"], ["2.01", "2.9", "2.11"]),
+    ],
+)
+def test_sorted_versions(versions, expected):
+    assert sorted_versions(versions) == expected
 
 
 @implementer(IEggStorage)
