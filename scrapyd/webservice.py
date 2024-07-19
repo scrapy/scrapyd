@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import json
 import sys
 import traceback
 import uuid
@@ -9,11 +10,11 @@ from copy import copy
 from io import BytesIO
 
 from twisted.python import log
-from twisted.web import error, http
+from twisted.web import error, http, resource
 
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError
 from scrapyd.jobstorage import job_items_url, job_log_url
-from scrapyd.utils import JsonResource, UtilsCache, get_spider_list, native_stringify_dict
+from scrapyd.utils import UtilsCache, get_spider_list, native_stringify_dict
 
 
 def param(
@@ -50,6 +51,23 @@ def param(
         return wrapper
 
     return decorator
+
+
+class JsonResource(resource.Resource):
+    json_encoder = json.JSONEncoder()
+
+    def render(self, txrequest):
+        r = resource.Resource.render(self, txrequest)
+        return self.encode_object(r, txrequest)
+
+    def encode_object(self, obj, txrequest):
+        r = "" if obj is None else self.json_encoder.encode(obj) + "\n"
+        txrequest.setHeader("Content-Type", "application/json")
+        txrequest.setHeader("Access-Control-Allow-Origin", "*")
+        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
+        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
+        txrequest.setHeader("Content-Length", str(len(r)))
+        return r
 
 
 class WsResource(JsonResource):

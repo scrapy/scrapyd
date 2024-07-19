@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from subprocess import PIPE, Popen
@@ -6,28 +5,10 @@ from typing import ClassVar
 from urllib.parse import urlsplit
 
 from scrapy.utils.misc import load_object
-from twisted.web import resource
 
 from scrapyd.config import Config
 from scrapyd.exceptions import RunnerError
 from scrapyd.sqlite import JsonSqliteDict
-
-
-class JsonResource(resource.Resource):
-    json_encoder = json.JSONEncoder()
-
-    def render(self, txrequest):
-        r = resource.Resource.render(self, txrequest)
-        return self.encode_object(r, txrequest)
-
-    def encode_object(self, obj, txrequest):
-        r = "" if obj is None else self.json_encoder.encode(obj) + "\n"
-        txrequest.setHeader("Content-Type", "application/json")
-        txrequest.setHeader("Access-Control-Allow-Origin", "*")
-        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
-        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
-        txrequest.setHeader("Content-Length", str(len(r)))
-        return r
 
 
 class UtilsCache:
