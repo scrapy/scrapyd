@@ -5,8 +5,8 @@ Release notes
 
 .. changelog
 
-Unreleased
-----------
+1.5.0b1 (2024-07-19)
+--------------------
 
 Added
 ~~~~~
