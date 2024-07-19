@@ -13,7 +13,7 @@ from scrapyd import get_application
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
-from scrapyd.utils import UtilsCache, get_spider_list
+from scrapyd.webservice import UtilsCache, get_spider_list
 
 
 def fake_list_jobs(*args, **kwargs):
@@ -106,7 +106,7 @@ def test_failed_spider_list(app):
     with pytest.raises(RunnerError) as exc:
         get_spider_list("mybot3", pythonpath=get_pythonpath_scrapyd())
 
-    assert re.search(r"Exception: This should break the `scrapy list` command$", str(exc.value))
+    assert re.search(f"Exception: This should break the `scrapy list` command{os.linesep}$", str(exc.value))
 
 
 def test_list_spiders(txrequest, site_no_egg):
