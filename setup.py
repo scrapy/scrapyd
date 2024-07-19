@@ -35,6 +35,7 @@ setup(
             "coveralls",
             "pytest",
             "pytest-cov",
+            "pytest-twisted",
             "requests",
         ],
         "docs": [
