@@ -406,6 +406,10 @@ Finished jobs are accessed via the :ref:`webui` and :ref:`listjobs.json` webserv
 
 Default
   ``100``
+Options
+  Any non-negative integer, including:
+
+  -  ``0`` to keep all finished jobs
 
 Directories
 -----------

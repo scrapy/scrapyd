@@ -99,8 +99,8 @@ Fixed
 Added
 ~~~~~
 
-- Add a :ref:`spiderqueue` configuration option. Since this was not previously configurable, the changes below are considered backwards-compatible.
-- Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` configuration option.
+- Add a :ref:`spiderqueue` setting. Since this was not previously configurable, the changes below are considered backwards-compatible.
+- Add support for the X-Forwarded-Prefix HTTP header. Rename this header using the :ref:`prefix_header` setting.
 
 Changed
 ~~~~~~~
@@ -165,7 +165,7 @@ Added
 - Make optional the ``project`` argument to the :ref:`listjobs.json` webservice, to easily query for all jobs.
 - Improve HTTP headers across webservices.
 - Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
-- Add configuration options for job storage class and egg storage class.
+- Add :ref:`jobstorage` and :ref:`eggstorage` settings.
 - Improve test coverage.
 - Python 3.7, 3.8, 3.9, 3.10 support.
 
@@ -215,7 +215,7 @@ Added
 
 - Website
 
-  - Add a :ref:`webroot` configuration option for website root class.
+  - Add a :ref:`webroot` setting for website root class.
   - Add start and finish times to jobs page.
 
 - Make console script executable.
@@ -252,7 +252,7 @@ Fixed
 Added
 ~~~~~
 
-- Document and include missing configuration options in ``default_scrapyd.conf``.
+- Document and include missing settings in ``default_scrapyd.conf``.
 - Document the spider queue's ``priority`` argument.
 - Enable some missing tests for the SQLite queues.
 
@@ -282,7 +282,7 @@ Changed
 ~~~~~~~
 
 - Move scrapyd-deploy command to `scrapyd-client <https://pypi.org/project/scrapyd-client/>`__ package. (:commit:`c1358dc`, :commit:`c9d66ca`, :commit:`191353e`)
-- Allow remote :ref:`items_dir` configuration. (:commit:`e261591`, :commit:`35a21db`)
+- Allow the :ref:`items_dir` setting to be a URL. (:commit:`e261591`, :commit:`35a21db`)
 - Look for a ``~/.scrapyd.conf`` file in the user's home directory. (:commit:`1fce99b`)
 
 Fixed

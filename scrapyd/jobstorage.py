@@ -55,11 +55,11 @@ class SqliteJobStorage:
         self.jstorage.clear(self.finished_to_keep)
 
     def list(self):
-        return list(self.__iter__())
+        return list(self)
 
     def __len__(self):
         return len(self.jstorage)
 
     def __iter__(self):
-        for j in self.jstorage:
-            yield Job(project=j[0], spider=j[1], job=j[2], start_time=j[3], end_time=j[4])
+        for project, spider, job, start_time, end_time in self.jstorage:
+            yield Job(project=project, spider=spider, job=job, start_time=start_time, end_time=end_time)
