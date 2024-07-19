@@ -14,14 +14,13 @@ from tests import root_add_version
 
 @pytest.fixture()
 def txrequest():
-    tcp_channel = DummyChannel.TCP()
     http_channel = http.HTTPChannel()
-    http_channel.makeConnection(tcp_channel)
+    http_channel.makeConnection(DummyChannel.TCP())
     return Request(http_channel)
 
 
-@pytest.fixture(params=[None, ("scrapyd", "items_dir", "items")], ids=["default", "default_with_local_items"])
-def site_no_egg(request):
+@pytest.fixture(params=[None, ("scrapyd", "items_dir", "items")], ids=["default", "items_dir"])
+def root(request):
     config = Config()
     if request.param:
         config.cp.set(*request.param)
@@ -32,14 +31,14 @@ def site_no_egg(request):
 
     for setting in ("dbs_dir", "eggs_dir"):
         directory = os.path.realpath(config.get(setting))
-        parent = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
+        basedir = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
         # Avoid accidentally deleting directories outside the project.
-        assert os.path.commonprefix((directory, parent)) == parent
+        assert os.path.commonprefix((directory, basedir)) == basedir
         shutil.rmtree(directory)
 
 
 @pytest.fixture()
-def site_with_egg(site_no_egg):
-    root_add_version(site_no_egg, "quotesbot", "0.1", "quotesbot")
-    site_no_egg.update_projects()
-    return site_no_egg
+def root_with_egg(root):
+    root_add_version(root, "quotesbot", "0.1", "quotesbot")
+    root.update_projects()
+    return root

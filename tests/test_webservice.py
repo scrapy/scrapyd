@@ -100,49 +100,49 @@ def test_failed_spider_list(app):
     assert re.search(f"Exception: This should break the `scrapy list` command{os.linesep}$", str(exc.value))
 
 
-def test_list_spiders(txrequest, site_no_egg):
-    root_add_version(site_no_egg, "myproject", "r1", "mybot")
-    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
+def test_list_spiders(txrequest, root):
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
 
     txrequest.args = {b"project": [b"myproject"]}
     endpoint = b"listspiders.json"
-    content = site_no_egg.children[endpoint].render_GET(txrequest)
+    content = root.children[endpoint].render_GET(txrequest)
 
     assert content["spiders"] == ["spider1", "spider2", "spider3"]
     assert content["status"] == "ok"
 
 
-def test_list_spiders_nonexistent(txrequest, site_no_egg):
+def test_list_spiders_nonexistent(txrequest, root):
     txrequest.args = {
         b"project": [b"nonexistent"],
     }
     endpoint = b"listspiders.json"
 
     with pytest.raises(error.Error) as exc:
-        site_no_egg.children[endpoint].render_GET(txrequest)
+        root.children[endpoint].render_GET(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"project 'nonexistent' not found"
 
 
-def test_list_spiders_version(txrequest, site_no_egg):
-    root_add_version(site_no_egg, "myproject", "r1", "mybot")
-    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
+def test_list_spiders_version(txrequest, root):
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
 
     txrequest.args = {
         b"project": [b"myproject"],
         b"_version": [b"r1"],
     }
     endpoint = b"listspiders.json"
-    content = site_no_egg.children[endpoint].render_GET(txrequest)
+    content = root.children[endpoint].render_GET(txrequest)
 
     assert content["spiders"] == ["spider1", "spider2"]
     assert content["status"] == "ok"
 
 
-def test_list_spiders_version_nonexistent(txrequest, site_no_egg):
-    root_add_version(site_no_egg, "myproject", "r1", "mybot")
-    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
+def test_list_spiders_version_nonexistent(txrequest, root):
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
 
     txrequest.args = {
         b"project": [b"myproject"],
@@ -151,55 +151,55 @@ def test_list_spiders_version_nonexistent(txrequest, site_no_egg):
     endpoint = b"listspiders.json"
 
     with pytest.raises(error.Error) as exc:
-        site_no_egg.children[endpoint].render_GET(txrequest)
+        root.children[endpoint].render_GET(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"version 'nonexistent' not found"
 
 
-def test_list_versions(txrequest, site_with_egg):
+def test_list_versions(txrequest, root_with_egg):
     txrequest.args = {
         b"project": [b"quotesbot"],
     }
     endpoint = b"listversions.json"
-    content = site_with_egg.children[endpoint].render_GET(txrequest)
+    content = root_with_egg.children[endpoint].render_GET(txrequest)
 
     assert content["versions"] == ["0_1"]
     assert content["status"] == "ok"
 
 
-def test_list_versions_nonexistent(txrequest, site_no_egg):
+def test_list_versions_nonexistent(txrequest, root):
     txrequest.args = {
         b"project": [b"quotesbot"],
     }
     endpoint = b"listversions.json"
-    content = site_no_egg.children[endpoint].render_GET(txrequest)
+    content = root.children[endpoint].render_GET(txrequest)
 
     assert content["versions"] == []
     assert content["status"] == "ok"
 
 
-def test_list_projects(txrequest, site_with_egg):
+def test_list_projects(txrequest, root_with_egg):
     txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
     endpoint = b"listprojects.json"
-    content = site_with_egg.children[endpoint].render_GET(txrequest)
+    content = root_with_egg.children[endpoint].render_GET(txrequest)
 
     assert content["projects"] == ["quotesbot"]
 
 
-def test_list_jobs(txrequest, site_with_egg):
+def test_list_jobs(txrequest, root_with_egg):
     txrequest.args = {}
     endpoint = b"listjobs.json"
-    content = site_with_egg.children[endpoint].render_GET(txrequest)
+    content = root_with_egg.children[endpoint].render_GET(txrequest)
 
     assert set(content) == {"node_name", "status", "pending", "running", "finished"}
 
 
 @mock.patch("scrapyd.jobstorage.MemoryJobStorage.__iter__", new=fake_list_jobs)
-def test_list_jobs_finished(txrequest, site_with_egg):
+def test_list_jobs_finished(txrequest, root_with_egg):
     txrequest.args = {}
     endpoint = b"listjobs.json"
-    content = site_with_egg.children[endpoint].render_GET(txrequest)
+    content = root_with_egg.children[endpoint].render_GET(txrequest)
 
     assert set(content["finished"][0]) == {
         "project",
@@ -212,16 +212,16 @@ def test_list_jobs_finished(txrequest, site_with_egg):
     }
 
 
-def test_delete_version(txrequest, site_with_egg):
+def test_delete_version(txrequest, root_with_egg):
     endpoint = b"delversion.json"
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
 
-    eggstorage = site_with_egg.app.getComponent(IEggStorage)
+    eggstorage = root_with_egg.app.getComponent(IEggStorage)
     version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
-    content = site_with_egg.children[endpoint].render_POST(txrequest)
+    content = root_with_egg.children[endpoint].render_POST(txrequest)
     no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
@@ -232,40 +232,40 @@ def test_delete_version(txrequest, site_with_egg):
     assert no_version is None
 
 
-def test_delete_version_nonexistent_project(txrequest, site_with_egg):
+def test_delete_version_nonexistent_project(txrequest, root_with_egg):
     endpoint = b"delversion.json"
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"nonexistent"]}
 
     with pytest.raises(error.Error) as exc:
-        site_with_egg.children[endpoint].render_POST(txrequest)
+        root_with_egg.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"version 'nonexistent' not found"
 
 
-def test_delete_version_nonexistent_version(txrequest, site_no_egg):
+def test_delete_version_nonexistent_version(txrequest, root):
     endpoint = b"delversion.json"
     txrequest.args = {b"project": [b"nonexistent"], b"version": [b"0.1"]}
 
     with pytest.raises(error.Error) as exc:
-        site_no_egg.children[endpoint].render_POST(txrequest)
+        root.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"version '0.1' not found"
 
 
-def test_delete_project(txrequest, site_with_egg):
+def test_delete_project(txrequest, root_with_egg):
     endpoint = b"delproject.json"
     txrequest.args = {
         b"project": [b"quotesbot"],
     }
 
-    eggstorage = site_with_egg.app.getComponent(IEggStorage)
+    eggstorage = root_with_egg.app.getComponent(IEggStorage)
     version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
-    content = site_with_egg.children[endpoint].render_POST(txrequest)
+    content = root_with_egg.children[endpoint].render_POST(txrequest)
     no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
@@ -276,30 +276,30 @@ def test_delete_project(txrequest, site_with_egg):
     assert no_version is None
 
 
-def test_delete_project_nonexistent(txrequest, site_no_egg):
+def test_delete_project_nonexistent(txrequest, root):
     endpoint = b"delproject.json"
     txrequest.args = {
         b"project": [b"nonexistent"],
     }
 
     with pytest.raises(error.Error) as exc:
-        site_no_egg.children[endpoint].render_POST(txrequest)
+        root.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"project 'nonexistent' not found"
 
 
-def test_addversion(txrequest, site_no_egg):
+def test_addversion(txrequest, root):
     endpoint = b"addversion.json"
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
     txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
-    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    eggstorage = root.app.getComponent(IEggStorage)
     version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
 
-    content = site_no_egg.children[endpoint].render_POST(txrequest)
+    content = root.children[endpoint].render_POST(txrequest)
     no_version, no_egg = eggstorage.get("quotesbot")
     if no_egg:
         no_egg.close()
@@ -310,14 +310,14 @@ def test_addversion(txrequest, site_no_egg):
     assert no_version == "0_1"
 
 
-def test_schedule(txrequest, site_with_egg):
+def test_schedule(txrequest, root_with_egg):
     endpoint = b"schedule.json"
     txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
 
-    assert site_with_egg.scheduler.queues["quotesbot"].list() == []
+    assert root_with_egg.scheduler.queues["quotesbot"].list() == []
 
-    content = site_with_egg.children[endpoint].render_POST(txrequest)
-    jobs = site_with_egg.scheduler.queues["quotesbot"].list()
+    content = root_with_egg.children[endpoint].render_POST(txrequest)
+    jobs = root_with_egg.scheduler.queues["quotesbot"].list()
     jobs[0].pop("_job")
 
     assert len(jobs) == 1
@@ -326,34 +326,34 @@ def test_schedule(txrequest, site_with_egg):
     assert "jobid" in content
 
 
-def test_schedule_nonexistent_project(txrequest, site_no_egg):
+def test_schedule_nonexistent_project(txrequest, root):
     endpoint = b"schedule.json"
     txrequest.args = {b"project": [b"nonexistent"], b"spider": [b"toscrape-css"]}
 
     with pytest.raises(error.Error) as exc:
-        site_no_egg.children[endpoint].render_POST(txrequest)
+        root.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"project 'nonexistent' not found"
 
 
-def test_schedule_nonexistent_version(txrequest, site_with_egg):
+def test_schedule_nonexistent_version(txrequest, root_with_egg):
     endpoint = b"schedule.json"
     txrequest.args = {b"project": [b"quotesbot"], b"_version": [b"nonexistent"], b"spider": [b"toscrape-css"]}
 
     with pytest.raises(error.Error) as exc:
-        site_with_egg.children[endpoint].render_POST(txrequest)
+        root_with_egg.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"version 'nonexistent' not found"
 
 
-def test_schedule_nonexistent_spider(txrequest, site_with_egg):
+def test_schedule_nonexistent_spider(txrequest, root_with_egg):
     endpoint = b"schedule.json"
     txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"nonexistent"]}
 
     with pytest.raises(error.Error) as exc:
-        site_with_egg.children[endpoint].render_POST(txrequest)
+        root_with_egg.children[endpoint].render_POST(txrequest)
 
     assert exc.value.status == b"200"
     assert exc.value.message == b"spider 'nonexistent' not found"
@@ -368,7 +368,7 @@ def test_schedule_nonexistent_spider(txrequest, site_with_egg):
         (b"delversion.json", False, "render_POST"),
     ],
 )
-def test_project_directory_traversal(txrequest, site_no_egg, endpoint, attach_egg, method):
+def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, method):
     txrequest.args = {
         b"project": [b"../p"],
         b"version": [b"0.1"],
@@ -378,11 +378,11 @@ def test_project_directory_traversal(txrequest, site_no_egg, endpoint, attach_eg
         txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
-        getattr(site_no_egg.children[endpoint], method)(txrequest)
+        getattr(root.children[endpoint], method)(txrequest)
 
     assert str(exc.value) == "../p"
 
-    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    eggstorage = root.app.getComponent(IEggStorage)
     version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
@@ -397,7 +397,7 @@ def test_project_directory_traversal(txrequest, site_no_egg, endpoint, attach_eg
         (b"listspiders.json", False, "render_GET"),
     ],
 )
-def test_project_directory_traversal_runner(txrequest, site_no_egg, endpoint, attach_egg, method):
+def test_project_directory_traversal_runner(txrequest, root, endpoint, attach_egg, method):
     txrequest.args = {
         b"project": [b"../p"],
         b"spider": [b"s"],
@@ -407,11 +407,11 @@ def test_project_directory_traversal_runner(txrequest, site_no_egg, endpoint, at
         txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
-        getattr(site_no_egg.children[endpoint], method)(txrequest)
+        getattr(root.children[endpoint], method)(txrequest)
 
     assert str(exc.value) == "../p"
 
-    eggstorage = site_no_egg.app.getComponent(IEggStorage)
+    eggstorage = root.app.getComponent(IEggStorage)
     version, egg = eggstorage.get("quotesbot")
     if egg:
         egg.close()
