@@ -18,13 +18,12 @@ class QueuePoller:
             # If the "waiting" backlog is empty (that is, if the maximum number of Scrapy processes are running):
             if not self.dq.waiting:
                 return
-            count = yield maybeDeferred(queue.count)
-            if count:
-                message = yield maybeDeferred(queue.pop)
+            if (yield maybeDeferred(queue.count)):
+                message = (yield maybeDeferred(queue.pop)).copy()
                 # The message can be None if, for example, two Scrapyd instances share a spider queue database.
                 if message is not None:
                     # Pop a dummy item from the "waiting" backlog. and fire the message's callbacks.
-                    return self.dq.put(self._message(message, project))
+                    return self.dq.put(dict(message, _project=project, _spider=message.pop("name")))
 
     def next(self):
         """
@@ -34,9 +33,3 @@ class QueuePoller:
 
     def update_projects(self):
         self.queues = get_spider_queues(self.config)
-
-    def _message(self, message, project):
-        new = message.copy()
-        new["_project"] = project
-        new["_spider"] = new.pop("name")
-        return new
