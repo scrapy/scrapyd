@@ -314,9 +314,14 @@ def test_schedule(txrequest, site_with_egg):
     endpoint = b"schedule.json"
     txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
 
-    content = site_with_egg.children[endpoint].render_POST(txrequest)
+    assert site_with_egg.scheduler.queues["quotesbot"].list() == []
 
-    assert site_with_egg.scheduler.calls == [["quotesbot", "toscrape-css"]]
+    content = site_with_egg.children[endpoint].render_POST(txrequest)
+    jobs = site_with_egg.scheduler.queues["quotesbot"].list()
+    jobs[0].pop("_job")
+
+    assert len(jobs) == 1
+    assert jobs[0] == {"name": "toscrape-css", "settings": {}, "version": None}
     assert content["status"] == "ok"
     assert "jobid" in content
 
