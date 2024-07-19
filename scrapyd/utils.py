@@ -1,60 +1,7 @@
-import json
 import os
-import sys
-from subprocess import PIPE, Popen
-from typing import ClassVar
 from urllib.parse import urlsplit
 
-from packaging.version import InvalidVersion, Version
 from scrapy.utils.misc import load_object
-from twisted.web import resource
-
-from scrapyd.config import Config
-from scrapyd.exceptions import RunnerError
-from scrapyd.sqlite import JsonSqliteDict
-
-
-class JsonResource(resource.Resource):
-    json_encoder = json.JSONEncoder()
-
-    def render(self, txrequest):
-        r = resource.Resource.render(self, txrequest)
-        return self.encode_object(r, txrequest)
-
-    def encode_object(self, obj, txrequest):
-        r = "" if obj is None else self.json_encoder.encode(obj) + "\n"
-        txrequest.setHeader("Content-Type", "application/json")
-        txrequest.setHeader("Access-Control-Allow-Origin", "*")
-        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
-        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
-        txrequest.setHeader("Content-Length", str(len(r)))
-        return r
-
-
-class UtilsCache:
-    # array of project name that need to be invalided
-    invalid_cached_projects: ClassVar = []
-
-    def __init__(self):
-        self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
-
-    # Invalid the spider's list's cache of a given project (by name)
-    @staticmethod
-    def invalid_cache(project):
-        UtilsCache.invalid_cached_projects.append(project)
-
-    def __getitem__(self, key):
-        for p in UtilsCache.invalid_cached_projects:
-            if p in self.cache_manager:
-                del self.cache_manager[p]
-        UtilsCache.invalid_cached_projects[:] = []
-        return self.cache_manager[key]
-
-    def __setitem__(self, key, value):
-        self.cache_manager[key] = value
-
-    def __repr__(self):
-        return f"UtilsCache(cache_manager={self.cache_manager!r})"
 
 
 def get_spider_queues(config):
@@ -96,88 +43,20 @@ def native_stringify_dict(dct_or_tuples, encoding="utf-8", *, keys_only=True):
     """
     d = {}
     for k, v in dct_or_tuples.items():
-        key = _to_native_str(k, encoding)
+        key = to_native_str(k, encoding)
         if keys_only:
             value = v
         elif isinstance(v, dict):
             value = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
         elif isinstance(v, list):
-            value = [_to_native_str(e, encoding) for e in v]
+            value = [to_native_str(e, encoding) for e in v]
         else:
-            value = _to_native_str(v, encoding)
+            value = to_native_str(v, encoding)
         d[key] = value
     return d
 
 
-def get_crawl_args(message):
-    """Return the command-line arguments to use for the scrapy crawl process
-    that will be started for this message
-    """
-    msg = message.copy()
-    args = [_to_native_str(msg["_spider"])]
-    del msg["_project"], msg["_spider"]
-    settings = msg.pop("settings", {})
-    for k, v in native_stringify_dict(msg, keys_only=False).items():
-        args += ["-a"]
-        args += [f"{k}={v}"]
-    for k, v in native_stringify_dict(settings, keys_only=False).items():
-        args += ["-s"]
-        args += [f"{k}={v}"]
-    return args
-
-
-def get_spider_list(project, runner=None, pythonpath=None, version=None):
-    """Return the spider list from the given project, using the given runner"""
-
-    # UtilsCache uses JsonSqliteDict, which encodes the project's value as JSON, but JSON allows only string keys,
-    # so the stored dict will have a "null" key, instead of a None key.
-    if version is None:
-        version = ""
-
-    if "cache" not in get_spider_list.__dict__:
-        get_spider_list.cache = UtilsCache()
-    try:
-        return get_spider_list.cache[project][version]
-    except KeyError:
-        pass
-
-    if runner is None:
-        runner = Config().get("runner")
-
-    env = os.environ.copy()
-    env["PYTHONIOENCODING"] = "UTF-8"
-    env["SCRAPY_PROJECT"] = project
-    if pythonpath:
-        env["PYTHONPATH"] = pythonpath
-    if version:
-        env["SCRAPYD_EGG_VERSION"] = version
-    pargs = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
-    proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
-    out, err = proc.communicate()
-    if proc.returncode:
-        msg = err or out or ""
-        msg = msg.decode("utf8")
-        raise RunnerError(msg)
-
-    spiders = out.decode("utf-8").splitlines()
-    try:
-        project_cache = get_spider_list.cache[project]
-        project_cache[version] = spiders
-    except KeyError:
-        project_cache = {version: spiders}
-    get_spider_list.cache[project] = project_cache
-
-    return spiders
-
-
-def _to_native_str(text, encoding="utf-8", errors="strict"):
+def to_native_str(text, encoding="utf-8", errors="strict"):
     if isinstance(text, str):
         return text
     return text.decode(encoding, errors)
-
-
-def sorted_versions(versions):
-    try:
-        return sorted(versions, key=Version)
-    except InvalidVersion:
-        return sorted(versions)

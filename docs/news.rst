@@ -57,6 +57,17 @@ CLI
 - Remove all ``twistd`` subcommands (FTP servers, etc.). Run ``twistd``, if needed.
 - Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
+Utils
+^^^^^
+
+Move functions from ``scrapyd.utils`` into their callers:
+
+-  ``sorted_versions`` to ``scrapyd.eggstorage``
+-  ``get_crawl_args`` to ``scrapyd.launcher``
+-  ``JsonResource``, ``get_spider_list`` and ``UtilsCache`` to ``scrapyd.webservice``
+
+Move ``activate_egg`` from ``scrapyd.eggutils`` to ``scrapyd.runner``
+
 Fixed
 ~~~~~
 

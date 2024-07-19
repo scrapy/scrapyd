@@ -3,11 +3,18 @@ import re
 import shutil
 from glob import escape, glob
 
+from packaging.version import InvalidVersion, Version
 from zope.interface import implementer
 
 from scrapyd.exceptions import DirectoryTraversalError, EggNotFoundError, ProjectNotFoundError
 from scrapyd.interfaces import IEggStorage
-from scrapyd.utils import sorted_versions
+
+
+def sorted_versions(versions):
+    try:
+        return sorted(versions, key=Version)
+    except InvalidVersion:
+        return sorted(versions)
 
 
 @implementer(IEggStorage)
