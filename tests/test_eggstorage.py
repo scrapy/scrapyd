@@ -13,7 +13,7 @@ from scrapyd.interfaces import IEggStorage
 
 
 @implementer(IEggStorage)
-class SomeFakeEggStorage:
+class FakeEggStorage:
     def __init__(self, config):
         self.config = config
 
@@ -52,12 +52,12 @@ def test_sorted_versions(versions, expected):
 
 def test_egg_config_application():
     config = Config()
-    eggstore = "tests.test_eggstorage.SomeFakeEggStorage"
+    eggstore = "tests.test_eggstorage.FakeEggStorage"
     config.cp.set("scrapyd", "eggstorage", eggstore)
     app = application(config)
     app_eggstorage = app.getComponent(IEggStorage)
 
-    assert isinstance(app_eggstorage, SomeFakeEggStorage)
+    assert isinstance(app_eggstorage, FakeEggStorage)
     assert app_eggstorage.list_projects() == ["hello_world"]
 
 
