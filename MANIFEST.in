@@ -9,5 +9,6 @@ recursive-include scrapyd *.py
 recursive-include tests *.egg
 recursive-include tests *.py
 recursive-include integration_tests *.py
+exclude .git-blame-ignore-revs
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yaml
