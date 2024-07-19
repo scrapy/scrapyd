@@ -1,38 +1,15 @@
 import os
-import sys
 
-from scrapy.utils.misc import load_object
 from twisted.application.internet import TCPServer, TimerService, UNIXServer
 from twisted.application.service import Application
-from twisted.cred.portal import Portal
 from twisted.python import log
 from twisted.web import server
-from twisted.web.guard import BasicCredentialFactory, HTTPAuthSessionWrapper
 
-from scrapyd.basicauth import PublicHTMLRealm, StringCredentialsChecker
+from scrapyd.basicauth import wrap_resource
 from scrapyd.environ import Environment
 from scrapyd.interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
 from scrapyd.scheduler import SpiderScheduler
-
-
-def create_wrapped_resource(webroot_cls, config, app):
-    username = os.getenv("SCRAPYD_USERNAME") or config.get("username", "")
-    password = os.getenv("SCRAPYD_PASSWORD") or config.get("password", "")
-    if ":" in username:
-        sys.exit(
-            "The `username` option contains illegal character ':', "
-            "check and update the configuration file of Scrapyd"
-        )
-
-    resource = webroot_cls(config, app)
-    if username and password:
-        log.msg("Basic authentication enabled")
-        portal = Portal(PublicHTMLRealm(resource), [StringCredentialsChecker(username, password)])
-        credential_factory = BasicCredentialFactory("Auth")
-        return HTTPAuthSessionWrapper(portal, [credential_factory])
-
-    log.msg("Basic authentication disabled as either `username` or `password` is unset")
-    return resource
+from scrapyd.utils import initialize_component
 
 
 def application(config):
@@ -48,30 +25,21 @@ def application(config):
     environment = Environment(config)
     app.setComponent(IEnvironment, environment)
 
-    poller_path = config.get("poller", "scrapyd.poller.QueuePoller")
-    poller_cls = load_object(poller_path)
-    poller = poller_cls(config)
+    poller = initialize_component(config, "poller", "scrapyd.poller.QueuePoller")
     app.setComponent(IPoller, poller)
 
-    jobstorage_path = config.get("jobstorage", "scrapyd.jobstorage.MemoryJobStorage")
-    jobstorage_cls = load_object(jobstorage_path)
-    jobstorage = jobstorage_cls(config)
+    jobstorage = initialize_component(config, "jobstorage", "scrapyd.jobstorage.MemoryJobStorage")
     app.setComponent(IJobStorage, jobstorage)
 
-    eggstorage_path = config.get("eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
-    eggstorage_cls = load_object(eggstorage_path)
-    eggstorage = eggstorage_cls(config)
+    eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
     app.setComponent(IEggStorage, eggstorage)
 
-    launcher_path = config.get("launcher", "scrapyd.launcher.Launcher")
-    launcher_cls = load_object(launcher_path)
-    launcher = launcher_cls(config, app)
+    launcher = initialize_component(config, "launcher", "scrapyd.launcher.Launcher", app)
 
     timer = TimerService(poll_interval, poller.poll)
 
-    webroot_path = config.get("webroot", "scrapyd.website.Root")
-    webroot_cls = load_object(webroot_path)
-    resource = server.Site(create_wrapped_resource(webroot_cls, config, app))
+    webroot = initialize_component(config, "webroot", "scrapyd.website.Root", app)
+    resource = server.Site(wrap_resource(webroot, config))
 
     if bind_address and http_port:
         webservice = TCPServer(http_port, resource, interface=bind_address)

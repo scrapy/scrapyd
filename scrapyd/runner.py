@@ -4,10 +4,10 @@ import tempfile
 from contextlib import contextmanager
 
 import pkg_resources
-from scrapy.utils.misc import load_object
 
 from scrapyd import Config
 from scrapyd.exceptions import BadEggError
+from scrapyd.utils import initialize_component
 
 
 def activate_egg(eggpath):
@@ -30,9 +30,7 @@ def activate_egg(eggpath):
 @contextmanager
 def project_environment(project):
     config = Config()
-    eggstorage_path = config.get("eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
-    eggstorage_cls = load_object(eggstorage_path)
-    eggstorage = eggstorage_cls(config)
+    eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
 
     eggversion = os.environ.get("SCRAPYD_EGG_VERSION", None)
     version, egg = eggstorage.get(project, eggversion)

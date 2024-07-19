@@ -4,6 +4,12 @@ from urllib.parse import urlsplit
 from scrapy.utils.misc import load_object
 
 
+def initialize_component(config, setting, default, *args):
+    path = config.get(setting, default)
+    cls = load_object(path)
+    return cls(config, *args)
+
+
 def job_log_url(job):
     return f"/logs/{job.project}/{job.spider}/{job.job}.log"
 
@@ -35,10 +41,7 @@ def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
-    eggstorage_path = config.get("eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
-    eggstorage_cls = load_object(eggstorage_path)
-    eggstorage = eggstorage_cls(config)
-
+    eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
     projects = eggstorage.list_projects()
     projects.extend(x[0] for x in config.items("settings", default=[]))
     return projects
