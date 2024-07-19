@@ -194,9 +194,9 @@ class Home(PrefixHeaderMixin, resource.Resource):
 <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
 </ul>
 """
-        if self.root.scheduler.list_projects():
+        if projects := self.root.scheduler.list_projects():
             s += "<p>Available projects:<p>\n<ul>\n"
-            for project_name in sorted(self.root.scheduler.list_projects()):
+            for project_name in sorted(projects):
                 s += f"<li>{escape(project_name)}</li>\n"
             s += "</ul>\n"
         else:
