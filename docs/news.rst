@@ -1,5 +1,3 @@
-.. _news:
-
 Release notes
 =============
 

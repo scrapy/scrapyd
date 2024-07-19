@@ -62,7 +62,7 @@ To schedule a spider run:
    $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=spider2
    {"status": "ok", "jobid": "26d1b1a6d6f111e0be5c001e648c57f8"}
 
-For more resources see: :ref:`api` for more available resources.
+For more resources see: :doc:`api` for more available resources.
 
 .. _webui:
 

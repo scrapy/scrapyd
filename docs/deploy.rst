@@ -1,5 +1,3 @@
-.. _deploy:
-
 Deploying your project
 ======================
 
