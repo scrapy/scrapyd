@@ -143,9 +143,9 @@ class Root(resource.Resource):
             self.putChild(b"items", File(itemsdir, "text/plain"))
         self.putChild(b"jobs", Jobs(self, self.local_items))
         services = config.items("services", ())
-        for service_name, service_cls_name in services:
-            service_cls = load_object(service_cls_name)
-            self.putChild(service_name.encode("utf-8"), service_cls(self))
+        for service_name, service_path in services:
+            service_cls = load_object(service_path)
+            self.putChild(service_name.encode(), service_cls(self))
 
     def update_projects(self):
         self.poller.update_projects()
@@ -216,7 +216,7 @@ monitoring)</p>
 </html>
 """
         txrequest.setHeader("Content-Type", "text/html; charset=utf-8")
-        s = s.encode("utf8")
+        s = s.encode()
         txrequest.setHeader("Content-Length", str(len(s)))
         return s
 
@@ -360,6 +360,6 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         self.base_path = self.get_base_path(txrequest)
         doc = self.prep_doc()
         txrequest.setHeader("Content-Type", "text/html; charset=utf-8")
-        doc = doc.encode("utf-8")
+        doc = doc.encode()
         txrequest.setHeader("Content-Length", str(len(doc)))
         return doc

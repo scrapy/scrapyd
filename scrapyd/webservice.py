@@ -151,16 +151,16 @@ class WsResource(JsonResource):
 
     def render(self, txrequest):
         try:
-            return JsonResource.render(self, txrequest).encode("utf-8")
+            return JsonResource.render(self, txrequest).encode()
         except Exception as e:  # noqa: BLE001
             if isinstance(e, error.Error):
                 txrequest.setResponseCode(int(e.status))
             if self.root.debug:
-                return traceback.format_exc().encode("utf-8")
+                return traceback.format_exc().encode()
             log.err()
             message = e.message.decode() if isinstance(e, error.Error) else f"{type(e).__name__}: {e}"
             r = {"node_name": self.root.nodename, "status": "error", "message": message}
-            return self.encode_object(r, txrequest).encode("utf-8")
+            return self.encode_object(r, txrequest).encode()
 
     def render_OPTIONS(self, txrequest):
         methods = ["OPTIONS", "HEAD"]
