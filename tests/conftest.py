@@ -1,5 +1,4 @@
 import shutil
-from pathlib import Path
 
 import pytest
 from twisted.web import http
@@ -11,6 +10,7 @@ from scrapyd import Config
 from scrapyd.app import application
 from scrapyd.interfaces import IEggStorage, ISpiderScheduler
 from scrapyd.website import Root
+from tests import root_add_version
 
 
 @implementer(ISpiderScheduler)
@@ -30,13 +30,6 @@ class FakeScheduler:
         pass
 
 
-def delete_eggs(storage, project, version, config):
-    if storage.list(project) != []:
-        storage.delete(project, version)
-        eggdir = config.get("eggs_dir")
-        shutil.rmtree(eggdir)
-
-
 @pytest.fixture()
 def txrequest():
     tcp_channel = DummyChannel.TCP()
@@ -46,41 +39,26 @@ def txrequest():
 
 
 @pytest.fixture(params=[None, ("scrapyd", "items_dir", "items")], ids=["default", "default_with_local_items"])
-def fxt_config(request):
-    conf = Config()
+def site_no_egg(request):
+    config = Config()
     if request.param:
-        conf.cp.set(*request.param)
-    return conf
+        config.cp.set(*request.param)
 
-
-def common_app_fixture(request, config):
     app = application(config)
-    project, version = "quotesbot", "0.1"
-    storage = app.getComponent(IEggStorage)
     app.setComponent(ISpiderScheduler, FakeScheduler(config))
 
-    def delete_egg():
-        # There is no egg initially but something can place an egg
-        # e.g. addversion test
-        delete_eggs(storage, project, version, config)
+    yield Root(config, app)
 
-    request.addfinalizer(delete_egg)
-    return Root(config, app), storage
-
-
-@pytest.fixture()
-def site_no_egg(request, fxt_config):
-    root, storage = common_app_fixture(request, fxt_config)
-    return root
+    # There is no egg initially but something can place an egg
+    # e.g. addversion test
+    eggstorage = app.getComponent(IEggStorage)
+    if eggstorage.list("quotesbot") != []:
+        eggstorage.delete("quotesbot", "0.1")
+        eggdir = config.get("eggs_dir")
+        shutil.rmtree(eggdir)
 
 
 @pytest.fixture()
-def site_with_egg(request, fxt_config):
-    root, storage = common_app_fixture(request, fxt_config)
-
-    egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
-    project, version = "quotesbot", "0.1"
-    with open(egg_path, "rb") as f:
-        storage.put(f, project, version)
-
-    return root
+def site_with_egg(site_no_egg):
+    root_add_version(site_no_egg, "quotesbot", "0.1", "quotesbot")
+    return site_no_egg

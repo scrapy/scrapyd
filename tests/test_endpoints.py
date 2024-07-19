@@ -1,10 +1,11 @@
+import io
 import re
-from pathlib import Path
 
 import pytest
 import requests
 from requests.models import Response
 
+from tests import get_egg_data
 from tests.mockserver import MockScrapydServer
 
 
@@ -16,17 +17,13 @@ def mock_scrapyd():
 
 @pytest.fixture()
 def quotesbot_egg():
-    eggpath = Path(__file__).absolute().parent / "quotesbot.egg"
-    with open(eggpath, "rb") as egg:
-        yield egg
+    return io.BytesIO(get_egg_data("quotesbot"))
 
 
 @pytest.fixture()
 def quotesbot_egg_asyncio():
     # This egg file contains settings with TWISTED_REACTOR set to asyncio ractor
-    eggpath = Path(__file__).absolute().parent / "quotesbot_asyncio.egg"
-    with open(eggpath, "rb") as egg:
-        yield egg
+    return io.BytesIO(get_egg_data("quotesbot_asyncio"))
 
 
 def _deploy(mock_scrapyd, quotesbot_egg) -> Response:

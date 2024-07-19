@@ -1,4 +1,4 @@
-from io import BytesIO
+import io
 from unittest.mock import patch
 
 import pytest
@@ -67,7 +67,7 @@ def test_interface(eggstorage):
 
 def test_put_secure(eggstorage):
     with pytest.raises(DirectoryTraversalError) as exc:
-        eggstorage.put(BytesIO(b"egg01"), "../p", "v")  # version is sanitized
+        eggstorage.put(io.BytesIO(b"egg01"), "../p", "v")  # version is sanitized
 
     assert str(exc.value) == "../p"
 
@@ -87,7 +87,7 @@ def test_list_secure_join(eggstorage):
 
 
 def test_list_secure_glob(eggstorage):
-    eggstorage.put(BytesIO(b"egg01"), "mybot", "01")
+    eggstorage.put(io.BytesIO(b"egg01"), "mybot", "01")
     versions = eggstorage.list("*")
 
     eggstorage.delete("mybot")
@@ -116,9 +116,9 @@ def test_list_semantic_versions(eggstorage):
 
 
 def test_put_get_list_delete(eggstorage):
-    eggstorage.put(BytesIO(b"egg01"), "mybot", "01")
-    eggstorage.put(BytesIO(b"egg03"), "mybot", "03/ver")
-    eggstorage.put(BytesIO(b"egg02"), "mybot", "02_my branch")
+    eggstorage.put(io.BytesIO(b"egg01"), "mybot", "01")
+    eggstorage.put(io.BytesIO(b"egg03"), "mybot", "03/ver")
+    eggstorage.put(io.BytesIO(b"egg02"), "mybot", "02_my branch")
 
     assert eggstorage.list("mybot") == ["01", "02_my_branch", "03_ver"]
     assert eggstorage.list("mybot2") == []

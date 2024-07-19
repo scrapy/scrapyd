@@ -1,8 +1,6 @@
+import io
 import os
 import re
-from io import BytesIO
-from pathlib import Path
-from pkgutil import get_data
 from unittest import mock
 
 import pytest
@@ -14,6 +12,7 @@ from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 from scrapyd.webservice import UtilsCache, get_spider_list
+from tests import get_egg_data, root_add_version
 
 
 def fake_list_jobs(*args, **kwargs):
@@ -38,20 +37,12 @@ def app():
     return get_application()
 
 
-def add_test_version(app, file, project, version):
-    eggstorage = app.getComponent(IEggStorage)
-    eggfile = BytesIO(get_data("tests", file))
-    eggstorage.put(eggfile, project, version)
-
-
-def add_test_version_from_root(root, basename, version):
-    egg_path = Path(__file__).absolute().parent / f"{basename}.egg"
-    with open(egg_path, "rb") as f:
-        root.eggstorage.put(f, "myproject", version)
+def add_test_version(app, project, version, basename):
+    app.getComponent(IEggStorage).put(io.BytesIO(get_egg_data(basename)), project, version)
 
 
 def test_get_spider_list_log_stdout(app):
-    add_test_version(app, "logstdout.egg", "logstdout", "logstdout")
+    add_test_version(app, "logstdout", "logstdout", "logstdout")
     spiders = get_spider_list("logstdout", pythonpath=get_pythonpath_scrapyd())
 
     # If LOG_STDOUT were respected, the output would be [].
@@ -60,14 +51,14 @@ def test_get_spider_list_log_stdout(app):
 
 def test_get_spider_list(app):
     # mybot.egg has two spiders, spider1 and spider2
-    add_test_version(app, "mybot.egg", "mybot", "r1")
+    add_test_version(app, "mybot", "r1", "mybot")
     spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # mybot2.egg has three spiders, spider1, spider2 and spider3...
     # BUT you won't see it here because it's cached.
     # Effectivelly it's like if version was never added
-    add_test_version(app, "mybot2.egg", "mybot", "r2")
+    add_test_version(app, "mybot", "r2", "mybot2")
     spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
     assert sorted(spiders) == ["spider1", "spider2"]
 
@@ -79,14 +70,14 @@ def test_get_spider_list(app):
     assert sorted(spiders) == ["spider1", "spider2", "spider3"]
 
     # Let's re-deploy mybot.egg and clear cache. It now sees 2 spiders
-    add_test_version(app, "mybot.egg", "mybot", "r3")
+    add_test_version(app, "mybot", "r3", "mybot")
     UtilsCache.invalid_cache("mybot")
     spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # And re-deploying the one with three (mybot2.egg) with a version that
     # isn't the higher, won't change what get_spider_list() returns.
-    add_test_version(app, "mybot2.egg", "mybot", "r1a")
+    add_test_version(app, "mybot", "r1a", "mybot2")
     UtilsCache.invalid_cache("mybot")
     spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
     assert sorted(spiders) == ["spider1", "spider2"]
@@ -95,14 +86,14 @@ def test_get_spider_list(app):
 @pytest.mark.skipif(os.name == "nt", reason="get_spider_list() unicode fails on windows")
 def test_get_spider_list_unicode(app):
     # mybotunicode.egg has two spiders, araña1 and araña2
-    add_test_version(app, "mybotunicode.egg", "mybotunicode", "r1")
+    add_test_version(app, "mybotunicode", "r1", "mybotunicode")
     spiders = get_spider_list("mybotunicode", pythonpath=get_pythonpath_scrapyd())
 
     assert sorted(spiders) == ["araña1", "araña2"]
 
 
 def test_failed_spider_list(app):
-    add_test_version(app, "mybot3.egg", "mybot3", "r1")
+    add_test_version(app, "mybot3", "r1", "mybot3")
     with pytest.raises(RunnerError) as exc:
         get_spider_list("mybot3", pythonpath=get_pythonpath_scrapyd())
 
@@ -110,8 +101,8 @@ def test_failed_spider_list(app):
 
 
 def test_list_spiders(txrequest, site_no_egg):
-    add_test_version_from_root(site_no_egg, "mybot", "r1")
-    add_test_version_from_root(site_no_egg, "mybot2", "r2")
+    root_add_version(site_no_egg, "myproject", "r1", "mybot")
+    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
 
     txrequest.args = {b"project": [b"myproject"]}
     endpoint = b"listspiders.json"
@@ -135,8 +126,8 @@ def test_list_spiders_nonexistent(txrequest, site_no_egg):
 
 
 def test_list_spiders_version(txrequest, site_no_egg):
-    add_test_version_from_root(site_no_egg, "mybot", "r1")
-    add_test_version_from_root(site_no_egg, "mybot2", "r2")
+    root_add_version(site_no_egg, "myproject", "r1", "mybot")
+    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
 
     txrequest.args = {
         b"project": [b"myproject"],
@@ -150,8 +141,8 @@ def test_list_spiders_version(txrequest, site_no_egg):
 
 
 def test_list_spiders_version_nonexistent(txrequest, site_no_egg):
-    add_test_version_from_root(site_no_egg, "mybot", "r1")
-    add_test_version_from_root(site_no_egg, "mybot2", "r2")
+    root_add_version(site_no_egg, "myproject", "r1", "mybot")
+    root_add_version(site_no_egg, "myproject", "r2", "mybot2")
 
     txrequest.args = {
         b"project": [b"myproject"],
@@ -301,9 +292,7 @@ def test_delete_project_nonexistent(txrequest, site_no_egg):
 def test_addversion(txrequest, site_no_egg):
     endpoint = b"addversion.json"
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
-    egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
-    with open(egg_path, "rb") as f:
-        txrequest.args[b"egg"] = [f.read()]
+    txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     storage = site_no_egg.app.getComponent(IEggStorage)
     version, egg = storage.get("quotesbot")
@@ -381,9 +370,7 @@ def test_project_directory_traversal(txrequest, site_no_egg, endpoint, attach_eg
     }
 
     if attach_egg:
-        egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
-        with open(egg_path, "rb") as f:
-            txrequest.args[b"egg"] = [f.read()]
+        txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
         getattr(site_no_egg.children[endpoint], method)(txrequest)
@@ -412,9 +399,7 @@ def test_project_directory_traversal_runner(txrequest, site_no_egg, endpoint, at
     }
 
     if attach_egg:
-        egg_path = Path(__file__).absolute().parent / "quotesbot.egg"
-        with open(egg_path, "rb") as f:
-            txrequest.args[b"egg"] = [f.read()]
+        txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
         getattr(site_no_egg.children[endpoint], method)(txrequest)
