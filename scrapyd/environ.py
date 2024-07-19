@@ -35,17 +35,10 @@ class Environment:
         project = message["_project"]
         env = self.initenv.copy()
         env["SCRAPY_PROJECT"] = project
-        env["SCRAPYD_SLOT"] = str(slot)
-        env["SCRAPYD_SPIDER"] = message["_spider"]
-        env["SCRAPYD_JOB"] = message["_job"]
         if "_version" in message:
             env["SCRAPYD_EGG_VERSION"] = message["_version"]
         if project in self.settings:
             env["SCRAPY_SETTINGS_MODULE"] = self.settings[project]
-        if self.logs_dir:
-            env["SCRAPYD_LOG_FILE"] = self._get_file(message, self.logs_dir, "log")
-        if self.items_dir:
-            env["SCRAPYD_FEED_URI"] = self._get_feed_uri(message, "jl")
         return env
 
     def _get_feed_uri(self, message, extension):

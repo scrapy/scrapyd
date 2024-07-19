@@ -94,6 +94,17 @@ Scrapyd is now tested on macOS and Windows, in addition to Linux. Scrapyd is als
 - The :ref:`dbs_dir` setting no longer causes an error if it contains a drive letter on Windows.
 - The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
 
+Removed
+~~~~~~~
+
+Removed undocumented and unused internal environment variables:
+
+- ``SCRAPY_FEED_URI`` to ``SCRAPYD_FEED_URI``
+- ``SCRAPY_JOB`` to ``SCRAPYD_JOB``
+- ``SCRAPY_LOG_FILE`` to ``SCRAPYD_LOG_FILE``
+- ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
+- ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
+
 1.4.3 (2023-09-25)
 ------------------
 
@@ -154,7 +165,7 @@ Changed
   - ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
   - ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
 
-  .. attention:: These are undocumented and unused, and may be removed in future versions. If you use these environment variables, please `report your use in an issue <https://github.com/scrapy/scrapyd/issues>`__.
+  .. attention:: Except for ``SCRAPYD_EGG_VERSION``, these are undocumented and unused, and may be removed in future versions. If you use these environment variables, please `report your use in an issue <https://github.com/scrapy/scrapyd/issues>`__.
 
 Removed
 ~~~~~~~
