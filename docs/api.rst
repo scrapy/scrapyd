@@ -16,6 +16,8 @@ If basic authentication is enabled, you can use ``curl`` with the ``-u`` option,
 daemonstatus.json
 -----------------
 
+.. versionadded:: 1.2.0
+
 To check the load status of a service.
 
 Supported request methods

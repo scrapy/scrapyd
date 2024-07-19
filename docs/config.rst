@@ -80,6 +80,8 @@ Options
 unix_socket_path
 ----------------
 
+.. versionadded:: 1.5.0
+
 The filesystem path of the Unix socket on which the :ref:`webui` and :doc:`api` listen for connections.
 
 For example:
@@ -127,6 +129,8 @@ Default
 spiderqueue
 ~~~~~~~~~~~
 
+.. versionadded:: 1.4.2
+
 The class that stores pending jobs.
 
 Default
@@ -155,6 +159,8 @@ Poller options
 
 poller
 ~~~~~~
+
+.. versionadded:: 1.5.0
 
 The class that tracks capacity for new jobs, and starts jobs when ready.
 
@@ -315,6 +321,8 @@ Web UI and API options
 webroot
 ~~~~~~~
 
+.. versionadded:: 1.2.0
+
 The class that defines the :ref:`webui` and :doc:`api`, as a Twisted Resource.
 
 If necessary, override this to fully control how the web UI and API work.
@@ -370,6 +378,8 @@ Egg storage options
 
 eggstorage
 ~~~~~~~~~~
+
+.. versionadded:: 1.3.0
 
 The class that stores project eggs.
 

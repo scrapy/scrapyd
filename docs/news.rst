@@ -174,13 +174,16 @@ Fixed
 Added
 ~~~~~
 
-- Add support for HTTP authentication.
+- Add :ref:`username` and :ref:`password` settings, for HTTP authentication.
+- Add :ref:`jobstorage` and :ref:`eggstorage` settings.
+- Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
+- Python 3.7, 3.8, 3.9, 3.10 support.
+
+Changed
+~~~~~~~
+
 - Make optional the ``project`` argument to the :ref:`listjobs.json` webservice, to easily query for all jobs.
 - Improve HTTP headers across webservices.
-- Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
-- Add :ref:`jobstorage` and :ref:`eggstorage` settings.
-- Improve test coverage.
-- Python 3.7, 3.8, 3.9, 3.10 support.
 
 Removed
 ~~~~~~~
