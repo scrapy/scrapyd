@@ -8,7 +8,7 @@ class SettingsSafeModulesTest(unittest.TestCase):
         "scrapy.utils.project",
         "scrapy.utils.conf",
         "scrapyd.interfaces",
-        "scrapyd.eggutils",
+        "scrapyd.runner",
     )
 
     def test_modules_that_shouldnt_load_settings(self):
