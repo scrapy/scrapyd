@@ -76,34 +76,17 @@ def native_stringify_dict(dct_or_tuples, encoding="utf-8", *, keys_only=True):
     """
     d = {}
     for k, v in dct_or_tuples.items():
-        key = _to_native_str(k, encoding)
+        key = to_native_str(k, encoding)
         if keys_only:
             value = v
         elif isinstance(v, dict):
             value = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
         elif isinstance(v, list):
-            value = [_to_native_str(e, encoding) for e in v]
+            value = [to_native_str(e, encoding) for e in v]
         else:
-            value = _to_native_str(v, encoding)
+            value = to_native_str(v, encoding)
         d[key] = value
     return d
-
-
-def get_crawl_args(message):
-    """Return the command-line arguments to use for the scrapy crawl process
-    that will be started for this message
-    """
-    msg = message.copy()
-    args = [_to_native_str(msg["_spider"])]
-    del msg["_project"], msg["_spider"]
-    settings = msg.pop("settings", {})
-    for k, v in native_stringify_dict(msg, keys_only=False).items():
-        args += ["-a"]
-        args += [f"{k}={v}"]
-    for k, v in native_stringify_dict(settings, keys_only=False).items():
-        args += ["-s"]
-        args += [f"{k}={v}"]
-    return args
 
 
 def get_spider_list(project, runner=None, pythonpath=None, version=None):
@@ -150,7 +133,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
     return spiders
 
 
-def _to_native_str(text, encoding="utf-8", errors="strict"):
+def to_native_str(text, encoding="utf-8", errors="strict"):
     if isinstance(text, str):
         return text
     return text.decode(encoding, errors)

@@ -8,7 +8,24 @@ from twisted.python import log
 
 from scrapyd import __version__
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
-from scrapyd.utils import get_crawl_args, native_stringify_dict
+from scrapyd.utils import native_stringify_dict, to_native_str
+
+
+def get_crawl_args(message):
+    """Return the command-line arguments to use for the scrapy crawl process
+    that will be started for this message
+    """
+    msg = message.copy()
+    args = [to_native_str(msg["_spider"])]
+    del msg["_project"], msg["_spider"]
+    settings = msg.pop("settings", {})
+    for k, v in native_stringify_dict(msg, keys_only=False).items():
+        args += ["-a"]
+        args += [f"{k}={v}"]
+    for k, v in native_stringify_dict(settings, keys_only=False).items():
+        args += ["-s"]
+        args += [f"{k}={v}"]
+    return args
 
 
 class Launcher(Service):
