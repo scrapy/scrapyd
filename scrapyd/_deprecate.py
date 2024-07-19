@@ -10,8 +10,7 @@ class ScrapydDeprecationWarning(Warning):
 class WarningMeta(type):
     def __init__(cls, name, bases, clsdict):
         wrapper_classes = tuple(c.__bases__ for c in bases if isinstance(c, WarningMeta))
-        classes = tuple(c for (c,) in wrapper_classes)
-        if classes:
+        if classes := tuple(c for (c,) in wrapper_classes):
             warnings.warn(
                 f"{cls!r} inherits from {classes!r} which {['is', 'are'][min(2, len(classes)) - 1]} "
                 "deprecated and will be removed from a later scrapyd release",

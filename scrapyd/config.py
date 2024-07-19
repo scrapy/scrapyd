@@ -32,8 +32,7 @@ class Config:
         sources += sorted(glob.glob("/etc/scrapyd/conf.d/*"))
         sources += ["scrapyd.conf"]
         sources += [expanduser("~/.scrapyd.conf")]
-        scrapy_cfg = closest_scrapy_cfg()
-        if scrapy_cfg:
+        if scrapy_cfg := closest_scrapy_cfg():
             sources.append(scrapy_cfg)
         return sources
 
