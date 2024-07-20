@@ -169,7 +169,7 @@ class WsResource(resource.Resource):
 
 class DaemonStatus(WsResource):
     def render_GET(self, txrequest):
-        pending = sum(q.count() for q in self.root.scheduler.queues.values())
+        pending = sum(queue.count() for queue in self.root.scheduler.queues.values())
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
 
@@ -227,7 +227,7 @@ class Cancel(WsResource):
 
         prevstate = None
 
-        if self.root.scheduler.queues[project].remove(lambda x: x["_job"] == job):
+        if self.root.scheduler.queues[project].remove(lambda message: message["_job"] == job):
             prevstate = "pending"
 
         spiders = self.root.launcher.processes.values()

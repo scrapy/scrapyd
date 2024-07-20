@@ -43,7 +43,7 @@ def get_project_list(config):
     """
     eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
     projects = eggstorage.list_projects()
-    projects.extend(x[0] for x in config.items("settings", default=[]))
+    projects.extend(project for project, _ in config.items("settings", default=[]))
     return projects
 
 
