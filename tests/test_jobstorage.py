@@ -1,4 +1,3 @@
-import pytest
 from zope.interface.verify import verifyObject
 
 from scrapyd.config import Config
@@ -10,55 +9,50 @@ j2 = Job("p2", "s2")
 j3 = Job("p3", "s3")
 
 
-@pytest.fixture()
-def sqlitejobstorage(tmpdir):
-    return SqliteJobStorage(Config(values={"dbs_dir": tmpdir, "finished_to_keep": "2"}))
+def pytest_generate_tests(metafunc):
+    idlist = []
+    argvalues = []
+    for scenario, cls in metafunc.cls.scenarios:
+        idlist.append(scenario)
+        argnames = ["cls"]
+        argvalues.append([cls])
+    metafunc.parametrize(argnames, argvalues, ids=idlist, scope="class")
 
 
-@pytest.fixture()
-def memoryjobstorage(tmpdir):
-    storage = MemoryJobStorage(Config(values={"dbs_dir": tmpdir, "finished_to_keep": "2"}))
-    storage.add(j1)
-    storage.add(j2)
-    storage.add(j3)
-    return storage
+def config(tmpdir):
+    return Config(values={"dbs_dir": tmpdir, "finished_to_keep": "2"})
 
 
-def test_memory_interface(memoryjobstorage):
-    verifyObject(IJobStorage, memoryjobstorage)
+class TestJobStorage:
+    scenarios = (("sqlite", SqliteJobStorage), ("memory", MemoryJobStorage))
 
+    def test_interface(self, cls, tmpdir):
+        verifyObject(IJobStorage, cls(config(tmpdir)))
 
-def test_memory_add(memoryjobstorage):
-    assert len(memoryjobstorage.list()) == 2
+    def test_add(self, cls, tmpdir):
+        jobstorage = cls(config(tmpdir))
 
+        assert len(jobstorage) == 0
 
-def test_memory_iter(memoryjobstorage):
-    actual = list(memoryjobstorage)
+        jobstorage.add(j1)
+        jobstorage.add(j2)
+        jobstorage.add(j3)
+        actual = jobstorage.list()
 
-    assert actual[0] == j2
-    assert actual[1] == j3
-    assert len(actual) == 2
+        assert len(jobstorage) == 2
+        assert actual == list(jobstorage)
+        assert actual == [j3, j2]
 
+    def test_iter(self, cls, tmpdir):
+        jobstorage = cls(config(tmpdir))
 
-def test_len(memoryjobstorage):
-    assert len(memoryjobstorage) == 2
+        assert len(jobstorage) == 0
 
+        jobstorage.add(j1)
+        jobstorage.add(j2)
+        jobstorage.add(j3)
+        actual = jobstorage.list()
 
-def test_sqlite_interface(sqlitejobstorage):
-    verifyObject(IJobStorage, sqlitejobstorage)
-
-
-def test_sqlite_add(sqlitejobstorage):
-    sqlitejobstorage.add(j1)
-    sqlitejobstorage.add(j2)
-    sqlitejobstorage.add(j3)
-
-    assert len(sqlitejobstorage.list()) == 2
-
-
-def test_sqlite_iter(sqlitejobstorage):
-    sqlitejobstorage.add(j1)
-    sqlitejobstorage.add(j2)
-    sqlitejobstorage.add(j3)
-
-    assert len(sqlitejobstorage) == 2
+        assert len(jobstorage) == 2
+        assert actual == list(jobstorage)
+        assert actual == [j3, j2]
