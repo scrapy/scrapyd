@@ -378,17 +378,18 @@ class DeleteProject(WsResource):
     @param("project")
     def render_POST(self, txrequest, project):
         self._delete_version(project)
-        UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
 
     def _delete_version(self, project, version=None):
         try:
             self.root.eggstorage.delete(project, version)
-            self.root.update_projects()
         except ProjectNotFoundError as e:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode()) from e
         except EggNotFoundError as e:
             raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode()) from e
+        else:
+            self.root.update_projects()
+            UtilsCache.invalid_cache(project)
 
 
 class DeleteVersion(DeleteProject):
@@ -396,5 +397,4 @@ class DeleteVersion(DeleteProject):
     @param("version")
     def render_POST(self, txrequest, project, version):
         self._delete_version(project, version)
-        UtilsCache.invalid_cache(project)
         return {"node_name": self.root.nodename, "status": "ok"}
