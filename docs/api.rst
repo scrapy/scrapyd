@@ -59,6 +59,10 @@ schedule.json
 
 Schedule a job. (A job is a `Scrapy crawl <https://docs.scrapy.org/en/latest/topics/commands.html#crawl>`__.)
 
+If the :ref:`logs_dir` setting is set, log files are written to ``{logs_dir}/{project}/{spider}/{jobid}.log``. Set the ``jobid`` parameter to configure the basename of the log file.
+
+.. important:: Like Scrapy's ``scrapy.Spider`` class, spiders should allow an arbitrary number of keyword arguments in their ``__init__`` method, because Scrapyd sets internally-generated spider arguments when starting crawls.
+
 Supported request methods
   ``POST``
 Parameters
@@ -89,8 +93,11 @@ Parameters
 
        curl http://localhost:6800/schedule.json -d arg1=val1 -d project=myproject -d spider=somespider
 
-If the :ref:`logs_dir` setting is set, log files are written to ``{logs_dir}/{project}/{spider}/{jobid}.log``.
-Set the ``jobid`` parameter to configure the basename of the log file.
+    .. warning::
+
+       When such parameters are set multiple times, only the first value is sent to the spider.
+
+       To change this behavior, please `open an issue <https://github.com/scrapy/scrapyd/issues>`__.
 
 Example:
 
@@ -98,10 +105,6 @@ Example:
 
    $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider
    {"node_name": "mynodename", "status": "ok", "jobid": "6487ec79947edab326d6db28a2d86511e8247444"}
-
-.. note:: Spiders scheduled with Scrapyd should allow for an arbitrary number of keyword arguments, as Scrapyd sends internally-generated spider arguments to the spider being scheduled.
-
-.. note:: When a parameter other than ``setting`` is entered multiple times with ``-d``, only the first value is sent to the spider.
 
 .. _status.json:
 
