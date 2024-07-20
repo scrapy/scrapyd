@@ -14,9 +14,9 @@ from scrapyd.utils import get_spider_queues
 def poller(tmpdir):
     eggs_dir = os.path.join(tmpdir, "eggs")
     dbs_dir = os.path.join(tmpdir, "dbs")
+    config = Config(values={"eggs_dir": eggs_dir, "dbs_dir": dbs_dir})
     os.makedirs(os.path.join(eggs_dir, "mybot1"))
     os.makedirs(os.path.join(eggs_dir, "mybot2"))
-    config = Config(values={"eggs_dir": eggs_dir, "dbs_dir": dbs_dir})
     return QueuePoller(config)
 
 
@@ -24,38 +24,71 @@ def test_interface(poller):
     verifyObject(IPoller, poller)
 
 
+# Need sorted(), because os.listdir() in FilesystemEggStorage.list_projects() uses an arbitrary order.
+def test_list_projects_update_projects(poller):
+    assert sorted(poller.queues) == ["mybot1", "mybot2"]
+
+    os.makedirs(os.path.join(poller.config.get("eggs_dir"), "mybot3"))
+
+    assert sorted(poller.queues) == ["mybot1", "mybot2"]
+
+    poller.update_projects()
+
+    assert sorted(poller.queues) == ["mybot1", "mybot2", "mybot3"]
+
+
 def test_poll_next(poller):
     queues = get_spider_queues(poller.config)
 
-    cfg = {"mybot1": "spider1", "mybot2": "spider2"}
-    priority = 0
-    for prj, spd in cfg.items():
-        queues[prj].add(spd, priority)
+    scenario = {"mybot1": "spider1", "mybot2": "spider2"}
+    for project, spider in scenario.items():
+        queues[project].add(spider)
 
-    d1 = poller.next()
-    d2 = poller.next()
+    deferred1 = poller.next()
+    deferred2 = poller.next()
 
-    assert isinstance(d1, Deferred)
-    assert not hasattr(d1, "result")
+    assert isinstance(deferred1, Deferred)
+    assert not hasattr(deferred1, "result")
+    assert isinstance(deferred2, Deferred)
+    assert not hasattr(deferred2, "result")
 
-    # poll once
-    poller.poll()
+    value = poller.poll()
 
-    assert hasattr(d1, "result")
-    assert getattr(d1, "called", False)
+    assert isinstance(value, Deferred)
+    assert hasattr(value, "result")
+    assert getattr(value, "called", False)
+    assert value.result is None
 
-    # which project got run: project1 or project2?
-    assert d1.result.get("_project")
+    assert hasattr(deferred1, "result")
+    assert getattr(deferred1, "called", False)
+    assert not hasattr(deferred2, "result")
+    assert not getattr(deferred2, "called", False)
 
-    prj = d1.result["_project"]
+    # os.listdir() in FilesystemEggStorage.list_projects() uses an arbitrary order.
+    project = deferred1.result["_project"]
+    queues[project].pop()
 
-    assert d1.result["_spider"] == cfg.pop(prj)
+    assert deferred1.result["_spider"] == scenario.pop(project)
 
-    queues[prj].pop()
+    value = poller.poll()
 
-    # poll twice
-    # check that the other project's spider got to run
-    poller.poll()
-    prj, spd = cfg.popitem()
+    assert isinstance(value, Deferred)
+    assert hasattr(value, "result")
+    assert getattr(value, "called", False)
+    assert value.result is None
 
-    assert d2.result == {"_project": prj, "_spider": spd}
+    assert hasattr(deferred2, "result")
+    assert getattr(deferred2, "called", False)
+
+    project, spider = scenario.popitem()
+
+    assert deferred2.result == {"_project": project, "_spider": spider}
+
+
+def test_poll_empty(poller):
+    value = poller.poll()
+
+    assert isinstance(value, Deferred)
+    assert hasattr(value, "result")
+    assert getattr(value, "called", False)
+    assert value.result is None
