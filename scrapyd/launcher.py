@@ -19,10 +19,10 @@ def get_crawl_args(message):
     args = [to_native_str(msg["_spider"])]
     del msg["_project"], msg["_spider"]
     settings = msg.pop("settings", {})
-    for k, v in native_stringify_dict(msg, keys_only=False).items():
+    for k, v in native_stringify_dict(msg).items():
         args += ["-a"]
         args += [f"{k}={v}"]
-    for k, v in native_stringify_dict(settings, keys_only=False).items():
+    for k, v in native_stringify_dict(settings).items():
         args += ["-s"]
         args += [f"{k}={v}"]
     return args
@@ -57,12 +57,12 @@ class Launcher(Service):
         environ = self.app.getComponent(IEnvironment)
         message.setdefault("settings", {})
         message["settings"].update(environ.get_settings(message))
-        msg = native_stringify_dict(message, keys_only=False)
+        msg = native_stringify_dict(message)
         project = msg["_project"]
         args = [sys.executable, "-m", self.runner, "crawl"]
         args += get_crawl_args(msg)
         env = environ.get_environment(msg, slot)
-        env = native_stringify_dict(env, keys_only=False)
+        env = native_stringify_dict(env)
         pp = ScrapyProcessProtocol(project, msg["_spider"], msg["_job"], env, args)
         pp.deferred.addBoth(self._process_finished, slot)
         reactor.spawnProcess(pp, sys.executable, args=args, env=env)

@@ -47,27 +47,25 @@ def get_project_list(config):
     return projects
 
 
-def native_stringify_dict(dct_or_tuples, encoding="utf-8", *, keys_only=True):
-    """Return a (new) dict with unicode keys (and values when "keys_only" is
-    False) of the given dict converted to strings. `dct_or_tuples` can be a
+def native_stringify_dict(dct_or_tuples):
+    """Return a (new) dict with unicode keys and values
+    of the given dict converted to strings. `dct_or_tuples` can be a
     dict or a list of tuples, like any dict constructor supports.
     """
     d = {}
     for k, v in dct_or_tuples.items():
-        key = to_native_str(k, encoding)
-        if keys_only:
-            value = v
-        elif isinstance(v, dict):
-            value = native_stringify_dict(v, encoding=encoding, keys_only=keys_only)
+        key = to_native_str(k)
+        if isinstance(v, dict):
+            value = native_stringify_dict(v)
         elif isinstance(v, list):
-            value = [to_native_str(e, encoding) for e in v]
+            value = [to_native_str(e) for e in v]
         else:
-            value = to_native_str(v, encoding)
+            value = to_native_str(v)
         d[key] = value
     return d
 
 
-def to_native_str(text, encoding="utf-8", errors="strict"):
+def to_native_str(text):
     if isinstance(text, str):
         return text
-    return text.decode(encoding, errors)
+    return text.decode()

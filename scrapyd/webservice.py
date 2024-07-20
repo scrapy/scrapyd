@@ -205,7 +205,7 @@ class Schedule(WsResource):
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
 
-        spider_arguments = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args), keys_only=False).items()}
+        spider_arguments = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args)).items()}
 
         self.root.scheduler.schedule(
             project,
