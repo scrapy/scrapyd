@@ -136,7 +136,7 @@ class WsResource(resource.Resource):
 
     def render(self, txrequest):
         try:
-            obj = super().render(self, txrequest)
+            obj = super().render(txrequest)
         except Exception as e:  # noqa: BLE001
             log.err()
 
