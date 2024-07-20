@@ -31,7 +31,7 @@ Example:
 addversion.json
 ---------------
 
-Add a version to a project, creating the project if needed.
+Add a version to a project in :ref:`eggstorage`, creating the project if needed.
 
 Supported request methods
   ``POST``
@@ -179,7 +179,7 @@ Example:
 listversions.json
 -----------------
 
-Get the versions of a project, in order, with the latest version last.
+Get the versions of a project in :ref:`eggstorage`, in :ref:`order<overview-order>`, with the latest version last.
 
 Supported request methods
   ``GET``
@@ -273,7 +273,7 @@ Example:
 delversion.json
 ---------------
 
-Delete a version of a project. If no versions of the project remain, delete the project, too.
+Delete a version of a project from :ref:`eggstorage`. If no versions of the project remain, delete the project, too.
 
 Supported request methods
   ``POST``
@@ -295,7 +295,7 @@ Example:
 delproject.json
 ---------------
 
-Delete a project and its versions.
+Delete a project and its versions from :ref:`eggstorage`.
 
 Supported request methods
   ``POST``

@@ -22,10 +22,19 @@ def chdir(monkeypatch, tmpdir):
     return monkeypatch.chdir(tmpdir)
 
 
-@pytest.fixture(params=[None, (Config.SECTION, "items_dir", "items")], ids=["default", "items_dir"])
+@pytest.fixture(
+    params=[
+        None,
+        (Config.SECTION, "items_dir", "items"),
+        ("settings", "localproject", "tests.fixtures.localbot.settings"),
+    ],
+    ids=["default", "items_dir", "settings"],
+)
 def root(request, chdir):
     config = Config()
     if request.param:
+        if request.param[0] != Config.SECTION:
+            config.cp.add_section(request.param[0])
         config.cp.set(*request.param)
 
     return Root(config, application(config))

@@ -9,7 +9,7 @@ class ConfigError(ScrapydError):
 class InvalidUsernameError(ConfigError):
     """Raised if the username contains a colon."""
 
-    def __init__(self, message):
+    def __init__(self):
         super().__init__(
             "The `username` option contains illegal character ':'. Check and update the Scrapyd configuration file."
         )

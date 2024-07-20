@@ -21,6 +21,11 @@ def app(chdir):
     return application
 
 
+def has_settings(root):
+    # The configuration is not guaranteed to be accessible here, but it is for now.
+    return root.scheduler.config.cp.has_section("settings")
+
+
 def add_test_version(app, project, version, basename):
     app.getComponent(IEggStorage).put(io.BytesIO(get_egg_data(basename)), project, version)
 
@@ -148,43 +153,40 @@ def test_daemonstatus(txrequest, root_with_egg):
     assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
 
 
-def test_list_spiders(txrequest, root):
+@pytest.mark.parametrize(
+    ("extra_args", "spiders"),
+    [
+        ({}, ["spider1", "spider2", "spider3"]),
+        ({b"_version": [b"r1"]}, ["spider1", "spider2"]),
+    ],
+)
+def test_list_spiders(txrequest, root, extra_args, spiders):
     UtilsCache.invalid_cache("myproject")  # test_get_spider_list fills cache
 
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
 
-    expected = {"status": "ok", "spiders": ["spider1", "spider2", "spider3"]}
-    assert_content(txrequest, root, "listspiders", {b"project": [b"myproject"]}, expected)
+    expected = {"status": "ok", "spiders": spiders}
+    assert_content(txrequest, root, "listspiders", {b"project": [b"myproject"], **extra_args}, expected)
 
 
-def test_list_spiders_nonexistent(txrequest, root):
-    txrequest.args = {b"project": [b"nonexistent"]}
+@pytest.mark.parametrize(
+    ("args", "param"),
+    [
+        ({b"project": [b"nonexistent"]}, "project"),
+        ({b"project": [b"myproject"], b"_version": [b"nonexistent"]}, "version"),
+    ],
+)
+def test_list_spiders_nonexistent(txrequest, root, args, param):
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
+
+    txrequest.args = args.copy()
     with pytest.raises(error.Error) as exc:
         root.children[b"listspiders.json"].render_GET(txrequest)
 
     assert exc.value.status == b"200"
-    assert exc.value.message == b"project 'nonexistent' not found"
-
-
-def test_list_spiders_version(txrequest, root):
-    root_add_version(root, "myproject", "r1", "mybot")
-    root_add_version(root, "myproject", "r2", "mybot2")
-
-    expected = {"status": "ok", "spiders": ["spider1", "spider2"]}
-    assert_content(txrequest, root, "listspiders", {b"project": [b"myproject"], b"_version": [b"r1"]}, expected)
-
-
-def test_list_spiders_version_nonexistent(txrequest, root):
-    root_add_version(root, "myproject", "r1", "mybot")
-    root_add_version(root, "myproject", "r2", "mybot2")
-
-    txrequest.args = {b"project": [b"myproject"], b"_version": [b"nonexistent"]}
-    with pytest.raises(error.Error) as exc:
-        root.children[b"listspiders.json"].render_GET(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"version 'nonexistent' not found"
+    assert exc.value.message == b"%b 'nonexistent' not found" % param.encode()
 
 
 def test_list_versions(txrequest, root_with_egg):
@@ -194,11 +196,13 @@ def test_list_versions(txrequest, root_with_egg):
 
 def test_list_versions_nonexistent(txrequest, root):
     expected = {"status": "ok", "versions": []}
-    assert_content(txrequest, root, "listversions", {b"project": [b"quotesbot"]}, expected)
+    assert_content(txrequest, root, "listversions", {b"project": [b"localproject"]}, expected)
 
 
 def test_list_projects(txrequest, root_with_egg):
     expected = {"status": "ok", "projects": ["quotesbot"]}
+    if has_settings(root_with_egg):
+        expected["projects"].append("localproject")
     assert_content(txrequest, root_with_egg, "listprojects", {}, expected)
 
 

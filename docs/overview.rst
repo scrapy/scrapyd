@@ -7,6 +7,11 @@ Projects and versions
 
 Scrapyd can manage multiple Scrapy projects. Each project can have multiple versions. The latest version is used by default for starting spiders.
 
+.. _overview-order:
+
+Version order
+-------------
+
 The latest version is the alphabetically greatest, unless all version names are `version specifiers <https://packaging.python.org/en/latest/specifications/version-specifiers/>`__ like ``1.0`` or ``1.0rc1``, in which case they are sorted as such.
 
 How Scrapyd works
