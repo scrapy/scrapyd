@@ -314,7 +314,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     "Project": escape(project),
                     "Spider": escape(m["name"]),
                     "Job": escape(m["_job"]),
-                    "Cancel": self.cancel_button(project=project, jobid=m["_job"], base_path=self.base_path),
+                    "Cancel": cancel_button(project=project, jobid=m["_job"], base_path=self.base_path),
                 }
             )
             for project, queue in self.root.scheduler.queues.items()
@@ -333,7 +333,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     "Runtime": microsec_trunc(datetime.now() - p.start_time),
                     "Log": f'<a href="{self.base_path}{job_log_url(p)}">Log</a>',
                     "Items": f'<a href="{self.base_path}{job_items_url(p)}">Items</a>',
-                    "Cancel": self.cancel_button(project=p.project, jobid=p.job, base_path=self.base_path),
+                    "Cancel": cancel_button(project=p.project, jobid=p.job, base_path=self.base_path),
                 }
             )
             for p in self.root.launcher.processes.values()
