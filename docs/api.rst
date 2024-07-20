@@ -147,6 +147,8 @@ Parameters
     the project name
   ``job`` (required)
     the job ID
+  ``signal``
+    the `signal <https://docs.python.org/3/library/signal.html#module-contents>`__ to send to the Scrapy process (``BREAK`` by default on Windows and ``INT`` by default, otherwise)
 
 Example:
 
