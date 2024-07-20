@@ -75,6 +75,7 @@ Fixed
 - The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
 - The ``MemoryJobStorage`` class returns finished jobs in reverse chronological order, like the ``SqliteJobStorage`` class.
+- The ``list_projects`` method of the ``SpiderScheduler`` class returns a ``list`, instead of ``dict_keys``.
 
 Security
 ^^^^^^^^

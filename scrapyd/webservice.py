@@ -270,7 +270,7 @@ class AddVersion(WsResource):
 
 class ListProjects(WsResource):
     def render_GET(self, txrequest):
-        projects = list(self.root.scheduler.list_projects())
+        projects = self.root.scheduler.list_projects()
         return {"node_name": self.root.nodename, "status": "ok", "projects": projects}
 
 

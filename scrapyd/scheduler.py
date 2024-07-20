@@ -14,7 +14,7 @@ class SpiderScheduler:
         self.queues[project].add(spider_name, priority=priority, **spider_args)
 
     def list_projects(self):
-        return self.queues.keys()
+        return list(self.queues)
 
     def update_projects(self):
         self.queues = get_spider_queues(self.config)
