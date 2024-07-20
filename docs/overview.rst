@@ -66,7 +66,7 @@ For more resources see: :doc:`api` for more available resources.
 
 .. _webui:
 
-Web Interface
+Web interface
 =============
 
 Scrapyd comes with a minimal web interface (for monitoring running processes

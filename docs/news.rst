@@ -13,7 +13,7 @@ Added
 - Add a :ref:`unix_socket_path` setting, to listen on a Unix socket.
 - Add a :ref:`poller` setting.
 - Respond to HTTP ``OPTIONS`` method requests.
-- Add environment variables to override common options. See :doc:`config`.
+- Add environment variables to override common options. See :ref:`config-envvars`.
 
 Documentation
 ^^^^^^^^^^^^^
@@ -67,6 +67,7 @@ Library
 -  Move ``activate_egg`` from ``scrapyd.eggutils`` to its caller, ``scrapyd.runner``.
 -  Move ``job_items_url`` and ``job_log_url`` from ``scrapyd.jobstorage`` to ``scrapyd.utils``. :ref:`jobstorage` is not responsible for URLs.
 -  Change ``scrapyd.app.create_wrapped_resource`` to ``scrapyd.basicauth.wrap_resource``.
+-  Remove unused keyword arguments from ``native_stringify_dict`` and ``to_native_str``.
 
 Fixed
 ~~~~~

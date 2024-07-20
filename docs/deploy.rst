@@ -1,14 +1,17 @@
-Deploying your project
-======================
+Deployment
+==========
 
-Deploying your project involves eggifying it and uploading the egg to Scrapyd via the `addversion.json <https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json>`_ webservice. You can do this manually, but the easiest way is to use the `scrapyd-deploy` tool provided by `scrapyd-client <https://github.com/scrapy/scrapyd-client>`_ which will do it all for you.
+Deploying a Scrapy project
+--------------------------
+
+This involves building a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploading it to Scrapyd via the `addversion.json <https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json>`_ webservice. Do this easily with the `scrapyd-deploy` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package.
 
 .. _docker:
 
-Create a Docker image
----------------------
+Creating a Docker image
+-----------------------
 
-If you prefer to create a Docker image, you can copy this ``Dockerfile`` template into your Scrapy project, and adapt it.
+If you prefer to create a Docker image for the Scrapyd service and your Scrapy projects, you can copy this ``Dockerfile`` template into your Scrapy project, and adapt it.
 
 .. code-block:: dockerfile
 
@@ -70,7 +73,7 @@ Where your ``scrapy.cfg`` file, used by ``scrapyd-deploy``, might be:
    url = http://localhost:6800
    project = myproject
 
-And your ``scrapyd.conf`` file might match the :ref:`config-example`, except:
+And your ``scrapyd.conf`` file might be:
 
 .. code-block:: ini
 
@@ -80,5 +83,3 @@ And your ``scrapyd.conf`` file might match the :ref:`config-example`, except:
    items_dir         = /var/lib/scrapyd/items
    dbs_dir           = /var/lib/scrapyd/dbs
    eggs_dir          = /src/eggs
-
-   ...

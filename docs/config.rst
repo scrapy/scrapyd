@@ -1,30 +1,47 @@
-Configuration file
-==================
+=============
+Configuration
+=============
 
-Scrapyd searches for configuration files in the following locations, and parses
-them in order with the latest one taking more priority:
+.. _config-default:
 
-* ``/etc/scrapyd/scrapyd.conf`` (Unix)
-* ``c:\scrapyd\scrapyd.conf`` (Windows)
-* ``/etc/scrapyd/conf.d/*`` (in alphabetical order, Unix)
-* ``scrapyd.conf``
-* ``~/.scrapyd.conf`` (home directory of the user that invoked ``scrapyd``)
+Default configuration
+=====================
 
-The configuration file supports the options below (see default values in
-the :ref:`example <config-example>`).
+Scrapyd always loads this configuration file, which can be overridden by :ref:`config-sources`:
+
+.. literalinclude:: ../scrapyd/default_scrapyd.conf
+
+.. _config-sources:
+
+Configuration sources
+=====================
+
+Scrapyd reads these configuration files in this order. Values in later files take priority.
+
+#. ``c:\scrapyd\scrapyd.conf``
+#. ``/etc/scrapyd/scrapyd.conf``
+#. ``/etc/scrapyd/conf.d/*`` in alphabetical order
+#. ``scrapyd.conf`` in the current directory
+#. ``~/.scrapyd.conf`` in the home directory of the user that invoked the ``scrapyd`` command
+#. the closest ``scrapy.cfg`` file, starting in the current directory and traversing upward
+
+.. _config-envvars:
 
 Environment variables
----------------------
+=====================
 
 .. versionadded:: 1.5.0
 
-The following environment variables override corresponding options:
+These environment variables override corresponding options:
 
 * ``SCRAPYD_BIND_ADDRESS`` (:ref:`bind_address`)
 * ``SCRAPYD_HTTP_PORT`` (:ref:`http_port`)
 * ``SCRAPYD_USERNAME`` (:ref:`username`)
 * ``SCRAPYD_PASSWORD`` (:ref:`password`)
 * ``SCRAPYD_UNIX_SOCKET_PATH`` (:ref:`unix_socket_path`)
+
+scrapyd section
+===============
 
 Application options
 -------------------
@@ -436,8 +453,8 @@ Options
 
   -  ``0`` to keep all finished jobs
 
-Directories
------------
+Directory options
+-----------------
 
 .. _dbs_dir:
 
@@ -456,28 +473,33 @@ Used by
 
 .. _config-services:
 
-Services
---------
+services section
+================
 
-Normally, you can leave the ``[services]`` section from the :ref:`example <config-example>` as-is.
-
-If you want to add a webservice (endpoint), add another line, like:
+If you want to add a webservice (endpoint), add, for example:
 
 .. code-block:: ini
-   :emphasize-lines: 2
 
    [services]
-   mywebservice.json   = amodule.anothermodule.MyWebService
-   schedule.json     = scrapyd.webservice.Schedule
-   ...
+   mywebservice.json = amodule.anothermodule.MyWebService
 
-You can use the webservices in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
+You can use code for webservices in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
 
-.. _config-example:
+.. _config-settings:
 
-Example configuration file
---------------------------
+settings section
+================
 
-Here is an example configuration file with all the defaults:
+Project code is typically stored in a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploaded to Scrapyd via the :ref:`addversion.json` webservice.
 
-.. literalinclude:: ../scrapyd/default_scrapyd.conf
+Project code can also be stored in a Python module. The module must be in the `module search path <https://docs.python.org/3/tutorial/modules.html#tut-searchpath>`__ of the Scrapyd process, which includes the current directory.
+
+To add projects from modules, add a ``[settings]`` section, like in Scrapy's `scrapy.cfg file <https://docs.scrapy.org/en/latest/topics/commands.html#default-structure-of-scrapy-projects>`__. For example:
+
+.. code-block:: ini
+
+   [settings]
+   project1 = one_project.settings
+   project2 = another_project.settings
+
+In this example, the ``one_project`` Scrapy project is named ``project1`` in Scrapyd, and the ``another_project`` Scrapy project is named ``project2``.

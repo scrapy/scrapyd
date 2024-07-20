@@ -1,9 +1,7 @@
 API
 ===
 
-The following section describes the available resources in Scrapyd JSON API.
-
-If basic authentication is enabled, you can use ``curl`` with the ``-u`` option, for example:
+If :ref:`basic authentication<username>` is enabled, you can use ``curl``'s ``-u`` option in the examples below, for example:
 
 .. code-block:: shell
 

@@ -1,16 +1,10 @@
-=======
-Scrapyd
-=======
 |PyPI Version| |Build Status| |Coverage Status| |Python Version| |Pypi Downloads|
 
-Scrapyd is a service for running `Scrapy <https://scrapy.org>`__ spiders.
+Scrapyd is a service for deploying and running `Scrapy <https://scrapy.org>`__ spiders.
 
-It allows you to deploy your Scrapy projects and control their spiders using an
-HTTP JSON API.
+It allows you to upload Scrapy projects and control their spiders using a JSON API.
 
-The documentation (including installation and usage) can be found at:
-http://scrapyd.readthedocs.org/
-
+(If you are viewing this on GitHub, open the `full documentation <https://scrapyd.readthedocs.io/>`__ for additional details.)
 
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/scrapyd.svg
    :target: https://pypi.org/project/scrapyd/
