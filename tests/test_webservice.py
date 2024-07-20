@@ -1,40 +1,21 @@
 import io
 import os
 import re
-from unittest import mock
 
 import pytest
-from scrapy.utils.test import get_pythonpath
 from twisted.web import error
 
-from scrapyd import get_application
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
-from scrapyd.interfaces import IEggStorage
+from scrapyd.interfaces import IEggStorage, IJobStorage
 from scrapyd.jobstorage import Job
+from scrapyd.txapp import application
 from scrapyd.webservice import UtilsCache, get_spider_list
 from tests import get_egg_data, root_add_version
 
 
-def fake_list_jobs(*args, **kwargs):
-    yield Job("proj1", "spider-a", "id1234")
-
-
-def fake_list_spiders(*args, **kwargs):
-    return []
-
-
-def fake_list_spiders_other(*args, **kwargs):
-    return ["quotesbot", "toscrape-css"]
-
-
-def get_pythonpath_scrapyd():
-    scrapyd_path = __import__("scrapyd").__path__[0]
-    return os.path.join(os.path.dirname(scrapyd_path), get_pythonpath(), os.environ.get("PYTHONPATH", ""))
-
-
 @pytest.fixture()
-def app():
-    return get_application()
+def app(chdir):
+    return application
 
 
 def add_test_version(app, project, version, basename):
@@ -43,7 +24,7 @@ def add_test_version(app, project, version, basename):
 
 def test_get_spider_list_log_stdout(app):
     add_test_version(app, "logstdout", "logstdout", "logstdout")
-    spiders = get_spider_list("logstdout", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("logstdout")
 
     # If LOG_STDOUT were respected, the output would be [].
     assert sorted(spiders) == ["spider1", "spider2"]
@@ -52,34 +33,34 @@ def test_get_spider_list_log_stdout(app):
 def test_get_spider_list(app):
     # mybot.egg has two spiders, spider1 and spider2
     add_test_version(app, "mybot", "r1", "mybot")
-    spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybot")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # mybot2.egg has three spiders, spider1, spider2 and spider3...
     # BUT you won't see it here because it's cached.
     # Effectivelly it's like if version was never added
     add_test_version(app, "mybot", "r2", "mybot2")
-    spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybot")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # Let's invalidate the cache for this project...
     UtilsCache.invalid_cache("mybot")
 
     # Now you get the updated list
-    spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybot")
     assert sorted(spiders) == ["spider1", "spider2", "spider3"]
 
     # Let's re-deploy mybot.egg and clear cache. It now sees 2 spiders
     add_test_version(app, "mybot", "r3", "mybot")
     UtilsCache.invalid_cache("mybot")
-    spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybot")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # And re-deploying the one with three (mybot2.egg) with a version that
     # isn't the higher, won't change what get_spider_list() returns.
     add_test_version(app, "mybot", "r1a", "mybot2")
     UtilsCache.invalid_cache("mybot")
-    spiders = get_spider_list("mybot", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybot")
     assert sorted(spiders) == ["spider1", "spider2"]
 
 
@@ -87,7 +68,7 @@ def test_get_spider_list(app):
 def test_get_spider_list_unicode(app):
     # mybotunicode.egg has two spiders, araña1 and araña2
     add_test_version(app, "mybotunicode", "r1", "mybotunicode")
-    spiders = get_spider_list("mybotunicode", pythonpath=get_pythonpath_scrapyd())
+    spiders = get_spider_list("mybotunicode")
 
     assert sorted(spiders) == ["araña1", "araña2"]
 
@@ -95,7 +76,7 @@ def test_get_spider_list_unicode(app):
 def test_failed_spider_list(app):
     add_test_version(app, "mybot3", "r1", "mybot3")
     with pytest.raises(RunnerError) as exc:
-        get_spider_list("mybot3", pythonpath=get_pythonpath_scrapyd())
+        get_spider_list("mybot3")
 
     assert re.search(f"Exception: This should break the `scrapy list` command{os.linesep}$", str(exc.value))
 
@@ -195,8 +176,10 @@ def test_list_jobs(txrequest, root_with_egg):
     assert set(content) == {"node_name", "status", "pending", "running", "finished"}
 
 
-@mock.patch("scrapyd.jobstorage.MemoryJobStorage.__iter__", new=fake_list_jobs)
 def test_list_jobs_finished(txrequest, root_with_egg):
+    jobstorage = root_with_egg.app.getComponent(IJobStorage)
+    jobstorage.add(Job("proj1", "spider-a", "id1234"))
+
     txrequest.args = {}
     endpoint = b"listjobs.json"
     content = root_with_egg.children[endpoint].render_GET(txrequest)

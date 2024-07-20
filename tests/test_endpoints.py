@@ -10,7 +10,7 @@ from tests.mockserver import MockScrapydServer
 
 
 @pytest.fixture()
-def mock_scrapyd():
+def mock_scrapyd(chdir):
     with MockScrapydServer() as server:
         yield server
 

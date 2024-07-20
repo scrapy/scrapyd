@@ -1,6 +1,3 @@
-import os.path
-import shutil
-
 import pytest
 from twisted.web import http
 from twisted.web.http import Request
@@ -19,23 +16,19 @@ def txrequest():
     return Request(http_channel)
 
 
-@pytest.fixture(params=[None, ("scrapyd", "items_dir", "items")], ids=["default", "items_dir"])
-def root(request):
+# Use this fixture when testing the Scrapyd web UI or API or writing configuration files.
+@pytest.fixture()
+def chdir(monkeypatch, tmpdir):
+    return monkeypatch.chdir(tmpdir)
+
+
+@pytest.fixture(params=[None, (Config.SECTION, "items_dir", "items")], ids=["default", "items_dir"])
+def root(request, chdir):
     config = Config()
     if request.param:
         config.cp.set(*request.param)
 
-    app = application(config)
-
-    yield Root(config, app)
-
-    for setting in ("dbs_dir", "eggs_dir"):
-        directory = os.path.realpath(config.get(setting))
-        basedir = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
-        # Avoid accidentally deleting directories outside the project.
-        assert os.path.commonprefix((directory, basedir)) == basedir
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
+    return Root(config, application(config))
 
 
 @pytest.fixture()
