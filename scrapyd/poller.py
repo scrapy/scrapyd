@@ -22,8 +22,10 @@ class QueuePoller:
                 message = (yield maybeDeferred(queue.pop)).copy()
                 # The message can be None if, for example, two Scrapyd instances share a spider queue database.
                 if message is not None:
+                    message["_project"] = project
+                    message["_spider"] = message.pop("name")
                     # Pop a dummy item from the "waiting" backlog. and fire the message's callbacks.
-                    return self.dq.put(dict(message, _project=project, _spider=message.pop("name")))
+                    return self.dq.put(message)
 
     def next(self):
         """
