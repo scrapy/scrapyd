@@ -34,7 +34,8 @@ def root(request):
         basedir = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
         # Avoid accidentally deleting directories outside the project.
         assert os.path.commonprefix((directory, basedir)) == basedir
-        shutil.rmtree(directory)
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
 
 
 @pytest.fixture()
