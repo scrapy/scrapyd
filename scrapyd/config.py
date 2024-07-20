@@ -1,7 +1,7 @@
 import glob
+import os.path
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from contextlib import suppress
-from os.path import expanduser
 from pkgutil import get_data
 
 from scrapy.utils.conf import closest_scrapy_cfg
@@ -15,28 +15,41 @@ class Config:
 
     def __init__(self, values=None, extra_sources=()):
         if values is None:
-            sources = self._getsources()
-            default_config = get_data(__package__, "default_scrapyd.conf").decode("utf8")
             self.cp = ConfigParser()
-            self.cp.read_string(default_config)
-            sources.extend(extra_sources)
-            for fname in sources:
-                with suppress(OSError), open(fname) as fp:
-                    self.cp.read_file(fp)
+            self.cp.read_string(get_data(__package__, "default_scrapyd.conf").decode("utf8"))
+            for source in self._get_sources(extra_sources):
+                with suppress(OSError), open(source) as f:
+                    self.cp.read_file(f)
         else:
             self.cp = ConfigParser(values)
             self.cp.add_section(self.SECTION)
 
-    def _getsources(self):
-        sources = ["/etc/scrapyd/scrapyd.conf", r"c:\scrapyd\scrapyd.conf"]
-        sources += sorted(glob.glob("/etc/scrapyd/conf.d/*"))
-        sources += ["scrapyd.conf"]
-        sources += [expanduser("~/.scrapyd.conf")]
+    def _get_sources(self, extra_sources):
+        sources = [
+            "/etc/scrapyd/scrapyd.conf",
+            "c:\\scrapyd\\scrapyd.conf",
+            *sorted(glob.glob("/etc/scrapyd/conf.d/*")),
+            "scrapyd.conf",
+            os.path.expanduser("~/.scrapyd.conf"),
+        ]
         if scrapy_cfg := closest_scrapy_cfg():
             sources.append(scrapy_cfg)
+        sources.extend(extra_sources)
         return sources
 
-    def _getany(self, method, option, default):
+    def get(self, option, default=None):
+        return self._get(self.cp.get, option, default)
+
+    def getint(self, option, default=None):
+        return self._get(self.cp.getint, option, default)
+
+    def getfloat(self, option, default=None):
+        return self._get(self.cp.getfloat, option, default)
+
+    def getboolean(self, option, default=None):
+        return self._get(self.cp.getboolean, option, default)
+
+    def _get(self, method, option, default):
         try:
             return method(self.SECTION, option)
         except (NoSectionError, NoOptionError):
@@ -44,22 +57,10 @@ class Config:
                 return default
             raise
 
-    def get(self, option, default=None):
-        return self._getany(self.cp.get, option, default)
-
-    def getint(self, option, default=None):
-        return self._getany(self.cp.getint, option, default)
-
-    def getfloat(self, option, default=None):
-        return self._getany(self.cp.getfloat, option, default)
-
-    def getboolean(self, option, default=None):
-        return self._getany(self.cp.getboolean, option, default)
-
     def items(self, section, default=None):
         try:
             return self.cp.items(section)
-        except (NoSectionError, NoOptionError):
+        except NoSectionError:
             if default is not None:
                 return default
             raise
