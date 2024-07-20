@@ -20,6 +20,7 @@ Documentation
 
 - How to add webservices (endpoints). See :ref:`config-services`.
 - How to create Docker images. See :ref:`docker`.
+- How to use the ``[settings]`` section to add Scrapy projects directly, without eggs. See :ref:`config-settings`.
 
 Changed
 ~~~~~~~
@@ -64,19 +65,27 @@ Library
   -  ``get_crawl_args`` to ``scrapyd.launcher``
   -  ``JsonResource``, ``get_spider_list`` and ``UtilsCache`` to ``scrapyd.webservice``
 
--  Move ``activate_egg`` from ``scrapyd.eggutils`` to its caller, ``scrapyd.runner``.
--  Move ``job_items_url`` and ``job_log_url`` from ``scrapyd.jobstorage`` to ``scrapyd.utils``. :ref:`jobstorage` is not responsible for URLs.
--  Change ``scrapyd.app.create_wrapped_resource`` to ``scrapyd.basicauth.wrap_resource``.
--  Remove unused keyword arguments from ``native_stringify_dict`` and ``to_native_str``.
+-  Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
+-  Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
+-  Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
+-  Merge the ``JsonResource`` class into the ``WsResource`` class, removing the ``render_object`` method.
+-  Remove the unused keyword arguments from the ``native_stringify_dict`` and ``to_native_str`` functions.
 
 Fixed
 ~~~~~
 
-- The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
-- The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
 - The ``MemoryJobStorage`` class returns finished jobs in reverse chronological order, like the ``SqliteJobStorage`` class.
 - The ``list_projects`` method of the ``SpiderScheduler`` class returns a ``list`, instead of ``dict_keys``.
+- Log errors to Scrapyd's log, even when :ref:`debug` mode is enabled.
+- List the closest ``scrapy.cfg`` file as a :ref:`configuration source<config-sources>`.
+
+API
+^^^
+
+- The Content-Length header counts the number of bytes, instead of the number of characters.
+- The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
+- The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 
 Security
 ^^^^^^^^

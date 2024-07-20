@@ -127,40 +127,35 @@ class UtilsCache:
         return f"UtilsCache(cache_manager={self.cache_manager!r})"
 
 
-class JsonResource(resource.Resource):
+class WsResource(resource.Resource):
     json_encoder = json.JSONEncoder()
 
-    def render(self, txrequest):
-        r = resource.Resource.render(self, txrequest)
-        return self.encode_object(r, txrequest)
-
-    def encode_object(self, obj, txrequest):
-        r = "" if obj is None else self.json_encoder.encode(obj) + "\n"
-        txrequest.setHeader("Content-Type", "application/json")
-        txrequest.setHeader("Access-Control-Allow-Origin", "*")
-        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
-        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
-        txrequest.setHeader("Content-Length", str(len(r)))
-        return r
-
-
-class WsResource(JsonResource):
     def __init__(self, root):
-        JsonResource.__init__(self)
+        super().__init__()
         self.root = root
 
     def render(self, txrequest):
         try:
-            return JsonResource.render(self, txrequest).encode()
+            obj = super().render(self, txrequest)
         except Exception as e:  # noqa: BLE001
+            log.err()
+
             if isinstance(e, error.Error):
                 txrequest.setResponseCode(int(e.status))
+
             if self.root.debug:
                 return traceback.format_exc().encode()
-            log.err()
+
             message = e.message.decode() if isinstance(e, error.Error) else f"{type(e).__name__}: {e}"
-            r = {"node_name": self.root.nodename, "status": "error", "message": message}
-            return self.encode_object(r, txrequest).encode()
+            obj = {"node_name": self.root.nodename, "status": "error", "message": message}
+
+        content = b"" if obj is None else self.json_encoder.encode(obj).encode() + b"\n"
+        txrequest.setHeader("Content-Type", "application/json")
+        txrequest.setHeader("Access-Control-Allow-Origin", "*")
+        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
+        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
+        txrequest.setHeader("Content-Length", str(len(content)))
+        return content
 
     def render_OPTIONS(self, txrequest):
         methods = ["OPTIONS", "HEAD"]
