@@ -1,6 +1,3 @@
-import os.path
-import shutil
-
 import pytest
 from twisted.web import http
 from twisted.web.http import Request
@@ -9,7 +6,7 @@ from twisted.web.test.requesthelper import DummyChannel
 from scrapyd import Config
 from scrapyd.app import application
 from scrapyd.website import Root
-from tests import root_add_version
+from tests import clean, root_add_version
 
 
 @pytest.fixture()
@@ -30,12 +27,7 @@ def root(request):
     yield Root(config, app)
 
     for setting in ("dbs_dir", "eggs_dir"):
-        directory = os.path.realpath(config.get(setting))
-        basedir = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
-        # Avoid accidentally deleting directories outside the project.
-        assert os.path.commonprefix((directory, basedir)) == basedir
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
+        clean(config, setting)
 
 
 @pytest.fixture()
