@@ -1,11 +1,6 @@
 Deployment
 ==========
 
-Deploying a Scrapy project
---------------------------
-
-This involves building a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploading it to Scrapyd via the `addversion.json <https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json>`_ webservice. Do this easily with the `scrapyd-deploy` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package.
-
 .. _docker:
 
 Creating a Docker image

@@ -1,52 +1,37 @@
-.. _contributing:
-
 Contributing
 ============
 
-.. important:: Read through the `Scrapy Contribution Docs <http://scrapy.readthedocs.org/en/latest/contributing.html>`__ for tips relating to writing patches, reporting bugs, and project coding style.
+.. important:: Read through the `Scrapy Contribution Docs <http://scrapy.readthedocs.org/en/latest/contributing.html>`__ for tips relating to writing patches, reporting bugs, and coding style.
 
-These docs describe how to setup and contribute to Scrapyd.
+Issues and bugs
+---------------
 
-Reporting issues & bugs
------------------------
-
-Issues should be reported to the Scrapyd project `issue tracker <https://github.com/scrapy/scrapyd/issues>`__ on GitHub.
+Report on `GitHub <https://github.com/scrapy/scrapyd/issues>`__.
 
 Tests
 -----
 
-Tests are implemented using the `Twisted unit-testing framework <https://docs.twisted.org/en/stable/development/test-standard.html>`__. Scrapyd uses ``trial`` as the test running application.
+Include tests in your pull requests.
 
-Running tests
--------------
-
-To run all tests go to the root directory of the Scrapyd source code and run:
+To run unit tests:
 
 .. code-block:: shell
 
-   trial tests
+   pytest tests
 
-To run a specific test (say ``tests/test_poller.py``) use:
+To run integration tests:
 
 .. code-block:: shell
 
-   trial tests.test_poller
+   printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
+   mkdir logs
+   scrapyd &
+   pytest integration_tests
 
-Writing tests
--------------
+Installation
+------------
 
-All functionality (including new features and bug fixes) should include a test
-case to check that it works as expected, so please include tests for your
-patches if you want them to get accepted sooner.
-
-Scrapyd uses unit tests, which are located in the `tests <https://github.com/scrapy/scrapyd/tree/master/tests>`__ directory.
-Their module name typically resembles the full path of the module they're testing.
-For example, the scheduler code is in ``scrapyd.scheduler`` and its unit tests are in ``tests/test_scheduler.py``.
-
-Installing locally
-------------------
-
-To install a locally edited version of Scrapyd onto the system to use and test, inside the project root run:
+To install an editable version for development, clone the repository, change to its directory, and run:
 
 .. code-block:: shell
 

@@ -203,6 +203,8 @@ Options
 
 .. attention:: It is not recommended to use a low interval like 0.1 when using the default :ref:`spiderqueue` value. Consider a custom queue based on `queuelib <https://github.com/scrapy/queuelib>`__.
 
+.. _config-launcher:
+
 Launcher options
 ----------------
 
