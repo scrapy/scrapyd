@@ -64,7 +64,6 @@ def test_get_spider_list(app):
     assert sorted(spiders) == ["spider1", "spider2"]
 
 
-@pytest.mark.skipif(os.name == "nt", reason="get_spider_list() unicode fails on windows")
 def test_get_spider_list_unicode(app):
     # mybotunicode.egg has two spiders, araña1 and araña2
     add_test_version(app, "mybotunicode", "r1", "mybotunicode")
