@@ -38,10 +38,10 @@ def test_urljoin(mock_scrapyd):
 
 
 def test_root(mock_scrapyd):
-    resp = requests.get(mock_scrapyd.url)
+    response = requests.get(mock_scrapyd.url)
 
-    assert resp.status_code == 200
-    assert re.search("To schedule a spider you need to use the API", resp.text)
+    assert response.status_code == 200
+    assert re.search("To schedule a spider you need to use the API", response.text)
 
 
 def test_auth():
@@ -60,35 +60,59 @@ def test_auth():
         assert res.status_code == 401
 
 
-def test_launch_spider_get(mock_scrapyd):
-    resp = requests.get(mock_scrapyd.urljoin("schedule.json"))
+@pytest.mark.parametrize(
+    ("webservice", "method"),
+    [
+        ("daemonstatus", "GET"),
+        ("addversion", "POST"),
+        ("schedule", "POST"),
+        ("cancel", "POST"),
+        ("status", "GET"),
+        ("listprojects", "GET"),
+        ("listversions", "GET"),
+        ("listspiders", "GET"),
+        ("listjobs", "GET"),
+        ("delversion", "POST"),
+        ("delproject", "POST"),
+    ],
+)
+def test_options(mock_scrapyd, webservice, method):
+    response = requests.options(mock_scrapyd.urljoin(f"{webservice}.json"))
 
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "error"
+    assert response.status_code == 204, f"204 != {response.status_code}"
+    assert response.content == b""
+    assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
+
+
+def test_launch_spider_get(mock_scrapyd):
+    response = requests.get(mock_scrapyd.urljoin("schedule.json"))
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "error"
 
 
 def test_spider_list_no_project(mock_scrapyd):
-    resp = requests.get(mock_scrapyd.urljoin("listspiders.json"))
-    data = resp.json()
+    response = requests.get(mock_scrapyd.urljoin("listspiders.json"))
+    data = response.json()
 
-    assert resp.status_code == 200
+    assert response.status_code == 200
     assert data["status"] == "error"
     assert data["message"] == "'project' parameter is required"
 
 
 def test_spider_list_project_no_egg(mock_scrapyd):
-    resp = requests.get(mock_scrapyd.urljoin("listprojects.json"))
-    data = resp.json()
+    response = requests.get(mock_scrapyd.urljoin("listprojects.json"))
+    data = response.json()
 
-    assert resp.status_code == 200
+    assert response.status_code == 200
     assert data["status"] == "ok"
 
 
 def test_addversion_and_delversion(mock_scrapyd, quotesbot_egg):
-    resp = _deploy(mock_scrapyd, quotesbot_egg)
-    data = resp.json()
+    response = _deploy(mock_scrapyd, quotesbot_egg)
+    data = response.json()
 
-    assert resp.status_code == 200
+    assert response.status_code == 200
     assert data["spiders"] == 2
     assert data["status"] == "ok"
     assert data["project"] == "quotesbot"
