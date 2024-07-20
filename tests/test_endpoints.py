@@ -34,7 +34,7 @@ def _deploy(mock_scrapyd, quotesbot_egg) -> Response:
 
 
 def test_urljoin(mock_scrapyd):
-    assert mock_scrapyd.urljoin("foo") == mock_scrapyd.url + "foo"
+    assert mock_scrapyd.urljoin("foo") == f"{mock_scrapyd.url}foo"
 
 
 def test_root(mock_scrapyd):
@@ -47,7 +47,7 @@ def test_root(mock_scrapyd):
 def test_auth():
     username, password = "Leonardo", "hunter2"
 
-    with MockScrapydServer(authentication=username + ":" + password) as server:
+    with MockScrapydServer(username=username, password=password) as server:
         assert requests.get(server.url).status_code == 401
 
         res = requests.get(server.url, auth=(username, password))

@@ -18,14 +18,14 @@ def get_ephemeral_port():
 
 
 class MockScrapydServer:
-    def __init__(self, authentication=None):
-        self.authentication = authentication
+    def __init__(self, username=None, password=None):
+        self.username = username
+        self.password = password
 
-    def __enter__(self, authentication=None):
-        """Launch Scrapyd application object with ephemeral port"""
+    def __enter__(self):
         command = [sys.executable, os.path.join(BASEDIR, "start_mock_app.py"), get_ephemeral_port()]
-        if self.authentication is not None:
-            command.append("--auth=" + self.authentication)
+        if self.username and self.password:
+            command.extend([f"--username={self.username}", f"--password={self.password}"])
 
         self.process = Popen(command, stdout=PIPE)
 
