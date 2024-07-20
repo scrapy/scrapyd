@@ -5,20 +5,17 @@ import re
 import pytest
 from twisted.web import error
 
-from scrapyd.config import Config
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage, IJobStorage
 from scrapyd.jobstorage import Job
 from scrapyd.txapp import application
 from scrapyd.webservice import UtilsCache, get_spider_list
-from tests import clean, get_egg_data, root_add_version
+from tests import get_egg_data, root_add_version
 
 
 @pytest.fixture()
-def app():
-    yield application
-
-    clean(Config(), "eggs_dir")
+def app(chdir):
+    return application
 
 
 def add_test_version(app, project, version, basename):

@@ -51,7 +51,7 @@ def test_sorted_versions(versions, expected):
     assert sorted_versions(versions) == expected
 
 
-def test_config():
+def test_config(chdir):
     config = Config()
     config.cp.set("scrapyd", "eggstorage", "tests.test_eggstorage.FakeEggStorage")
 

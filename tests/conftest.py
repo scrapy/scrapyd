@@ -6,7 +6,7 @@ from twisted.web.test.requesthelper import DummyChannel
 from scrapyd import Config
 from scrapyd.app import application
 from scrapyd.website import Root
-from tests import clean, root_add_version
+from tests import root_add_version
 
 
 @pytest.fixture()
@@ -16,18 +16,19 @@ def txrequest():
     return Request(http_channel)
 
 
-@pytest.fixture(params=[None, ("scrapyd", "items_dir", "items")], ids=["default", "items_dir"])
-def root(request):
+# Use this fixture when testing the Scrapyd web UI or API or writing configuration files.
+@pytest.fixture()
+def chdir(monkeypatch, tmpdir):
+    return monkeypatch.chdir(tmpdir)
+
+
+@pytest.fixture(params=[None, (Config.SECTION, "items_dir", "items")], ids=["default", "items_dir"])
+def root(request, chdir):
     config = Config()
     if request.param:
         config.cp.set(*request.param)
 
-    app = application(config)
-
-    yield Root(config, app)
-
-    for setting in ("dbs_dir", "eggs_dir"):
-        clean(config, setting)
+    return Root(config, application(config))
 
 
 @pytest.fixture()
