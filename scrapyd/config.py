@@ -26,8 +26,8 @@ class Config:
 
     def _get_sources(self, extra_sources):
         sources = [
-            "/etc/scrapyd/scrapyd.conf",
             "c:\\scrapyd\\scrapyd.conf",
+            "/etc/scrapyd/scrapyd.conf",
             *sorted(glob.glob("/etc/scrapyd/conf.d/*")),
             "scrapyd.conf",
             os.path.expanduser("~/.scrapyd.conf"),
