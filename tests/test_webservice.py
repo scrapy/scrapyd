@@ -1,3 +1,4 @@
+import datetime
 import io
 import os
 import re
@@ -12,6 +13,8 @@ from scrapyd.txapp import application
 from scrapyd.webservice import UtilsCache, get_spider_list
 from tests import get_egg_data, root_add_version
 
+job1 = Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
+
 
 @pytest.fixture()
 def app(chdir):
@@ -20,6 +23,14 @@ def app(chdir):
 
 def add_test_version(app, project, version, basename):
     app.getComponent(IEggStorage).put(io.BytesIO(get_egg_data(basename)), project, version)
+
+
+def assert_webservice(txrequest, root, basename, args, expected):
+    txrequest.args = args.copy()
+    content = root.children[b"%b.json" % basename.encode()].render_GET(txrequest)
+
+    assert content.pop("node_name")
+    assert content == expected
 
 
 def test_get_spider_list_log_stdout(app):
@@ -88,6 +99,26 @@ def test_utils_cache_repr():
     cache["key"] = "value"
 
     assert repr(cache) == "UtilsCache(cache_manager=JsonSqliteDict({'key': 'value'}))"
+
+
+def test_daemonstatus(txrequest, root_with_egg):
+    expected = {"status": "ok", "running": 0, "pending": 0, "finished": 0}
+    assert_webservice(txrequest, root_with_egg, "daemonstatus", {}, expected)
+
+    root_with_egg.launcher.finished.add(job1)
+
+    expected["finished"] += 1
+    assert_webservice(txrequest, root_with_egg, "daemonstatus", {}, expected)
+
+    root_with_egg.launcher.processes[0] = job1
+
+    expected["running"] += 1
+    assert_webservice(txrequest, root_with_egg, "daemonstatus", {}, expected)
+
+    root_with_egg.scheduler.queues["quotesbot"].add("quotesbot")
+
+    expected["pending"] += 1
+    assert_webservice(txrequest, root_with_egg, "daemonstatus", {}, expected)
 
 
 def test_list_spiders(txrequest, root):
