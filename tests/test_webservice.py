@@ -438,6 +438,15 @@ def test_add_version(txrequest, root):
     assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
 
+def test_add_version_settings(txrequest, root):
+    if not has_settings(root):
+        pytest.skip("[settings] section is not set")
+
+    args = {b"project": [b"localproject"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
+    message = b"project 'localproject' already configured in the [settings] section"
+    assert_error(txrequest, root, "POST", "addversion", args, message)
+
+
 def test_add_version_invalid(txrequest, root):
     args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [b"invalid"]}
     message = b"egg is not a ZIP file (if using curl, use egg=@path not egg=path)"

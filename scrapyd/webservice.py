@@ -90,7 +90,7 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None, config=
         env["PYTHONPATH"] = pythonpath
     if version:
         env["SCRAPYD_EGG_VERSION"] = version
-    if project in dict(settings):
+    if project in settings:
         env["SCRAPY_SETTINGS_MODULE"] = settings[project]
 
     pargs = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
@@ -257,6 +257,11 @@ class AddVersion(WsResource):
         if not zipfile.is_zipfile(BytesIO(egg)):
             raise error.Error(
                 code=http.OK, message=b"egg is not a ZIP file (if using curl, use egg=@path not egg=path)"
+            )
+
+        if any(p for p, _ in self.root._config.items("settings", default=[]) if project == p):
+            raise error.Error(
+                code=http.OK, message=b"project '%b' already configured in the [settings] section" % project.encode()
             )
 
         self.root.eggstorage.put(BytesIO(egg), project, version)
