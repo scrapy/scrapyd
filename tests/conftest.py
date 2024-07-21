@@ -1,3 +1,6 @@
+import os.path
+import shutil
+
 import pytest
 from twisted.web import http
 from twisted.web.http import Request
@@ -7,6 +10,8 @@ from scrapyd import Config
 from scrapyd.app import application
 from scrapyd.website import Root
 from tests import root_add_version
+
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
 
 @pytest.fixture()
@@ -19,22 +24,25 @@ def txrequest():
 # Use this fixture when testing the Scrapyd web UI or API or writing configuration files.
 @pytest.fixture()
 def chdir(monkeypatch, tmpdir):
-    return monkeypatch.chdir(tmpdir)
+    monkeypatch.chdir(tmpdir)
+    return tmpdir
 
 
 @pytest.fixture(
     params=[
         None,
         (Config.SECTION, "items_dir", "items"),
-        ("settings", "localproject", "tests.fixtures.localbot.settings"),
+        ("settings", "localproject", "localproject.settings"),
     ],
     ids=["default", "items_dir", "settings"],
 )
 def root(request, chdir):
     config = Config()
     if request.param:
-        if request.param[0] != Config.SECTION:
+        if request.param[0] == "settings":
             config.cp.add_section(request.param[0])
+            # Copy the local files to be in the Python path.
+            shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), os.path.join(chdir), dirs_exist_ok=True)
         config.cp.set(*request.param)
 
     return Root(config, application(config))

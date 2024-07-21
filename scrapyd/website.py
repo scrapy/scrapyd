@@ -128,22 +128,27 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 class Root(resource.Resource):
     def __init__(self, config, app):
         resource.Resource.__init__(self)
-        self.debug = config.getboolean("debug", False)
-        self.runner = config.get("runner")
-        self.prefix_header = config.get("prefix_header")
-        logsdir = config.get("logs_dir")
-        itemsdir = config.get("items_dir")
-        self.local_items = itemsdir and (urlparse(itemsdir).scheme.lower() in ["", "file"])
+
+        logs_dir = config.get("logs_dir")
+        items_dir = config.get("items_dir")
+
         self.app = app
+        # TODO(jpmckinney): Make Config a Component
+        # https://github.com/scrapy/scrapyd/issues/526
+        self._config = config
+        self.debug = config.getboolean("debug", False)
+        self.runner = config.get("runner", "scrapyd.runner")
+        self.prefix_header = config.get("prefix_header")
+        self.local_items = items_dir and (urlparse(items_dir).scheme.lower() in ["", "file"])
         self.nodename = config.get("node_name", socket.gethostname())
+
         self.putChild(b"", Home(self, self.local_items))
-        if logsdir:
-            self.putChild(b"logs", File(logsdir.encode("ascii", "ignore"), "text/plain"))
+        if logs_dir:
+            self.putChild(b"logs", File(logs_dir.encode("ascii", "ignore"), "text/plain"))
         if self.local_items:
-            self.putChild(b"items", File(itemsdir, "text/plain"))
+            self.putChild(b"items", File(items_dir, "text/plain"))
         self.putChild(b"jobs", Jobs(self, self.local_items))
-        services = config.items("services", ())
-        for service_name, service_path in services:
+        for service_name, service_path in config.items("services", default=[]):
             service_cls = load_object(service_path)
             self.putChild(service_name.encode(), service_cls(self))
 

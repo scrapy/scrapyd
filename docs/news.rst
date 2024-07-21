@@ -36,6 +36,7 @@ Web UI
 API
 ^^^
 
+- The :ref:`schedule.json` and :ref:`listspiders.json` webservices support Scrapy projects stored as Python modules, using the previously undocumented :ref:`[settings]<config-settings>` section.
 - Clarify error messages, for example:
 
   - ``'project' parameter is required``, instead of ``'project'`` (KeyError)

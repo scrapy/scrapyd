@@ -1,3 +1,6 @@
+from tests import has_settings
+
+
 def test_render_jobs(txrequest, root_with_egg):
     content = root_with_egg.children[b"jobs"].render(txrequest)
     expect_headers = {
@@ -23,7 +26,7 @@ def test_render_home(txrequest, root_with_egg):
     content = root_with_egg.children[b""].render_GET(txrequest)
     expect_headers = {
         b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"714"],
+        b"Content-Length": [b"736" if has_settings(root_with_egg) else b"714"],
     }
     if root_with_egg.local_items:
         expect_headers[b"Content-Length"] = [b"751"]

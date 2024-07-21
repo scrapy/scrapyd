@@ -57,7 +57,7 @@ def param(
     return decorator
 
 
-def get_spider_list(project, runner=None, pythonpath=None, version=None):
+def get_spider_list(project, runner=None, pythonpath=None, version=None, config=None):
     """Return the spider list from the given project, using the given runner"""
 
     # UtilsCache uses JsonSqliteDict, which encodes the project's value as JSON, but JSON allows only string keys,
@@ -72,16 +72,24 @@ def get_spider_list(project, runner=None, pythonpath=None, version=None):
     except KeyError:
         pass
 
+    settings = {} if config is None else dict(config.items("settings", default=[]))
+
+    # runner should always be set.
     if runner is None:
-        runner = Config().get("runner")
+        runner = Config().get("runner", "scrapyd.runner")
 
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "UTF-8"
     env["SCRAPY_PROJECT"] = project
+    # TODO(jpmckinney): Remove
+    # https://github.com/scrapy/scrapyd/commit/17520a32d19726dc4b09611ff732a9ff3fa8b6ea
     if pythonpath:
         env["PYTHONPATH"] = pythonpath
     if version:
         env["SCRAPYD_EGG_VERSION"] = version
+    if project in dict(settings):
+        env["SCRAPY_SETTINGS_MODULE"] = settings[project]
+
     pargs = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
     proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
     out, err = proc.communicate()
@@ -196,7 +204,7 @@ class Schedule(WsResource):
                 raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
-        spiders = get_spider_list(project, version=version, runner=self.root.runner)
+        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
 
@@ -251,9 +259,11 @@ class AddVersion(WsResource):
             )
 
         self.root.eggstorage.put(BytesIO(egg), project, version)
-        spiders = get_spider_list(project, version=version, runner=self.root.runner)
         self.root.update_projects()
+
+        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
         UtilsCache.invalid_cache(project)
+
         return {
             "node_name": self.root.nodename,
             "status": "ok",
@@ -280,12 +290,13 @@ class ListSpiders(WsResource):
     @param("project")
     @param("_version", dest="version", required=False, default=None)
     def render_GET(self, txrequest, project, version):
-        if self.root.eggstorage.get(project, version) == (None, None):
-            if version:
-                raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+        if project not in self.root.scheduler.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
-        spiders = get_spider_list(project, version=version, runner=self.root.runner)
+        if version and self.root.eggstorage.get(project, version) == (None, None):
+            raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+
+        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
 
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 

@@ -11,7 +11,7 @@ from scrapyd.interfaces import IEggStorage, IJobStorage
 from scrapyd.jobstorage import Job
 from scrapyd.txapp import application
 from scrapyd.webservice import UtilsCache, get_spider_list
-from tests import get_egg_data, root_add_version
+from tests import get_egg_data, has_settings, root_add_version
 
 job1 = Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
 
@@ -21,9 +21,8 @@ def app(chdir):
     return application
 
 
-def has_settings(root):
-    # The configuration is not guaranteed to be accessible here, but it is for now.
-    return root.scheduler.config.cp.has_section("settings")
+def get_local_projects(root):
+    return ["localproject"] if has_settings(root) else []
 
 
 def add_test_version(app, project, version, basename):
@@ -154,32 +153,44 @@ def test_daemonstatus(txrequest, root_with_egg):
 
 
 @pytest.mark.parametrize(
-    ("extra_args", "spiders"),
+    ("args", "spiders", "run_only_if_has_settings"),
     [
-        ({}, ["spider1", "spider2", "spider3"]),
-        ({b"_version": [b"r1"]}, ["spider1", "spider2"]),
+        ({b"project": [b"myproject"]}, ["spider1", "spider2", "spider3"], False),
+        ({b"project": [b"myproject"], b"_version": [b"r1"]}, ["spider1", "spider2"], False),
+        ({b"project": [b"localproject"]}, ["example"], True),
     ],
 )
-def test_list_spiders(txrequest, root, extra_args, spiders):
+def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
+    if run_only_if_has_settings and not has_settings(root):
+        pytest.skip("[settings] section is not set")
+
     UtilsCache.invalid_cache("myproject")  # test_get_spider_list fills cache
 
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
+    root.update_projects()
 
     expected = {"status": "ok", "spiders": spiders}
-    assert_content(txrequest, root, "listspiders", {b"project": [b"myproject"], **extra_args}, expected)
+    assert_content(txrequest, root, "listspiders", args, expected)
 
 
 @pytest.mark.parametrize(
-    ("args", "param"),
+    ("args", "param", "run_only_if_has_settings"),
     [
-        ({b"project": [b"nonexistent"]}, "project"),
-        ({b"project": [b"myproject"], b"_version": [b"nonexistent"]}, "version"),
+        ({b"project": [b"nonexistent"]}, "project", False),
+        ({b"project": [b"myproject"], b"_version": [b"nonexistent"]}, "version", False),
+        ({b"project": [b"localproject"], b"_version": [b"nonexistent"]}, "version", True),
     ],
 )
-def test_list_spiders_nonexistent(txrequest, root, args, param):
+def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_settings):
+    if run_only_if_has_settings and not has_settings(root):
+        pytest.skip("[settings] section is not set")
+
+    UtilsCache.invalid_cache("myproject")  # test_get_spider_list fills cache
+
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
+    root.update_projects()
 
     txrequest.args = args.copy()
     with pytest.raises(error.Error) as exc:
@@ -200,14 +211,12 @@ def test_list_versions_nonexistent(txrequest, root):
 
 
 def test_list_projects(txrequest, root_with_egg):
-    expected = {"status": "ok", "projects": ["quotesbot"]}
-    if has_settings(root_with_egg):
-        expected["projects"].append("localproject")
+    expected = {"status": "ok", "projects": ["quotesbot", *get_local_projects(root_with_egg)]}
     assert_content(txrequest, root_with_egg, "listprojects", {}, expected)
 
 
 def test_list_projects_empty(txrequest, root):
-    expected = {"status": "ok", "projects": []}
+    expected = {"status": "ok", "projects": get_local_projects(root)}
     assert_content(txrequest, root, "listprojects", {}, expected)
 
 
@@ -237,6 +246,8 @@ def test_list_jobs_finished(txrequest, root_with_egg):
 
 
 def test_delete_version(txrequest, root):
+    projects = get_local_projects(root)
+
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
@@ -258,7 +269,7 @@ def test_delete_version(txrequest, root):
 
     txrequest.args = {}
     content = root.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == ["myproject"]
+    assert content["projects"] == ["myproject", *projects]
 
     # Delete another version.
     txrequest.args = {b"project": [b"myproject"], b"version": [b"r1"]}
@@ -269,7 +280,7 @@ def test_delete_version(txrequest, root):
 
     txrequest.args = {}
     content = root.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == []  # "myproject" if root.update_projects() weren't celled
+    assert content["projects"] == [*projects]  # "myproject" if root.update_projects() weren't celled
 
 
 @pytest.mark.parametrize(
@@ -289,13 +300,15 @@ def test_delete_version_nonexistent(txrequest, root_with_egg, args, message):
 
 
 def test_delete_project(txrequest, root_with_egg):
+    projects = get_local_projects(root_with_egg)
+
     txrequest.args = {b"project": [b"quotesbot"]}
     content = root_with_egg.children[b"listspiders.json"].render_GET(txrequest)
     assert content["spiders"] == ["toscrape-css", "toscrape-xpath"]
 
     txrequest.args = {}
     content = root_with_egg.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == ["quotesbot"]
+    assert content["projects"] == ["quotesbot", *projects]
 
     # Delete the project.
     txrequest.args = {b"project": [b"quotesbot"]}
@@ -311,7 +324,7 @@ def test_delete_project(txrequest, root_with_egg):
 
     txrequest.args = {}
     content = root_with_egg.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == []  # "quotesbot" if root.update_projects() weren't celled
+    assert content["projects"] == [*projects]  # "quotesbot" if root.update_projects() weren't celled
 
 
 def test_delete_project_nonexistent(txrequest, root):
@@ -323,7 +336,7 @@ def test_delete_project_nonexistent(txrequest, root):
     assert exc.value.message == b"project 'nonexistent' not found"
 
 
-def test_addversion(txrequest, root):
+def test_add_version(txrequest, root):
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
 
     eggstorage = root.app.getComponent(IEggStorage)
@@ -342,7 +355,7 @@ def test_addversion(txrequest, root):
     assert no_version == "0_1"
 
 
-def test_addversion_same(txrequest, root):
+def test_add_version_same(txrequest, root):
     txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
 
     eggstorage = root.app.getComponent(IEggStorage)
@@ -402,6 +415,27 @@ def test_schedule_nonexistent_spider(txrequest, root_with_egg):
     assert exc.value.message == b"spider 'nonexistent' not found"
 
 
+# Cancel, Status, ListJobs and ListSpiders error with "project '%b' not found" on directory traversal attempts.
+# The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
+# would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
+@pytest.mark.parametrize(
+    ("method", "basename", "args"),
+    [
+        ("POST", "cancel", {b"project": [b"../p"], b"job": [b"aaa"]}),
+        ("GET", "status", {b"project": [b"../p"], b"job": [b"aaa"]}),
+        ("GET", "listspiders", {b"project": [b"../p"]}),
+        ("GET", "listjobs", {b"project": [b"../p"]}),
+    ],
+)
+def test_project_directory_traversal_notfound(txrequest, root, method, basename, args):
+    txrequest.args = args.copy()
+    with pytest.raises(error.Error) as exc:
+        getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
+
+    assert exc.value.status == b"200"
+    assert exc.value.message == b"project '../p' not found"
+
+
 @pytest.mark.parametrize(
     ("endpoint", "attach_egg", "method"),
     [
@@ -430,7 +464,6 @@ def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, meth
     ("endpoint", "method"),
     [
         (b"schedule.json", "render_POST"),
-        (b"listspiders.json", "render_GET"),
     ],
 )
 def test_project_directory_traversal_runner(txrequest, root, endpoint, method):

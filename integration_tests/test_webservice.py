@@ -46,7 +46,7 @@ def test_options(webservice, method):
     assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
 
 
-# cancel.json, status.json and listjobs.json will error with "project '%b' not found" on directory traversal attempts.
+# Cancel, Status, ListJobs and ListSpiders will error with "project '%b' not found" on directory traversal attempts.
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
@@ -76,7 +76,6 @@ def test_project_directory_traversal(webservice, method, params):
     ("webservice", "method", "params"),
     [
         ("schedule", "post", {"spider": "s"}),
-        ("listspiders", "get", {}),
     ],
 )
 def test_project_directory_traversal_runner(webservice, method, params):

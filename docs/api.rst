@@ -201,6 +201,8 @@ listspiders.json
 
 Get the spiders in a version of a project.
 
+.. note:: If :ref:`the project is in a Python module rather than a Python egg<config-settings>`, don't set the ``version`` parameter.
+
 Supported request methods
   ``GET``
 Parameters
