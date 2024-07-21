@@ -41,6 +41,9 @@ def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
     the scrapyd.conf [settings] section
     """
+
+    # The poller and scheduler use this function (via get_spider_queues), and they aren't initialized with the
+    # application. So, we need to re-initialize this component here.
     eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
     projects = eggstorage.list_projects()
     projects.extend(project for project, _ in config.items("settings", default=[]))

@@ -19,28 +19,26 @@ def application(config):
     unix_socket_path = os.getenv("SCRAPYD_UNIX_SOCKET_PATH") or config.get("unix_socket_path", "")
     poll_interval = config.getfloat("poll_interval", 5)
 
-    scheduler = SpiderScheduler(config)
-    app.setComponent(ISpiderScheduler, scheduler)
-
     environment = Environment(config)
-    app.setComponent(IEnvironment, environment)
-
+    scheduler = SpiderScheduler(config)
     poller = initialize_component(config, "poller", "scrapyd.poller.QueuePoller")
-    app.setComponent(IPoller, poller)
-
     jobstorage = initialize_component(config, "jobstorage", "scrapyd.jobstorage.MemoryJobStorage")
-    app.setComponent(IJobStorage, jobstorage)
-
     eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
+
+    app.setComponent(IEnvironment, environment)
+    app.setComponent(ISpiderScheduler, scheduler)
+    app.setComponent(IPoller, poller)
+    app.setComponent(IJobStorage, jobstorage)
     app.setComponent(IEggStorage, eggstorage)
 
+    # launcher uses jobstorage in initializer, and uses poller and environment.
     launcher = initialize_component(config, "launcher", "scrapyd.launcher.Launcher", app)
 
     timer = TimerService(poll_interval, poller.poll)
 
+    # webroot uses launcher, poller, scheduler and environment.
     webroot = initialize_component(config, "webroot", "scrapyd.website.Root", app)
     resource = server.Site(wrap_resource(webroot, config))
-
     if bind_address and http_port:
         webservice = TCPServer(http_port, resource, interface=bind_address)
         log.msg(

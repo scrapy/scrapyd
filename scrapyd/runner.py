@@ -35,15 +35,17 @@ def project_environment(project):
     eggstorage = initialize_component(config, "eggstorage", "scrapyd.eggstorage.FilesystemEggStorage")
 
     eggversion = os.environ.get("SCRAPYD_EGG_VERSION", None)
-    version, egg = eggstorage.get(project, eggversion)
+    sanitized_version, egg = eggstorage.get(project, eggversion)
 
     tmp = None
+    # egg can be None if the project is not in eggstorage, but is defined in the [settings] configuration section.
     if egg:
         try:
             if hasattr(egg, "name"):  # for example, FileIO
                 activate_egg(egg.name)
             else:  # for example, BytesIO
-                tmp = tempfile.NamedTemporaryFile(suffix=".egg", prefix=f"{project}-{version}-", delete=False)
+                prefix = f"{project}-{sanitized_version}-"
+                tmp = tempfile.NamedTemporaryFile(suffix=".egg", prefix=prefix, delete=False)
                 shutil.copyfileobj(egg, tmp)
                 tmp.close()
                 activate_egg(tmp.name)
