@@ -2,6 +2,8 @@ import datetime
 import io
 import os
 import re
+import sys
+from unittest.mock import MagicMock, call
 
 import pytest
 from twisted.web import error
@@ -21,13 +23,19 @@ job1 = Job(
     start_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7),
     end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8),
 )
-process1 = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=[])
-process1.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
 
 
 @pytest.fixture()
 def app(chdir):
     return application
+
+
+@pytest.fixture()
+def scrapy_process():
+    process = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=[])
+    process.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
+    process.transport = MagicMock()
+    return process
 
 
 def get_local_projects(root):
@@ -38,9 +46,9 @@ def add_test_version(app, project, version, basename):
     app.getComponent(IEggStorage).put(io.BytesIO(get_egg_data(basename)), project, version)
 
 
-def assert_content(txrequest, root, basename, args, expected):
+def assert_content(txrequest, root, method, basename, args, expected):
     txrequest.args = args.copy()
-    content = root.children[b"%b.json" % basename.encode()].render_GET(txrequest)
+    content = getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
 
     assert content.pop("node_name")
     assert content == expected
@@ -161,21 +169,21 @@ def test_invalid_type(txrequest, root):
     assert_error(txrequest, root, "POST", "schedule", args, message)
 
 
-def test_daemonstatus(txrequest, root_with_egg):
+def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
     expected = {"status": "ok", "running": 0, "pending": 0, "finished": 0}
-    assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
     root_with_egg.launcher.finished.add(job1)
     expected["finished"] += 1
-    assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
-    root_with_egg.launcher.processes[0] = process1
+    root_with_egg.launcher.processes[0] = scrapy_process
     expected["running"] += 1
-    assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
     root_with_egg.scheduler.queues["quotesbot"].add("quotesbot")
     expected["pending"] += 1
-    assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
 
 @pytest.mark.parametrize(
@@ -197,7 +205,7 @@ def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
     root.update_projects()
 
     expected = {"status": "ok", "spiders": spiders}
-    assert_content(txrequest, root, "listspiders", args, expected)
+    assert_content(txrequest, root, "GET", "listspiders", args, expected)
 
 
 @pytest.mark.parametrize(
@@ -223,26 +231,26 @@ def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_
 
 def test_list_versions(txrequest, root_with_egg):
     expected = {"status": "ok", "versions": ["0_1"]}
-    assert_content(txrequest, root_with_egg, "listversions", {b"project": [b"quotesbot"]}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "listversions", {b"project": [b"quotesbot"]}, expected)
 
 
 def test_list_versions_nonexistent(txrequest, root):
     expected = {"status": "ok", "versions": []}
-    assert_content(txrequest, root, "listversions", {b"project": [b"localproject"]}, expected)
+    assert_content(txrequest, root, "GET", "listversions", {b"project": [b"localproject"]}, expected)
 
 
 def test_list_projects(txrequest, root_with_egg):
     expected = {"status": "ok", "projects": ["quotesbot", *get_local_projects(root_with_egg)]}
-    assert_content(txrequest, root_with_egg, "listprojects", {}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
 def test_list_projects_empty(txrequest, root):
     expected = {"status": "ok", "projects": get_local_projects(root)}
-    assert_content(txrequest, root, "listprojects", {}, expected)
+    assert_content(txrequest, root, "GET", "listprojects", {}, expected)
 
 
 @pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
-def test_status(txrequest, root, args):
+def test_status(txrequest, root, scrapy_process, args):
     root_add_version(root, "p1", "r1", "mybot")
     root_add_version(root, "p2", "r2", "mybot2")
     root.update_projects()
@@ -253,22 +261,22 @@ def test_status(txrequest, root, args):
         root.scheduler.queues["p2"].add("s2", _job="j1")
 
     expected = {"status": "ok", "currstate": None}
-    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+    assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
     root.scheduler.queues["p1"].add("s1", _job="j1")
 
     expected["currstate"] = "pending"
-    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+    assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
-    root.launcher.processes[0] = process1
+    root.launcher.processes[0] = scrapy_process
 
     expected["currstate"] = "running"
-    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+    assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
     root.launcher.finished.add(job1)
 
     expected["currstate"] = "finished"
-    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+    assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
 
 def test_status_nonexistent(txrequest, root):
@@ -277,7 +285,7 @@ def test_status_nonexistent(txrequest, root):
 
 
 @pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
-def test_list_jobs(txrequest, root, args):
+def test_list_jobs(txrequest, root, scrapy_process, args):
     root_add_version(root, "p1", "r1", "mybot")
     root_add_version(root, "p2", "r2", "mybot2")
     root.update_projects()
@@ -288,24 +296,24 @@ def test_list_jobs(txrequest, root, args):
         root.scheduler.queues["p2"].add("s2", _job="j2")
 
     expected = {"status": "ok", "pending": [], "running": [], "finished": []}
-    assert_content(txrequest, root, "listjobs", args, expected)
+    assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
     root.launcher.finished.add(job1)
 
     expected["finished"].append(
         {
-            "id": None,
+            "id": "j1",
             "project": "p1",
             "spider": "s1",
             "start_time": "2001-02-03 04:05:06.000007",
             "end_time": "2001-02-03 04:05:06.000008",
-            "items_url": "/items/p1/s1/None.jl",
-            "log_url": "/logs/p1/s1/None.log",
+            "items_url": "/items/p1/s1/j1.jl",
+            "log_url": "/logs/p1/s1/j1.log",
         },
     )
-    assert_content(txrequest, root, "listjobs", args, expected)
+    assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
-    root.launcher.processes[0] = process1
+    root.launcher.processes[0] = scrapy_process
 
     expected["running"].append(
         {
@@ -316,7 +324,7 @@ def test_list_jobs(txrequest, root, args):
             "pid": None,
         }
     )
-    assert_content(txrequest, root, "listjobs", args, expected)
+    assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
     root.scheduler.queues["p1"].add("s1", _job="j1")
 
@@ -327,7 +335,7 @@ def test_list_jobs(txrequest, root, args):
             "spider": "s1",
         },
     )
-    assert_content(txrequest, root, "listjobs", args, expected)
+    assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
 
 def test_list_jobs_nonexistent(txrequest, root):
@@ -480,6 +488,43 @@ def test_schedule_nonexistent_version(txrequest, root_with_egg):
 def test_schedule_nonexistent_spider(txrequest, root_with_egg):
     args = {b"project": [b"quotesbot"], b"spider": [b"nonexistent"]}
     assert_error(txrequest, root_with_egg, "POST", "schedule", args, b"spider 'nonexistent' not found")
+
+
+@pytest.mark.parametrize("args", [{}, {b"signal": [b"TERM"]}])
+def test_cancel(txrequest, root, scrapy_process, args):
+    signal = "TERM" if args else ("INT" if sys.platform != "win32" else "BREAK")
+
+    root_add_version(root, "p1", "r1", "mybot")
+    root_add_version(root, "p2", "r2", "mybot2")
+    root.update_projects()
+
+    args = {b"project": [b"p1"], b"job": [b"j1"], **args}
+
+    expected = {"status": "ok", "prevstate": None}
+    assert_content(txrequest, root, "POST", "cancel", args, expected)
+
+    root.scheduler.queues["p1"].add("s1", _job="j1")
+    root.scheduler.queues["p1"].add("s1", _job="j1")
+    root.scheduler.queues["p1"].add("s1", _job="j2")
+
+    assert root.scheduler.queues["p1"].count() == 3
+    expected["prevstate"] = "pending"
+    assert_content(txrequest, root, "POST", "cancel", args, expected)
+    assert root.scheduler.queues["p1"].count() == 1
+
+    root.launcher.processes[0] = scrapy_process
+    root.launcher.processes[1] = scrapy_process
+    root.launcher.processes[2] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
+
+    expected["prevstate"] = "running"
+    assert_content(txrequest, root, "POST", "cancel", args, expected)
+    assert scrapy_process.transport.signalProcess.call_count == 2
+    scrapy_process.transport.signalProcess.assert_has_calls([call(signal), call(signal)])
+
+
+def test_cancel_nonexistent(txrequest, root):
+    args = {b"project": [b"nonexistent"], b"job": [b"aaa"]}
+    assert_error(txrequest, root, "POST", "cancel", args, b"project 'nonexistent' not found")
 
 
 # Cancel, Status, ListJobs and ListSpiders error with "project '%b' not found" on directory traversal attempts.

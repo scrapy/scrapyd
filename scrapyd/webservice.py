@@ -245,7 +245,6 @@ class Cancel(WsResource):
             if process.project == project and process.job == job:
                 process.transport.signalProcess(signal)
                 prevstate = "running"
-                break
 
         return {"node_name": self.root.nodename, "status": "ok", "prevstate": prevstate}
 
