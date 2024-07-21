@@ -247,21 +247,25 @@ Example:
        "status": "ok",
        "pending": [
            {
-               "project": "myproject", "spider": "spider1",
-               "id": "78391cc0fcaf11e1b0090800272a6d06"
+               "id": "78391cc0fcaf11e1b0090800272a6d06",
+               "project": "myproject",
+               "spider": "spider1"
            }
        ],
        "running": [
            {
                "id": "422e608f9f28cef127b3d5ef93fe9399",
-               "project": "myproject", "spider": "spider2",
-               "start_time": "2012-09-12 10:14:03.594664"
+               "project": "myproject",
+               "spider": "spider2",
+               "start_time": "2012-09-12 10:14:03.594664",
+               "pid": 93956
            }
        ],
        "finished": [
            {
                "id": "2f16646cfcaf11e1b0090800272a6d06",
-               "project": "myproject", "spider": "spider3",
+               "project": "myproject",
+               "spider": "spider3",
                "start_time": "2012-09-12 10:14:03.594664",
                "end_time": "2012-09-12 10:24:03.594664",
                "log_url": "/logs/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.log",

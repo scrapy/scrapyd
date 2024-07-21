@@ -114,6 +114,15 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
             self.log(f"Process died: exitstatus={status.value.exitCode!r} ")
         self.deferred.callback(self)
 
+    def asdict(self):
+        return {
+            "project": self.project,
+            "spider": self.spider,
+            "id": self.job,
+            "pid": self.pid,
+            "start_time": str(self.start_time),
+        }
+
     def log(self, action):
         fmt = "%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r args=%(args)r"
         log.msg(

@@ -18,7 +18,7 @@ from twisted.web import error, http, resource
 from scrapyd.config import Config
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
 from scrapyd.sqlite import JsonSqliteDict
-from scrapyd.utils import job_items_url, job_log_url, native_stringify_dict
+from scrapyd.utils import native_stringify_dict
 
 
 def param(
@@ -241,10 +241,9 @@ class Cancel(WsResource):
         if self.root.scheduler.queues[project].remove(lambda message: message["_job"] == job):
             prevstate = "pending"
 
-        spiders = self.root.launcher.processes.values()
-        for s in spiders:
-            if s.project == project and s.job == job:
-                s.transport.signalProcess(signal)
+        for process in self.root.launcher.processes.values():
+            if process.project == project and process.job == job:
+                process.transport.signalProcess(signal)
                 prevstate = "running"
                 break
 
@@ -308,27 +307,25 @@ class Status(WsResource):
     @param("job")
     @param("project", required=False)
     def render_GET(self, txrequest, job, project):
-        spiders = self.root.launcher.processes.values()
         queues = self.root.scheduler.queues
-
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         result = {"node_name": self.root.nodename, "status": "ok", "currstate": None}
 
-        for s in self.root.launcher.finished:
-            if (project is None or s.project == project) and s.job == job:
+        for finished in self.root.launcher.finished:
+            if (project is None or finished.project == project) and finished.job == job:
                 result["currstate"] = "finished"
                 return result
 
-        for s in spiders:
-            if (project is None or s.project == project) and s.job == job:
+        for process in self.root.launcher.processes.values():
+            if (project is None or process.project == project) and process.job == job:
                 result["currstate"] = "running"
                 return result
 
-        for qname in queues if project is None else [project]:
-            for x in queues[qname].list():
-                if x["_job"] == job:
+        for queue_name in queues if project is None else [project]:
+            for message in queues[queue_name].list():
+                if message["_job"] == job:
                     result["currstate"] = "pending"
                     return result
 
@@ -338,48 +335,28 @@ class Status(WsResource):
 class ListJobs(WsResource):
     @param("project", required=False)
     def render_GET(self, txrequest, project):
-        spiders = self.root.launcher.processes.values()
         queues = self.root.scheduler.queues
-
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
-
-        pending = [
-            {"project": qname, "spider": x["name"], "id": x["_job"]}
-            for qname in (queues if project is None else [project])
-            for x in queues[qname].list()
-        ]
-        running = [
-            {
-                "project": s.project,
-                "spider": s.spider,
-                "id": s.job,
-                "pid": s.pid,
-                "start_time": str(s.start_time),
-            }
-            for s in spiders
-            if project is None or s.project == project
-        ]
-        finished = [
-            {
-                "project": s.project,
-                "spider": s.spider,
-                "id": s.job,
-                "start_time": str(s.start_time),
-                "end_time": str(s.end_time),
-                "log_url": job_log_url(s),
-                "items_url": job_items_url(s),
-            }
-            for s in self.root.launcher.finished
-            if project is None or s.project == project
-        ]
 
         return {
             "node_name": self.root.nodename,
             "status": "ok",
-            "pending": pending,
-            "running": running,
-            "finished": finished,
+            "pending": [
+                {"project": queue_name, "spider": message["name"], "id": message["_job"]}
+                for queue_name in (queues if project is None else [project])
+                for message in queues[queue_name].list()
+            ],
+            "running": [
+                process.asdict()
+                for process in self.root.launcher.processes.values()
+                if project is None or process.project == project
+            ],
+            "finished": [
+                finished.asdict()
+                for finished in self.root.launcher.finished
+                if project is None or finished.project == project
+            ],
         }
 
 

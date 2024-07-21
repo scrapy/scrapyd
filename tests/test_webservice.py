@@ -7,13 +7,21 @@ import pytest
 from twisted.web import error
 
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
-from scrapyd.interfaces import IEggStorage, IJobStorage
+from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
+from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.txapp import application
 from scrapyd.webservice import UtilsCache, get_spider_list
 from tests import get_egg_data, has_settings, root_add_version
 
-job1 = Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
+job1 = Job(
+    "p1",
+    "s1",
+    start_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7),
+    end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8),
+)
+process1 = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=[])
+process1.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
 
 
 @pytest.fixture()
@@ -160,7 +168,7 @@ def test_daemonstatus(txrequest, root_with_egg):
     expected["finished"] += 1
     assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
 
-    root_with_egg.launcher.processes[0] = job1
+    root_with_egg.launcher.processes[0] = process1
     expected["running"] += 1
     assert_content(txrequest, root_with_egg, "daemonstatus", {}, expected)
 
@@ -232,29 +240,63 @@ def test_list_projects_empty(txrequest, root):
     assert_content(txrequest, root, "listprojects", {}, expected)
 
 
-def test_list_jobs(txrequest, root_with_egg):
-    txrequest.args = {}
-    content = root_with_egg.children[b"listjobs.json"].render_GET(txrequest)
+@pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
+def test_list_jobs(txrequest, root, args):
+    root_add_version(root, "p1", "r1", "mybot")
+    root_add_version(root, "p2", "r2", "mybot2")
+    root.update_projects()
 
-    assert set(content) == {"node_name", "status", "pending", "running", "finished"}
+    if args:
+        root.launcher.finished.add(Job(project="p2", spider="s2"))
+        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
+        root.scheduler.queues["p2"].add("s2", _job="j2")
+
+    expected = {"status": "ok", "pending": [], "running": [], "finished": []}
+    assert_content(txrequest, root, "listjobs", args, expected)
+
+    root.launcher.finished.add(job1)
+
+    expected["finished"].append(
+        {
+            "id": None,
+            "project": "p1",
+            "spider": "s1",
+            "start_time": "2001-02-03 04:05:06.000007",
+            "end_time": "2001-02-03 04:05:06.000008",
+            "items_url": "/items/p1/s1/None.jl",
+            "log_url": "/logs/p1/s1/None.log",
+        },
+    )
+    assert_content(txrequest, root, "listjobs", args, expected)
+
+    root.launcher.processes[0] = process1
+
+    expected["running"].append(
+        {
+            "id": "j1",
+            "project": "p1",
+            "spider": "s1",
+            "start_time": "2001-02-03 04:05:06.000009",
+            "pid": None,
+        }
+    )
+    assert_content(txrequest, root, "listjobs", args, expected)
+
+    root.scheduler.queues["p1"].add("s1", _job="j1")
+
+    expected["pending"].append(
+        {
+            "id": "j1",
+            "project": "p1",
+            "spider": "s1",
+        },
+    )
+    assert_content(txrequest, root, "listjobs", args, expected)
 
 
-def test_list_jobs_finished(txrequest, root_with_egg):
-    jobstorage = root_with_egg.app.getComponent(IJobStorage)
-    jobstorage.add(Job("proj1", "spider-a", "id1234"))
-
-    txrequest.args = {}
-    content = root_with_egg.children[b"listjobs.json"].render_GET(txrequest)
-
-    assert set(content["finished"][0]) == {
-        "project",
-        "spider",
-        "id",
-        "start_time",
-        "end_time",
-        "log_url",
-        "items_url",
-    }
+def test_list_jobs_nonexistent(txrequest, root):
+    args = {b"project": [b"nonexistent"]}
+    assert_error(txrequest, root, "GET", "listjobs", args, b"project 'nonexistent' not found")
 
 
 def test_delete_version(txrequest, root):

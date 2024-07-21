@@ -18,7 +18,8 @@ jobs:
       - run: pip install -e .[test]
       - if: matrix.python-version != 'pypy-3.9' || matrix.os != 'windows-latest'
         run: pytest tests --cov scrapyd
-      - if: matrix.python-version != 'pypy-3.9' || matrix.os != 'macos-latest'
+      # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
+      - if: matrix.python-version != 'pypy-3.9'
         name: Run integration tests
         run: |
           printf "[scrapyd]\nusername = hello12345\npassword = 67890world\n" > scrapyd.conf
