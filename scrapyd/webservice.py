@@ -46,7 +46,10 @@ def param(
                 value = default
             else:
                 values = (value.decode() if type is str else type(value) for value in txrequest.args.pop(encoded))
-                value = list(values) if multiple else next(values)
+                try:
+                    value = list(values) if multiple else next(values)
+                except (UnicodeDecodeError, ValueError) as e:
+                    raise error.Error(code=http.OK, message=b"%b is invalid: %b" % (encoded, str(e).encode())) from e
 
             kwargs[dest] = value
 

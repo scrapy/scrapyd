@@ -7,7 +7,7 @@ class ConfigError(ScrapydError):
 
 
 class InvalidUsernameError(ConfigError):
-    """Raised if the username contains a colon."""
+    """Raised if the username contains a colon"""
 
     def __init__(self):
         super().__init__(

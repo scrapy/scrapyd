@@ -45,7 +45,8 @@ API
   - ``version 'myversion' not found``, instead of a traceback
   - ``exception class: message``, instead of ``message``
   - ``BadEggError``, instead of ``TypeError: 'tuple' object is not an iterator``
-  - Unsupported method error messages no longer list ``object`` as an allowed HTTP method
+  - Error messages for non-UTF-8 bytes and non-float ``priority``.
+  - "Unsupported method" error messages no longer list ``object`` as an allowed HTTP method
 
 CLI
 ^^^

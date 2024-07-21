@@ -37,6 +37,15 @@ def assert_content(txrequest, root, basename, args, expected):
     assert content == expected
 
 
+def assert_error(txrequest, root, method, basename, args, message):
+    txrequest.args = args.copy()
+    with pytest.raises(error.Error) as exc:
+        getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
+
+    assert exc.value.status == b"200"
+    assert exc.value.message == message
+
+
 def test_get_spider_list_log_stdout(app):
     add_test_version(app, "logstdout", "logstdout", "logstdout")
     spiders = get_spider_list("logstdout")
@@ -127,12 +136,20 @@ def test_utils_cache_repr():
     ],
 )
 def test_required(txrequest, root_with_egg, method, basename, param, args):
-    txrequest.args = args.copy() if args else {}
-    with pytest.raises(error.Error) as exc:
-        getattr(root_with_egg.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
+    message = b"'%b' parameter is required" % param.encode()
+    assert_error(txrequest, root_with_egg, method, basename, args, message)
 
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"'%b' parameter is required" % param.encode()
+
+def test_invalid_utf8(txrequest, root):
+    args = {b"project": [b"\xc3\x28"]}
+    message = b"project is invalid: 'utf-8' codec can't decode byte 0xc3 in position 0: invalid continuation byte"
+    assert_error(txrequest, root, "GET", "listversions", args, message)
+
+
+def test_invalid_type(txrequest, root):
+    args = {b"project": [b"p"], b"spider": [b"s"], b"priority": [b"x"]}
+    message = b"priority is invalid: could not convert string to float: b'x'"
+    assert_error(txrequest, root, "POST", "schedule", args, message)
 
 
 def test_daemonstatus(txrequest, root_with_egg):
@@ -192,12 +209,7 @@ def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
 
-    txrequest.args = args.copy()
-    with pytest.raises(error.Error) as exc:
-        root.children[b"listspiders.json"].render_GET(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"%b 'nonexistent' not found" % param.encode()
+    assert_error(txrequest, root, "GET", "listspiders", args, b"%b 'nonexistent' not found" % param.encode())
 
 
 def test_list_versions(txrequest, root_with_egg):
@@ -291,12 +303,7 @@ def test_delete_version(txrequest, root):
     ],
 )
 def test_delete_version_nonexistent(txrequest, root_with_egg, args, message):
-    txrequest.args = args.copy()
-    with pytest.raises(error.Error) as exc:
-        root_with_egg.children[b"delversion.json"].render_POST(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == message
+    assert_error(txrequest, root_with_egg, "POST", "delversion", args, message)
 
 
 def test_delete_project(txrequest, root_with_egg):
@@ -317,10 +324,8 @@ def test_delete_project(txrequest, root_with_egg):
     assert content == {"status": "ok"}
     assert root_with_egg.eggstorage.get("quotesbot") == (None, None)  # project is gone
 
-    txrequest.args = {b"project": [b"quotesbot"]}
-    with pytest.raises(error.Error) as exc:
-        root_with_egg.children[b"listspiders.json"].render_GET(txrequest)
-    assert exc.value.message == b"project 'quotesbot' not found"
+    args = {b"project": [b"quotesbot"]}
+    assert_error(txrequest, root_with_egg, "GET", "listspiders", args, b"project 'quotesbot' not found")
 
     txrequest.args = {}
     content = root_with_egg.children[b"listprojects.json"].render_GET(txrequest)
@@ -328,12 +333,8 @@ def test_delete_project(txrequest, root_with_egg):
 
 
 def test_delete_project_nonexistent(txrequest, root):
-    txrequest.args = {b"project": [b"nonexistent"]}
-    with pytest.raises(error.Error) as exc:
-        root.children[b"delproject.json"].render_POST(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"project 'nonexistent' not found"
+    args = {b"project": [b"nonexistent"]}
+    assert_error(txrequest, root, "POST", "delproject", args, b"project 'nonexistent' not found")
 
 
 def test_add_version(txrequest, root):
@@ -389,30 +390,18 @@ def test_schedule(txrequest, root_with_egg):
 
 
 def test_schedule_nonexistent_project(txrequest, root):
-    txrequest.args = {b"project": [b"nonexistent"], b"spider": [b"toscrape-css"]}
-    with pytest.raises(error.Error) as exc:
-        root.children[b"schedule.json"].render_POST(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"project 'nonexistent' not found"
+    args = {b"project": [b"nonexistent"], b"spider": [b"toscrape-css"]}
+    assert_error(txrequest, root, "POST", "schedule", args, b"project 'nonexistent' not found")
 
 
 def test_schedule_nonexistent_version(txrequest, root_with_egg):
-    txrequest.args = {b"project": [b"quotesbot"], b"_version": [b"nonexistent"], b"spider": [b"toscrape-css"]}
-    with pytest.raises(error.Error) as exc:
-        root_with_egg.children[b"schedule.json"].render_POST(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"version 'nonexistent' not found"
+    args = {b"project": [b"quotesbot"], b"_version": [b"nonexistent"], b"spider": [b"toscrape-css"]}
+    assert_error(txrequest, root_with_egg, "POST", "schedule", args, b"version 'nonexistent' not found")
 
 
 def test_schedule_nonexistent_spider(txrequest, root_with_egg):
-    txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"nonexistent"]}
-    with pytest.raises(error.Error) as exc:
-        root_with_egg.children[b"schedule.json"].render_POST(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"spider 'nonexistent' not found"
+    args = {b"project": [b"quotesbot"], b"spider": [b"nonexistent"]}
+    assert_error(txrequest, root_with_egg, "POST", "schedule", args, b"spider 'nonexistent' not found")
 
 
 # Cancel, Status, ListJobs and ListSpiders error with "project '%b' not found" on directory traversal attempts.
@@ -428,12 +417,7 @@ def test_schedule_nonexistent_spider(txrequest, root_with_egg):
     ],
 )
 def test_project_directory_traversal_notfound(txrequest, root, method, basename, args):
-    txrequest.args = args.copy()
-    with pytest.raises(error.Error) as exc:
-        getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
-
-    assert exc.value.status == b"200"
-    assert exc.value.message == b"project '../p' not found"
+    assert_error(txrequest, root, method, basename, args, b"project '../p' not found")
 
 
 @pytest.mark.parametrize(
