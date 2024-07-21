@@ -15,8 +15,9 @@ from scrapyd.webservice import UtilsCache, get_spider_list
 from tests import get_egg_data, has_settings, root_add_version
 
 job1 = Job(
-    "p1",
-    "s1",
+    project="p1",
+    spider="s1",
+    job="j1",
     start_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7),
     end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8),
 )
@@ -241,13 +242,48 @@ def test_list_projects_empty(txrequest, root):
 
 
 @pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
+def test_status(txrequest, root, args):
+    root_add_version(root, "p1", "r1", "mybot")
+    root_add_version(root, "p2", "r2", "mybot2")
+    root.update_projects()
+
+    if args:
+        root.launcher.finished.add(Job(project="p2", spider="s2", job="j1"))
+        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j1", {}, [])
+        root.scheduler.queues["p2"].add("s2", _job="j1")
+
+    expected = {"status": "ok", "currstate": None}
+    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+
+    root.scheduler.queues["p1"].add("s1", _job="j1")
+
+    expected["currstate"] = "pending"
+    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+
+    root.launcher.processes[0] = process1
+
+    expected["currstate"] = "running"
+    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+
+    root.launcher.finished.add(job1)
+
+    expected["currstate"] = "finished"
+    assert_content(txrequest, root, "status", {b"job": [b"j1"], **args}, expected)
+
+
+def test_status_nonexistent(txrequest, root):
+    args = {b"job": [b"aaa"], b"project": [b"nonexistent"]}
+    assert_error(txrequest, root, "GET", "status", args, b"project 'nonexistent' not found")
+
+
+@pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
 def test_list_jobs(txrequest, root, args):
     root_add_version(root, "p1", "r1", "mybot")
     root_add_version(root, "p2", "r2", "mybot2")
     root.update_projects()
 
     if args:
-        root.launcher.finished.add(Job(project="p2", spider="s2"))
+        root.launcher.finished.add(Job(project="p2", spider="s2", job="j2"))
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
         root.scheduler.queues["p2"].add("s2", _job="j2")
 
