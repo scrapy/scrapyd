@@ -79,7 +79,7 @@ Fixed
 
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
 - The ``MemoryJobStorage`` class returns finished jobs in reverse chronological order, like the ``SqliteJobStorage`` class.
-- The ``list_projects`` method of the ``SpiderScheduler`` class returns a ``list`, instead of ``dict_keys``.
+- The ``list_projects`` method of the ``SpiderScheduler`` class returns a ``list``, instead of ``dict_keys``.
 - Log errors to Scrapyd's log, even when :ref:`debug` mode is enabled.
 - List the closest ``scrapy.cfg`` file as a :ref:`configuration source<config-sources>`.
 
