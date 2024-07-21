@@ -103,7 +103,7 @@ Platform support
 
 Scrapyd is now tested on macOS and Windows, in addition to Linux.
 
-- The :ref:`cancel.json` webservice now works on Windows, by using SIGBREAK instead of SIGNINT or SIGTERM.
+- The :ref:`cancel.json` webservice now works on Windows, by using SIGBREAK instead of SIGINT or SIGTERM.
 - The :ref:`dbs_dir` setting no longer causes an error if it contains a drive letter on Windows.
 - The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
 
