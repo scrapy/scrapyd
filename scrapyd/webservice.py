@@ -262,8 +262,8 @@ class AddVersion(WsResource):
         self.root.eggstorage.put(BytesIO(egg), project, version)
         self.root.update_projects()
 
-        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
         UtilsCache.invalid_cache(project)
+        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
 
         return {
             "node_name": self.root.nodename,
@@ -374,6 +374,7 @@ class DeleteProject(WsResource):
             raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode()) from e
         else:
             self.root.update_projects()
+
             UtilsCache.invalid_cache(project)
 
 

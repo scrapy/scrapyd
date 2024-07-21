@@ -51,7 +51,7 @@ def assert_content(txrequest, root, method, basename, args, expected):
     content = getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
 
     assert content.pop("node_name")
-    assert content == expected
+    assert content == {"status": "ok", **expected}
 
 
 def assert_error(txrequest, root, method, basename, args, message):
@@ -170,7 +170,7 @@ def test_invalid_type(txrequest, root):
 
 
 def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
-    expected = {"status": "ok", "running": 0, "pending": 0, "finished": 0}
+    expected = {"running": 0, "pending": 0, "finished": 0}
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
     root_with_egg.launcher.finished.add(job1)
@@ -204,7 +204,7 @@ def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
 
-    expected = {"status": "ok", "spiders": spiders}
+    expected = {"spiders": spiders}
     assert_content(txrequest, root, "GET", "listspiders", args, expected)
 
 
@@ -230,22 +230,22 @@ def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_
 
 
 def test_list_versions(txrequest, root_with_egg):
-    expected = {"status": "ok", "versions": ["0_1"]}
+    expected = {"versions": ["0_1"]}
     assert_content(txrequest, root_with_egg, "GET", "listversions", {b"project": [b"quotesbot"]}, expected)
 
 
 def test_list_versions_nonexistent(txrequest, root):
-    expected = {"status": "ok", "versions": []}
+    expected = {"versions": []}
     assert_content(txrequest, root, "GET", "listversions", {b"project": [b"localproject"]}, expected)
 
 
 def test_list_projects(txrequest, root_with_egg):
-    expected = {"status": "ok", "projects": ["quotesbot", *get_local_projects(root_with_egg)]}
+    expected = {"projects": ["quotesbot", *get_local_projects(root_with_egg)]}
     assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
 def test_list_projects_empty(txrequest, root):
-    expected = {"status": "ok", "projects": get_local_projects(root)}
+    expected = {"projects": get_local_projects(root)}
     assert_content(txrequest, root, "GET", "listprojects", {}, expected)
 
 
@@ -260,7 +260,7 @@ def test_status(txrequest, root, scrapy_process, args):
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j1", {}, [])
         root.scheduler.queues["p2"].add("s2", _job="j1")
 
-    expected = {"status": "ok", "currstate": None}
+    expected = {"currstate": None}
     assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
     root.scheduler.queues["p1"].add("s1", _job="j1")
@@ -295,7 +295,7 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
         root.scheduler.queues["p2"].add("s2", _job="j2")
 
-    expected = {"status": "ok", "pending": [], "running": [], "finished": []}
+    expected = {"pending": [], "running": [], "finished": []}
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
     root.launcher.finished.add(job1)
@@ -350,35 +350,29 @@ def test_delete_version(txrequest, root):
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
 
-    txrequest.args = {b"project": [b"myproject"]}
-    content = root.children[b"listspiders.json"].render_GET(txrequest)
-    assert content["spiders"] == ["spider1", "spider2", "spider3"]
+    # Spiders (before).
+    expected = {"spiders": ["spider1", "spider2", "spider3"]}
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"myproject"]}, expected)
 
-    # Delete one version/
-    txrequest.args = {b"project": [b"myproject"], b"version": [b"r2"]}
-    content = root.children[b"delversion.json"].render_POST(txrequest)
-    assert content.pop("node_name")
-    assert content == {"status": "ok"}
+    # Delete one version.
+    args = {b"project": [b"myproject"], b"version": [b"r2"]}
+    assert_content(txrequest, root, "POST", "delversion", args, {"status": "ok"})
     assert root.eggstorage.get("myproject", "r2") == (None, None)  # version is gone
 
-    txrequest.args = {b"project": [b"myproject"]}
-    content = root.children[b"listspiders.json"].render_GET(txrequest)
-    assert content["spiders"] == ["spider1", "spider2"]  # "spider3" if UtilsCache.invalid_cache() weren't called
+    # Spiders (after) would contain "spider3" without UtilsCache.invalid_cache().
+    expected = {"spiders": ["spider1", "spider2"]}
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"myproject"]}, expected)
 
-    txrequest.args = {}
-    content = root.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == ["myproject", *projects]
+    # Projects (before).
+    assert_content(txrequest, root, "GET", "listprojects", {}, {"projects": ["myproject", *projects]})
 
     # Delete another version.
-    txrequest.args = {b"project": [b"myproject"], b"version": [b"r1"]}
-    content = root.children[b"delversion.json"].render_POST(txrequest)
-    assert content.pop("node_name")
-    assert content == {"status": "ok"}
+    args = {b"project": [b"myproject"], b"version": [b"r1"]}
+    assert_content(txrequest, root, "POST", "delversion", args, {"status": "ok"})
     assert root.eggstorage.get("myproject") == (None, None)  # project is gone
 
-    txrequest.args = {}
-    content = root.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == [*projects]  # "myproject" if root.update_projects() weren't celled
+    # Projects (after) would contain "myproject" without root.update_projects().
+    assert_content(txrequest, root, "GET", "listprojects", {}, {"projects": [*projects]})
 
 
 @pytest.mark.parametrize(
@@ -395,27 +389,26 @@ def test_delete_version_nonexistent(txrequest, root_with_egg, args, message):
 def test_delete_project(txrequest, root_with_egg):
     projects = get_local_projects(root_with_egg)
 
-    txrequest.args = {b"project": [b"quotesbot"]}
-    content = root_with_egg.children[b"listspiders.json"].render_GET(txrequest)
-    assert content["spiders"] == ["toscrape-css", "toscrape-xpath"]
+    # Spiders (before).
+    expected = {"spiders": ["toscrape-css", "toscrape-xpath"]}
+    assert_content(txrequest, root_with_egg, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
-    txrequest.args = {}
-    content = root_with_egg.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == ["quotesbot", *projects]
+    # Projects (before).
+    expected = {"projects": ["quotesbot", *projects]}
+    assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
     # Delete the project.
-    txrequest.args = {b"project": [b"quotesbot"]}
-    content = root_with_egg.children[b"delproject.json"].render_POST(txrequest)
-    assert content.pop("node_name")
-    assert content == {"status": "ok"}
+    args = {b"project": [b"quotesbot"]}
+    assert_content(txrequest, root_with_egg, "POST", "delproject", args, {"status": "ok"})
     assert root_with_egg.eggstorage.get("quotesbot") == (None, None)  # project is gone
 
+    # Spiders (after).
     args = {b"project": [b"quotesbot"]}
     assert_error(txrequest, root_with_egg, "GET", "listspiders", args, b"project 'quotesbot' not found")
 
-    txrequest.args = {}
-    content = root_with_egg.children[b"listprojects.json"].render_GET(txrequest)
-    assert content["projects"] == [*projects]  # "quotesbot" if root.update_projects() weren't celled
+    # Projects (after) would contain "quotesbot" without root.update_projects().
+    expected = {"projects": [*projects]}
+    assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
 def test_delete_project_nonexistent(txrequest, root):
@@ -424,41 +417,31 @@ def test_delete_project_nonexistent(txrequest, root):
 
 
 def test_add_version(txrequest, root):
-    txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
+    assert root.eggstorage.get("quotesbot") == (None, None)
 
-    eggstorage = root.app.getComponent(IEggStorage)
-    version, egg = eggstorage.get("quotesbot")
-    if egg:
-        egg.close()
+    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
+    expected = {"project": "quotesbot", "version": "0.1", "spiders": 2}
+    assert_content(txrequest, root, "POST", "addversion", args, expected)
+    assert root.eggstorage.list("quotesbot") == ["0_1"]
 
-    content = root.children[b"addversion.json"].render_POST(txrequest)
-    no_version, no_egg = eggstorage.get("quotesbot")
-    if no_egg:
-        no_egg.close()
+    assert "0.1" in get_spider_list.cache["quotesbot"]
+    expected = {"spiders": ["toscrape-css", "toscrape-xpath"]}
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
-    assert version is None
-    assert content["status"] == "ok"
-    assert "node_name" in content
-    assert no_version == "0_1"
+    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot2")]}
+    expected = {"project": "quotesbot", "version": "0.1", "spiders": 3}  # 2 without UtilsCache.invalid_cache()
+    assert_content(txrequest, root, "POST", "addversion", args, expected)
+    assert root.eggstorage.list("quotesbot") == ["0_1"]  # overwrite version
+
+    assert "0.1" in get_spider_list.cache["quotesbot"]
+    expected = {"spiders": ["spider1", "spider2", "spider3"]}
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
 
-def test_add_version_same(txrequest, root):
-    txrequest.args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
-
-    eggstorage = root.app.getComponent(IEggStorage)
-    version, egg = eggstorage.get("quotesbot")
-    if egg:
-        egg.close()
-
-    content = root.children[b"addversion.json"].render_POST(txrequest)
-    no_version, no_egg = eggstorage.get("quotesbot")
-    if no_egg:
-        no_egg.close()
-
-    assert version is None
-    assert content["status"] == "ok"
-    assert "node_name" in content
-    assert no_version == "0_1"
+def test_add_version_invalid(txrequest, root):
+    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [b"invalid"]}
+    message = b"egg is not a ZIP file (if using curl, use egg=@path not egg=path)"
+    assert_error(txrequest, root, "POST", "addversion", args, message)
 
 
 def test_schedule(txrequest, root_with_egg):
@@ -500,7 +483,7 @@ def test_cancel(txrequest, root, scrapy_process, args):
 
     args = {b"project": [b"p1"], b"job": [b"j1"], **args}
 
-    expected = {"status": "ok", "prevstate": None}
+    expected = {"prevstate": None}
     assert_content(txrequest, root, "POST", "cancel", args, expected)
 
     root.scheduler.queues["p1"].add("s1", _job="j1")
