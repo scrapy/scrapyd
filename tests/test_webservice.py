@@ -491,7 +491,37 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     jobs = root.scheduler.queues[project].list()
 
     assert len(jobs) == 1
-    assert jobs[0] == {"name": spider, "settings": {}, "version": version, "_job": jobid}
+    assert jobs[0] == {"name": spider, "version": version, "_job": jobid, "settings": {}}
+
+
+def test_schedule_parameters(txrequest, root_with_egg):
+    txrequest.args = {
+        b"project": [b"quotesbot"],
+        b"spider": [b"toscrape-css"],
+        b"_version": [b"0.1"],
+        b"jobid": [b"aaa"],
+        b"priority": [b"5"],
+        b"setting": [b"DOWNLOAD_DELAY=2", b"TRACK=Cause = Time"],
+        b"other": [b"one", b"two"],
+    }
+    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+
+    assert content.pop("node_name")
+    assert content == {"status": "ok", "jobid": "aaa"}
+
+    jobs = root_with_egg.scheduler.queues["quotesbot"].list()
+
+    assert len(jobs) == 1
+    assert jobs[0] == {
+        "name": "toscrape-css",
+        "version": "0.1",
+        "_job": "aaa",
+        "settings": {
+            "DOWNLOAD_DELAY": "2",
+            "TRACK": "Cause = Time",
+        },
+        "other": "one",  # users are encouraged in api.rst to open an issue if they want multiple values
+    }
 
 
 # Like test_list_spiders_nonexistent.
