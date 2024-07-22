@@ -26,6 +26,8 @@ def activate_egg(eggpath):
 
     distribution.activate()
 
+    # setdefault() was added in https://github.com/scrapy/scrapyd/commit/0641a57. It's not clear why, since the egg
+    # should control its settings module. That said, it is unlikely to already be set.
     os.environ.setdefault("SCRAPY_SETTINGS_MODULE", distribution.get_entry_info("scrapy", "settings").module_name)
 
 

@@ -30,12 +30,18 @@ class Environment:
 
     def get_environment(self, message, slot):
         project = message["_project"]
+
         env = self.initenv.copy()
         env["SCRAPY_PROJECT"] = project
+        # If the version is not provided, then the runner uses the default version, determined by egg storage.
         if "_version" in message:
             env["SCRAPYD_EGG_VERSION"] = message["_version"]
+        # Scrapy discovers the same scrapy.cfg files as Scrapyd. So, this is only needed if users are adding [settings]
+        # sections to Scrapyd configuration files (which Scrapy doesn't discover). This might lead to strange behavior
+        # if an egg project and a [settings] project have the same name (unlikely). Preserved, since committed in 2010.
         if project in self.settings:
             env["SCRAPY_SETTINGS_MODULE"] = self.settings[project]
+
         return env
 
     def _get_feed_uri(self, message, extension):
