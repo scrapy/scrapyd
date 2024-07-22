@@ -442,8 +442,8 @@ def test_add_version_settings(txrequest, root):
         pytest.skip("[settings] section is not set")
 
     args = {b"project": [b"localproject"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
-    message = b"project 'localproject' already configured in the [settings] section"
-    assert_error(txrequest, root, "POST", "addversion", args, message)
+    expected = {"project": "localproject", "spiders": 2, "version": "0.1"}
+    assert_content(txrequest, root, "POST", "addversion", args, expected)
 
 
 def test_add_version_invalid(txrequest, root):

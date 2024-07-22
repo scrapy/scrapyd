@@ -86,7 +86,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 
         for path in directory:
             if isinstance(path, bytes):
-                path = path.decode("utf8")  # noqa: PLW2901 from Twisted
+                path = path.decode()  # noqa: PLW2901 from Twisted
 
             url = quote(path, "/")
             escaped_path = escape(path)
@@ -133,9 +133,6 @@ class Root(resource.Resource):
         items_dir = config.get("items_dir")
 
         self.app = app
-        # TODO(jpmckinney): Make Config a Component
-        # https://github.com/scrapy/scrapyd/issues/526
-        self._config = config
         self.debug = config.getboolean("debug", False)
         self.runner = config.get("runner", "scrapyd.runner")
         self.prefix_header = config.get("prefix_header")

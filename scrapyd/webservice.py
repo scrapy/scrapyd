@@ -231,11 +231,6 @@ class AddVersion(WsResource):
                 code=http.OK, message=b"egg is not a ZIP file (if using curl, use egg=@path not egg=path)"
             )
 
-        if any(p for p, _ in self.root._config.items("settings", default=[]) if project == p):
-            raise error.Error(
-                code=http.OK, message=b"project '%b' already configured in the [settings] section" % project.encode()
-            )
-
         self.root.eggstorage.put(BytesIO(egg), project, version)
         self.root.update_projects()
 

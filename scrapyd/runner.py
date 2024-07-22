@@ -38,7 +38,7 @@ def project_environment(project):
     sanitized_version, egg = eggstorage.get(project, eggversion)
 
     tmp = None
-    # egg can be None if the project is not in eggstorage, but is defined in the [settings] configuration section.
+    # egg can be None if the project is not in egg storage: for example, if Scrapyd is invoked within a Scrapy project.
     if egg:
         try:
             if hasattr(egg, "name"):  # for example, FileIO
@@ -64,6 +64,10 @@ def main():
     with project_environment(project):
         from scrapy.cmdline import execute
 
+        # This calls scrapy.utils.project.get_project_settings(). It uses SCRAPY_SETTINGS_MODULE if set. Otherwise, it
+        # calls scrapy.utils.conf.init_env(), which reads Scrapy's configuration sources, looks for a project matching
+        # SCRAPY_PROJECT in the [settings] section, and uses its value for SCRAPY_SETTINGS_MODULE.
+        # https://docs.scrapy.org/en/latest/topics/commands.html#configuration-settings
         execute()
 
 

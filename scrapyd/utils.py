@@ -39,7 +39,7 @@ def sqlite_connection_string(config, database):
 
 def get_project_list(config):
     """Get list of projects by inspecting the eggs storage and the ones defined in
-    the scrapyd.conf [settings] section
+    the scrapy.cfg [settings] section
     """
 
     # The poller and scheduler use this function (via get_spider_queues), and they aren't initialized with the

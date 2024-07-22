@@ -38,17 +38,16 @@ def chdir(monkeypatch, tmpdir):
     params=[
         None,
         (Config.SECTION, "items_dir", "items"),
-        ("settings", "localproject", "localproject.settings"),
+        "scrapy.cfg",
     ],
     ids=["default", "items_dir", "settings"],
 )
 def root(request, chdir):
+    if request.param == "scrapy.cfg":
+        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), os.path.join(chdir), dirs_exist_ok=True)
+
     config = Config()
-    if request.param:
-        if request.param[0] == "settings":
-            config.cp.add_section(request.param[0])
-            # Copy the local files to be in the Python path.
-            shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), os.path.join(chdir), dirs_exist_ok=True)
+    if isinstance(request.param, tuple):
         config.cp.set(*request.param)
 
     return Root(config, application(config))

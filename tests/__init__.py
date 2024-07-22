@@ -1,4 +1,5 @@
 import io
+import os.path
 import pkgutil
 
 
@@ -7,8 +8,7 @@ def get_egg_data(basename):
 
 
 def has_settings(root):
-    # https://github.com/scrapy/scrapyd/issues/526
-    return root._config.cp.has_section("settings")
+    return os.path.exists("scrapy.cfg")
 
 
 def root_add_version(root, project, version, basename):

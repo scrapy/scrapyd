@@ -30,10 +30,6 @@ ignore = [
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ006",  # `datetime.datetime.fromtimestamp()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-
-  # https://github.com/scrapy/scrapyd/issues/526
-  "FIX002",
-  "SLF001",
 ]
 
 [tool.ruff.lint.flake8-builtins]
