@@ -489,19 +489,16 @@ You can use code for webservices in `webservice.py <https://github.com/scrapy/sc
 
 .. _config-settings:
 
-settings section
-================
+settings section (scrapy.cfg)
+=============================
 
-Project code is typically stored in a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploaded to Scrapyd via the :ref:`addversion.json` webservice.
+Project code is usually stored in a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploaded to Scrapyd via the :ref:`addversion.json` webservice.
 
-Project code can also be stored in a Python module. The module must be in the `module search path <https://docs.python.org/3/tutorial/modules.html#tut-searchpath>`__ of the Scrapyd process, which includes the current directory.
+Alternatively, you can invoke Scrapyd within a Scrapy project: that is, you can run the ``scrapyd`` command from a directory containing a ``scrapy.cfg`` file (or from a directory with any parent directory containing a ``scrapy.cfg`` file).
 
-To add projects from modules, add a ``[settings]`` section, like in Scrapy's `scrapy.cfg file <https://docs.scrapy.org/en/latest/topics/commands.html#default-structure-of-scrapy-projects>`__. For example:
+As described in `Scrapy's documentation <https://docs.scrapy.org/en/latest/topics/commands.html#sharing-the-root-directory-between-projects>`__, the ``scrapy.cfg`` file contains a ``[settings]`` section, which can describe many Scrapy projects. By default, it is:
 
 .. code-block:: ini
 
    [settings]
-   project1 = one_project.settings
-   project2 = another_project.settings
-
-In this example, the ``one_project`` Scrapy project is named ``project1`` in Scrapyd, and the ``another_project`` Scrapy project is named ``project2``.
+   default = projectname.settings

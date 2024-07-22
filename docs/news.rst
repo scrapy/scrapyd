@@ -20,7 +20,7 @@ Documentation
 
 - How to add webservices (endpoints). See :ref:`config-services`.
 - How to create Docker images. See :ref:`docker`.
-- How to use the ``[settings]`` section to add Scrapy projects directly, without eggs. See :ref:`config-settings`.
+- How to integrate Scrapy projects, without eggs. See :ref:`config-settings`.
 
 Changed
 ~~~~~~~
