@@ -40,10 +40,24 @@ Parameters
     the project name
   ``version`` (required)
     the project version
+
+    Scrapyd uses the packaging `Version <https://packaging.pypa.io/en/stable/version.html>`__ to interpret the version numbers you provide.
   ``egg`` (required)
     a Python egg containing the project's code
 
-.. note:: Scrapyd uses the `packaging Version <https://packaging.pypa.io/en/stable/version.html>`__ to interpret the version numbers you provide.
+    The egg must set an entry point to its Scrapy settings. For example, with a ``setup.py`` file:
+
+    .. code-block:: python
+       :emphasize-lines: 5
+
+       setup(
+           name         = 'project',
+           version      = '1.0',
+           packages     = find_packages(),
+           entry_points = {'scrapy': ['settings = projectname.settings']},
+       )
+
+    Do this easily with the `scrapyd-deploy` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package.
 
 Example:
 
