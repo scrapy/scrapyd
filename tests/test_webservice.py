@@ -457,33 +457,62 @@ def test_add_version_invalid(txrequest, root):
     assert_error(txrequest, root, "POST", "addversion", args, message)
 
 
-def test_schedule(txrequest, root_with_egg):
-    assert root_with_egg.scheduler.queues["quotesbot"].list() == []
+# Like test_list_spiders.
+@pytest.mark.parametrize(
+    ("args", "run_only_if_has_settings"),
+    [
+        ({b"project": [b"myproject"], b"spider": [b"spider3"]}, False),
+        ({b"project": [b"myproject"], b"_version": [b"r1"], b"spider": [b"spider1"]}, False),
+        ({b"project": [b"localproject"], b"spider": [b"example"]}, True),
+    ],
+)
+def test_schedule(txrequest, root, args, run_only_if_has_settings):
+    if run_only_if_has_settings and not has_settings(root):
+        pytest.skip("[settings] section is not set")
 
-    txrequest.args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
-    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
-    jobs = root_with_egg.scheduler.queues["quotesbot"].list()
-    jobs[0].pop("_job")
+    project = args[b"project"][0].decode()
+    spider = args[b"spider"][0].decode()
+    version = args[b"_version"][0].decode() if b"_version" in args else None
+
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
+    root.update_projects()
+
+    assert root.scheduler.queues[project].list() == []
+
+    txrequest.args = args.copy()
+    content = root.children[b"schedule.json"].render_POST(txrequest)
+    jobid = content.pop("jobid")
+
+    assert content.pop("node_name")
+    assert content == {"status": "ok"}
+    assert re.search(r"^[a-z0-9]{32}$", jobid)
+
+    jobs = root.scheduler.queues[project].list()
 
     assert len(jobs) == 1
-    assert jobs[0] == {"name": "toscrape-css", "settings": {}, "version": None}
-    assert content["status"] == "ok"
-    assert "jobid" in content
+    assert jobs[0] == {"name": spider, "settings": {}, "version": version, "_job": jobid}
 
 
-def test_schedule_nonexistent_project(txrequest, root):
-    args = {b"project": [b"nonexistent"], b"spider": [b"toscrape-css"]}
-    assert_error(txrequest, root, "POST", "schedule", args, b"project 'nonexistent' not found")
+# Like test_list_spiders_nonexistent.
+@pytest.mark.parametrize(
+    ("args", "param", "run_only_if_has_settings"),
+    [
+        ({b"project": [b"nonexistent"], b"spider": [b"spider1"]}, "project", False),
+        ({b"project": [b"myproject"], b"_version": [b"nonexistent"], b"spider": [b"spider1"]}, "version", False),
+        ({b"project": [b"myproject"], b"spider": [b"nonexistent"]}, "spider", False),
+        ({b"project": [b"localproject"], b"_version": [b"nonexistent"], b"spider": [b"example"]}, "version", True),
+    ],
+)
+def test_schedule_nonexistent(txrequest, root, args, param, run_only_if_has_settings):
+    if run_only_if_has_settings and not has_settings(root):
+        pytest.skip("[settings] section is not set")
 
+    root_add_version(root, "myproject", "r1", "mybot")
+    root_add_version(root, "myproject", "r2", "mybot2")
+    root.update_projects()
 
-def test_schedule_nonexistent_version(txrequest, root_with_egg):
-    args = {b"project": [b"quotesbot"], b"_version": [b"nonexistent"], b"spider": [b"toscrape-css"]}
-    assert_error(txrequest, root_with_egg, "POST", "schedule", args, b"version 'nonexistent' not found")
-
-
-def test_schedule_nonexistent_spider(txrequest, root_with_egg):
-    args = {b"project": [b"quotesbot"], b"spider": [b"nonexistent"]}
-    assert_error(txrequest, root_with_egg, "POST", "schedule", args, b"spider 'nonexistent' not found")
+    assert_error(txrequest, root, "POST", "schedule", args, b"%b 'nonexistent' not found" % param.encode())
 
 
 @pytest.mark.parametrize("args", [{}, {b"signal": [b"TERM"]}])
@@ -523,7 +552,7 @@ def test_cancel_nonexistent(txrequest, root):
     assert_error(txrequest, root, "POST", "cancel", args, b"project 'nonexistent' not found")
 
 
-# Cancel, Status, ListJobs and ListSpiders error with "project '%b' not found" on directory traversal attempts.
+# ListSpiders, Schedule, Cancel, Status and ListJobs return "project '%b' not found" on directory traversal attempts.
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
@@ -561,18 +590,3 @@ def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, meth
 
     eggstorage = root.app.getComponent(IEggStorage)
     assert eggstorage.get("quotesbot") == (None, None)
-
-
-@pytest.mark.parametrize(
-    ("endpoint", "method"),
-    [
-        (b"schedule.json", "render_POST"),
-    ],
-)
-def test_project_directory_traversal_runner(txrequest, root, endpoint, method):
-    txrequest.args = {b"project": [b"../p"], b"spider": [b"s"]}
-
-    with pytest.raises(DirectoryTraversalError) as exc:
-        getattr(root.children[endpoint], method)(txrequest)
-
-    assert str(exc.value) == "../p"

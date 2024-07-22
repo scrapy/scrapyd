@@ -46,7 +46,7 @@ def test_options(webservice, method):
     assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
 
 
-# Cancel, Status, ListJobs and ListSpiders will error with "project '%b' not found" on directory traversal attempts.
+# ListSpiders, Schedule, Cancel, Status and ListJobs return "project '%b' not found" on directory traversal attempts.
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
@@ -59,26 +59,6 @@ def test_options(webservice, method):
     ],
 )
 def test_project_directory_traversal(webservice, method, params):
-    response = getattr(requests, method)(
-        f"http://127.0.0.1:6800/{webservice}.json",
-        auth=("hello12345", "67890world"),
-        **{"params" if method == "get" else "data": {"project": "../p", **params}},
-    )
-
-    data = response.json()
-    data.pop("node_name")
-
-    assert response.status_code == 200, f"200 != {response.status_code}"
-    assert data == {"status": "error", "message": "DirectoryTraversalError: ../p"}
-
-
-@pytest.mark.parametrize(
-    ("webservice", "method", "params"),
-    [
-        ("schedule", "post", {"spider": "s"}),
-    ],
-)
-def test_project_directory_traversal_runner(webservice, method, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{webservice}.json",
         auth=("hello12345", "67890world"),

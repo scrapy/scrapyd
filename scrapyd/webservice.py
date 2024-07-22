@@ -174,10 +174,11 @@ class Schedule(WsResource):
     @param("priority", required=False, default=0, type=float)
     @param("setting", required=False, default=list, multiple=True)
     def render_POST(self, txrequest, project, spider, version, jobid, priority, setting):
-        if self.root.eggstorage.get(project, version) == (None, None):
-            if version:
-                raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
+        if project not in self.root.scheduler.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
+
+        if version and self.root.eggstorage.get(project, version) == (None, None):
+            raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
 
         spiders = spider_list.get(project, version, runner=self.root.runner)
         if spider not in spiders:
