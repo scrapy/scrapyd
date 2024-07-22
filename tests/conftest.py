@@ -8,10 +8,16 @@ from twisted.web.test.requesthelper import DummyChannel
 
 from scrapyd import Config
 from scrapyd.app import application
+from scrapyd.webservice import spider_list
 from scrapyd.website import Root
 from tests import root_add_version
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+
+@pytest.fixture(autouse=True)
+def _clear_spider_list_cache():
+    spider_list.cache.clear()
 
 
 @pytest.fixture()

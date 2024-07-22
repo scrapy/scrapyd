@@ -7,6 +7,7 @@ import sys
 import traceback
 import uuid
 import zipfile
+from collections import defaultdict
 from copy import copy
 from io import BytesIO
 from subprocess import PIPE, Popen
@@ -15,9 +16,7 @@ from typing import ClassVar
 from twisted.python import log
 from twisted.web import error, http, resource
 
-from scrapyd.config import Config
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
-from scrapyd.sqlite import JsonSqliteDict
 from scrapyd.utils import native_stringify_dict
 
 
@@ -60,84 +59,57 @@ def param(
     return decorator
 
 
-def get_spider_list(project, runner=None, pythonpath=None, version=None, config=None):
-    """Return the spider list from the given project, using the given runner"""
+class SpiderList:
+    cache: ClassVar = defaultdict(dict)
 
-    # UtilsCache uses JsonSqliteDict, which encodes the project's value as JSON, but JSON allows only string keys,
-    # so the stored dict will have a "null" key, instead of a None key.
-    if version is None:
-        version = ""
+    def get(self, project, version, *, runner):
+        """Return the ``scrapy list`` output for the project and version, using a cache if possible."""
+        try:
+            return self.cache[project][version]
+        except KeyError:
+            return self.set(project, version, runner=runner)
 
-    if "cache" not in get_spider_list.__dict__:
-        get_spider_list.cache = UtilsCache()
-    try:
-        return get_spider_list.cache[project][version]
-    except KeyError:
-        pass
+    def set(self, project, version, *, runner):
+        """Calculate, cache and return the ``scrapy list`` output for the project and version, bypassing the cache."""
 
-    settings = {} if config is None else dict(config.items("settings", default=[]))
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "UTF-8"
+        env["SCRAPY_PROJECT"] = project
+        # If the version is not provided, then the runner uses the default version, determined by egg storage.
+        if version:
+            env["SCRAPYD_EGG_VERSION"] = version
 
-    # runner should always be set.
-    if runner is None:
-        runner = Config().get("runner", "scrapyd.runner")
+        args = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
+        process = Popen(args, stdout=PIPE, stderr=PIPE, env=env)
+        stdout, stderr = process.communicate()
+        if process.returncode:
+            raise RunnerError((stderr or stdout or b"").decode())
 
-    env = os.environ.copy()
-    env["PYTHONIOENCODING"] = "UTF-8"
-    env["SCRAPY_PROJECT"] = project
-    # TODO(jpmckinney): Remove
-    # https://github.com/scrapy/scrapyd/commit/17520a32d19726dc4b09611ff732a9ff3fa8b6ea
-    if pythonpath:
-        env["PYTHONPATH"] = pythonpath
-    if version:
-        env["SCRAPYD_EGG_VERSION"] = version
-    if project in settings:
-        env["SCRAPY_SETTINGS_MODULE"] = settings[project]
+        spiders = stdout.decode().splitlines()
 
-    pargs = [sys.executable, "-m", runner, "list", "-s", "LOG_STDOUT=0"]
-    proc = Popen(pargs, stdout=PIPE, stderr=PIPE, env=env)
-    out, err = proc.communicate()
-    if proc.returncode:
-        msg = err or out or ""
-        msg = msg.decode("utf8")
-        raise RunnerError(msg)
+        # Note: If the cache is empty, that doesn't mean that this is the project's only version; it simply means that
+        # this is the first version called in this Scrapyd process.
 
-    spiders = out.decode("utf-8").splitlines()
-    try:
-        project_cache = get_spider_list.cache[project]
-        project_cache[version] = spiders
-    except KeyError:
-        project_cache = {version: spiders}
-    get_spider_list.cache[project] = project_cache
+        # Evict the return value of version=None calls, since we can't determine whether this version is the default
+        # version (in which case we would overwrite it) or not (in which case we would keep it).
+        self.cache[project].pop(None, None)
+        self.cache[project][version] = spiders
+        return spiders
 
-    return spiders
+    def delete(self, project, version=None):
+        if version is None:
+            self.cache.pop(project, None)
+        else:
+            # Evict the return value of version=None calls, since we can't determine whether this version is the
+            # default version (in which case we would pop it) or not (in which case we would keep it).
+            self.cache[project].pop(None, None)
+            self.cache[project].pop(version, None)
 
 
-class UtilsCache:
-    # array of project name that need to be invalided
-    invalid_cached_projects: ClassVar = []
-
-    def __init__(self):
-        self.cache_manager = JsonSqliteDict(table="utils_cache_manager")
-
-    # Invalid the spider's list's cache of a given project (by name)
-    @staticmethod
-    def invalid_cache(project):
-        UtilsCache.invalid_cached_projects.append(project)
-
-    def __getitem__(self, key):
-        for p in UtilsCache.invalid_cached_projects:
-            if p in self.cache_manager:
-                del self.cache_manager[p]
-        UtilsCache.invalid_cached_projects[:] = []
-        return self.cache_manager[key]
-
-    def __setitem__(self, key, value):
-        self.cache_manager[key] = value
-
-    def __repr__(self):
-        return f"UtilsCache(cache_manager={self.cache_manager!r})"
+spider_list = SpiderList()
 
 
+# WebserviceResource
 class WsResource(resource.Resource):
     json_encoder = json.JSONEncoder()
 
@@ -207,7 +179,7 @@ class Schedule(WsResource):
                 raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
-        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
+        spiders = spider_list.get(project, version, runner=self.root.runner)
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
 
@@ -267,8 +239,7 @@ class AddVersion(WsResource):
         self.root.eggstorage.put(BytesIO(egg), project, version)
         self.root.update_projects()
 
-        UtilsCache.invalid_cache(project)
-        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
+        spiders = spider_list.set(project, version, runner=self.root.runner)
 
         return {
             "node_name": self.root.nodename,
@@ -302,7 +273,7 @@ class ListSpiders(WsResource):
         if version and self.root.eggstorage.get(project, version) == (None, None):
             raise error.Error(code=http.OK, message=b"version '%b' not found" % version.encode())
 
-        spiders = get_spider_list(project, version=version, runner=self.root.runner, config=self.root._config)
+        spiders = spider_list.get(project, version, runner=self.root.runner)
 
         return {"node_name": self.root.nodename, "status": "ok", "spiders": spiders}
 
@@ -368,6 +339,7 @@ class DeleteProject(WsResource):
     @param("project")
     def render_POST(self, txrequest, project):
         self._delete_version(project)
+        spider_list.delete(project)
         return {"node_name": self.root.nodename, "status": "ok"}
 
     def _delete_version(self, project, version=None):
@@ -380,12 +352,11 @@ class DeleteProject(WsResource):
         else:
             self.root.update_projects()
 
-            UtilsCache.invalid_cache(project)
-
 
 class DeleteVersion(DeleteProject):
     @param("project")
     @param("version")
     def render_POST(self, txrequest, project, version):
         self._delete_version(project, version)
+        spider_list.delete(project, version)
         return {"node_name": self.root.nodename, "status": "ok"}

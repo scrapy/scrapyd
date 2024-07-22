@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from scrapyd.jobstorage import Job
-from scrapyd.sqlite import JsonSqliteDict, JsonSqlitePriorityQueue, SqliteFinishedJobs
+from scrapyd.sqlite import JsonSqlitePriorityQueue, SqliteFinishedJobs
 
 
 @pytest.fixture()
@@ -18,57 +18,6 @@ def sqlitefinishedjobs():
     q.add(Job("p2", "s2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8)))
     q.add(Job("p3", "s3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9)))
     return q
-
-
-def test_jsonsqlitedict_basic_types():
-    test_dict = (
-        ("hello", "world"),
-        ("int", 1),
-        ("float", 1.5),
-        ("null", None),
-        ("list", ["a", "word"]),
-        ("dict", {"some": "dict"}),
-    )
-
-    d = JsonSqliteDict()
-    d.update(test_dict)
-
-    assert list(d.items()) == list(test_dict)
-
-    d.clear()
-
-    assert not d.items()
-
-
-def test_jsonsqlitedict_in():
-    d = JsonSqliteDict()
-
-    assert "test" not in d
-
-    d["test"] = 123
-
-    assert "test" in d
-
-
-def test_jsonsqlitedict_keyerror():
-    d = JsonSqliteDict()
-
-    with pytest.raises(KeyError):
-        d.__getitem__("test")
-
-
-def test_jsonsqlitedict_replace():
-    d = JsonSqliteDict()
-
-    assert d.get("test") is None
-
-    d["test"] = 123
-
-    assert d.get("test") == 123
-
-    d["test"] = 456
-
-    assert d.get("test") == 456
 
 
 def test_jsonsqlitepriorityqueue_empty(jsonsqlitepriorityqueue):

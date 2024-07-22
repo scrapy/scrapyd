@@ -2,11 +2,6 @@ import json
 import sqlite3
 from datetime import datetime
 
-try:
-    from collections.abc import MutableMapping
-except ImportError:
-    from collections.abc import MutableMapping
-
 
 class SqliteMixin:
     def __init__(self, database, table):
@@ -23,58 +18,6 @@ class SqliteMixin:
 
     def decode(self, obj):
         return json.loads(bytes(obj).decode("ascii"))
-
-
-class JsonSqliteDict(SqliteMixin, MutableMapping):
-    """SQLite-backed dictionary"""
-
-    def __init__(self, database=None, table="dict"):
-        super().__init__(database, table)
-
-        self.conn.execute(f"CREATE TABLE IF NOT EXISTS {table} (key blob PRIMARY KEY, value blob)")
-
-    def __getitem__(self, key):
-        if value := self.conn.execute(f"SELECT value FROM {self.table} WHERE key = ?", (self.encode(key),)).fetchone():
-            return self.decode(value[0])
-        raise KeyError(key)
-
-    def __setitem__(self, key, value):
-        self.conn.execute(
-            f"INSERT OR REPLACE INTO {self.table} (key, value) VALUES (?, ?)",
-            (self.encode(key), self.encode(value)),
-        )
-        self.conn.commit()
-
-    def __delitem__(self, key):
-        self.conn.execute(f"DELETE FROM {self.table} WHERE key = ?", (self.encode(key),))
-        self.conn.commit()
-
-    def __iter__(self):
-        yield from self.iterkeys()
-
-    def __repr__(self):
-        return f"JsonSqliteDict({dict(self.iteritems())})"
-
-    def iterkeys(self):
-        return (self.decode(key) for (key,) in self.conn.execute(f"SELECT key FROM {self.table}"))
-
-    def itervalues(self):
-        return (self.decode(value) for (value,) in self.conn.execute(f"SELECT value FROM {self.table}"))
-
-    def iteritems(self):
-        return (
-            (self.decode(key), self.decode(value))
-            for key, value in self.conn.execute(f"SELECT key, value FROM {self.table}")
-        )
-
-    def keys(self):
-        return list(self.iterkeys())
-
-    def values(self):
-        return list(self.itervalues())
-
-    def items(self):
-        return list(self.iteritems())
 
 
 class JsonSqlitePriorityQueue(SqliteMixin):

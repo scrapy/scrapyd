@@ -66,13 +66,15 @@ Library
 
   -  ``sorted_versions`` to ``scrapyd.eggstorage``
   -  ``get_crawl_args`` to ``scrapyd.launcher``
-  -  ``JsonResource``, ``get_spider_list`` and ``UtilsCache`` to ``scrapyd.webservice``
+  -  ``JsonResource`` to ``scrapyd.webservice``
 
 -  Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
 -  Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
 -  Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
+-  Change the ``get_spider_list`` function to a ``SpiderList`` class.
 -  Merge the ``JsonResource`` class into the ``WsResource`` class, removing the ``render_object`` method.
 -  Remove the unused keyword arguments from the ``native_stringify_dict`` and ``to_native_str`` functions.
+-  Remove the ``JsonSqliteDict`` and ``UtilsCache`` classes.
 
 Fixed
 ~~~~~

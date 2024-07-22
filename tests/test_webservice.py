@@ -13,7 +13,7 @@ from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.txapp import application
-from scrapyd.webservice import UtilsCache, get_spider_list
+from scrapyd.webservice import spider_list
 from tests import get_egg_data, has_settings, root_add_version
 
 job1 = Job(
@@ -63,72 +63,63 @@ def assert_error(txrequest, root, method, basename, args, message):
     assert exc.value.message == message
 
 
-def test_get_spider_list_log_stdout(app):
+def test_spider_list_log_stdout(app):
     add_test_version(app, "logstdout", "logstdout", "logstdout")
-    spiders = get_spider_list("logstdout")
+    spiders = spider_list.get("logstdout", None, runner="scrapyd.runner")
 
     # If LOG_STDOUT were respected, the output would be [].
     assert sorted(spiders) == ["spider1", "spider2"]
 
 
-def test_get_spider_list(app):
-    UtilsCache.invalid_cache("myproject")  # test_list_spiders fills cache, if run first
-
+def test_spider_list(app):
     # mybot.egg has two spiders, spider1 and spider2
     add_test_version(app, "myproject", "r1", "mybot")
-    spiders = get_spider_list("myproject")
+    spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # mybot2.egg has three spiders, spider1, spider2 and spider3...
     # BUT you won't see it here because it's cached.
     # Effectivelly it's like if version was never added
     add_test_version(app, "myproject", "r2", "mybot2")
-    spiders = get_spider_list("myproject")
+    spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # Let's invalidate the cache for this project...
-    UtilsCache.invalid_cache("myproject")
+    spider_list.delete("myproject")
 
     # Now you get the updated list
-    spiders = get_spider_list("myproject")
+    spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2", "spider3"]
 
     # Let's re-deploy mybot.egg and clear cache. It now sees 2 spiders
     add_test_version(app, "myproject", "r3", "mybot")
-    UtilsCache.invalid_cache("myproject")
-    spiders = get_spider_list("myproject")
+    spider_list.delete("myproject")
+    spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
     # And re-deploying the one with three (mybot2.egg) with a version that
-    # isn't the higher, won't change what get_spider_list() returns.
+    # isn't the higher, won't change what spider_list.get() returns.
     add_test_version(app, "myproject", "r1a", "mybot2")
-    UtilsCache.invalid_cache("myproject")
-    spiders = get_spider_list("myproject")
+    spider_list.delete("myproject")
+    spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
 
-def test_get_spider_list_unicode(app):
+def test_spider_list_unicode(app):
     # mybotunicode.egg has two spiders, araña1 and araña2
     add_test_version(app, "myprojectunicode", "r1", "mybotunicode")
-    spiders = get_spider_list("myprojectunicode")
+    spiders = spider_list.get("myprojectunicode", None, runner="scrapyd.runner")
 
     assert sorted(spiders) == ["araña1", "araña2"]
 
 
-def test_get_spider_list_error(app):
+def test_spider_list_error(app):
     # mybot3.settings contains "raise Exception('This should break the `scrapy list` command')"
     add_test_version(app, "myproject3", "r1", "mybot3")
     with pytest.raises(RunnerError) as exc:
-        get_spider_list("myproject3")
+        spider_list.get("myproject3", None, runner="scrapyd.runner")
 
     assert re.search(f"Exception: This should break the `scrapy list` command{os.linesep}$", str(exc.value))
-
-
-def test_utils_cache_repr():
-    cache = UtilsCache()
-    cache["key"] = "value"
-
-    assert repr(cache) == "UtilsCache(cache_manager=JsonSqliteDict({'key': 'value'}))"
 
 
 @pytest.mark.parametrize(
@@ -198,8 +189,6 @@ def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
     if run_only_if_has_settings and not has_settings(root):
         pytest.skip("[settings] section is not set")
 
-    UtilsCache.invalid_cache("myproject")  # test_get_spider_list fills cache
-
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
@@ -219,8 +208,6 @@ def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
 def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_settings):
     if run_only_if_has_settings and not has_settings(root):
         pytest.skip("[settings] section is not set")
-
-    UtilsCache.invalid_cache("myproject")  # test_get_spider_list fills cache
 
     root_add_version(root, "myproject", "r1", "mybot")
     root_add_version(root, "myproject", "r2", "mybot2")
@@ -359,7 +346,7 @@ def test_delete_version(txrequest, root):
     assert_content(txrequest, root, "POST", "delversion", args, {"status": "ok"})
     assert root.eggstorage.get("myproject", "r2") == (None, None)  # version is gone
 
-    # Spiders (after) would contain "spider3" without UtilsCache.invalid_cache().
+    # Spiders (after) would contain "spider3" without cache eviction.
     expected = {"spiders": ["spider1", "spider2"]}
     assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"myproject"]}, expected)
 
@@ -373,6 +360,11 @@ def test_delete_version(txrequest, root):
 
     # Projects (after) would contain "myproject" without root.update_projects().
     assert_content(txrequest, root, "GET", "listprojects", {}, {"projects": [*projects]})
+
+
+def test_delete_version_uncached(txrequest, root_with_egg):
+    args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
+    assert_content(txrequest, root_with_egg, "POST", "delversion", args, {"status": "ok"})
 
 
 @pytest.mark.parametrize(
@@ -411,6 +403,11 @@ def test_delete_project(txrequest, root_with_egg):
     assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
+def test_delete_project_uncached(txrequest, root_with_egg):
+    args = {b"project": [b"quotesbot"]}
+    assert_content(txrequest, root_with_egg, "POST", "delproject", args, {"status": "ok"})
+
+
 def test_delete_project_nonexistent(txrequest, root):
     args = {b"project": [b"nonexistent"]}
     assert_error(txrequest, root, "POST", "delproject", args, b"project 'nonexistent' not found")
@@ -419,21 +416,23 @@ def test_delete_project_nonexistent(txrequest, root):
 def test_add_version(txrequest, root):
     assert root.eggstorage.get("quotesbot") == (None, None)
 
+    # Add a version.
     args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
     expected = {"project": "quotesbot", "version": "0.1", "spiders": 2}
     assert_content(txrequest, root, "POST", "addversion", args, expected)
     assert root.eggstorage.list("quotesbot") == ["0_1"]
 
-    assert "0.1" in get_spider_list.cache["quotesbot"]
+    # Spiders (before).
     expected = {"spiders": ["toscrape-css", "toscrape-xpath"]}
     assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
+    # Add the same version with a different egg.
     args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot2")]}
-    expected = {"project": "quotesbot", "version": "0.1", "spiders": 3}  # 2 without UtilsCache.invalid_cache()
+    expected = {"project": "quotesbot", "version": "0.1", "spiders": 3}  # 2 without cache eviction
     assert_content(txrequest, root, "POST", "addversion", args, expected)
     assert root.eggstorage.list("quotesbot") == ["0_1"]  # overwrite version
 
-    assert "0.1" in get_spider_list.cache["quotesbot"]
+    # Spiders (after).
     expected = {"spiders": ["spider1", "spider2", "spider3"]}
     assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
 
