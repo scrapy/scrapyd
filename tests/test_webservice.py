@@ -63,50 +63,42 @@ def assert_error(txrequest, root, method, basename, args, message):
     assert exc.value.message == message
 
 
-def test_spider_list_log_stdout(app):
-    add_test_version(app, "logstdout", "logstdout", "logstdout")
-    spiders = spider_list.get("logstdout", None, runner="scrapyd.runner")
-
-    # If LOG_STDOUT were respected, the output would be [].
-    assert sorted(spiders) == ["spider1", "spider2"]
-
-
 def test_spider_list(app):
-    # mybot.egg has two spiders, spider1 and spider2
     add_test_version(app, "myproject", "r1", "mybot")
     spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
-    # mybot2.egg has three spiders, spider1, spider2 and spider3...
-    # BUT you won't see it here because it's cached.
-    # Effectivelly it's like if version was never added
+    # Use the cache.
     add_test_version(app, "myproject", "r2", "mybot2")
     spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
-    assert sorted(spiders) == ["spider1", "spider2"]
+    assert sorted(spiders) == ["spider1", "spider2"]  # mybot2 has 3 spiders, but the cache wasn't evicted
 
-    # Let's invalidate the cache for this project...
+    # Clear the cache.
     spider_list.delete("myproject")
-
-    # Now you get the updated list
     spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2", "spider3"]
 
-    # Let's re-deploy mybot.egg and clear cache. It now sees 2 spiders
+    # Re-add the 2-spider version and clear the cache.
     add_test_version(app, "myproject", "r3", "mybot")
     spider_list.delete("myproject")
     spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
-    # And re-deploying the one with three (mybot2.egg) with a version that
-    # isn't the higher, won't change what spider_list.get() returns.
+    # Re-add the 3-spider version and clear the cache, but use a lower version number.
     add_test_version(app, "myproject", "r1a", "mybot2")
     spider_list.delete("myproject")
     spiders = spider_list.get("myproject", None, runner="scrapyd.runner")
     assert sorted(spiders) == ["spider1", "spider2"]
 
 
+def test_spider_list_log_stdout(app):
+    add_test_version(app, "logstdout", "logstdout", "logstdout")
+    spiders = spider_list.get("logstdout", None, runner="scrapyd.runner")
+
+    assert sorted(spiders) == ["spider1", "spider2"]  # [] if LOG_STDOUT were enabled
+
+
 def test_spider_list_unicode(app):
-    # mybotunicode.egg has two spiders, araña1 and araña2
     add_test_version(app, "myprojectunicode", "r1", "mybotunicode")
     spiders = spider_list.get("myprojectunicode", None, runner="scrapyd.runner")
 
@@ -114,7 +106,7 @@ def test_spider_list_unicode(app):
 
 
 def test_spider_list_error(app):
-    # mybot3.settings contains "raise Exception('This should break the `scrapy list` command')"
+    # mybot3.settings contains "raise Exception('This should break the `scrapy list` command')".
     add_test_version(app, "myproject3", "r1", "mybot3")
     with pytest.raises(RunnerError) as exc:
         spider_list.get("myproject3", None, runner="scrapyd.runner")
