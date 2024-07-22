@@ -274,8 +274,8 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
 
     def prep_row(self, cells):
         if isinstance(cells, dict):
-            cells = [cells.get(k) for k in self.header_cols]
-        cells = [f"<td>{'' if c is None else c}</td>" for c in cells]
+            cells = [cells.get(key) for key in self.header_cols]
+        cells = [f"<td>{'' if cell is None else cell}</td>" for cell in cells]
         return f"<tr>{''.join(cells)}</tr>"
 
     def prep_doc(self):
@@ -314,48 +314,48 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             self.prep_row(
                 {
                     "Project": escape(project),
-                    "Spider": escape(m["name"]),
-                    "Job": escape(m["_job"]),
-                    "Cancel": cancel_button(project=project, jobid=m["_job"], base_path=self.base_path),
+                    "Spider": escape(message["name"]),
+                    "Job": escape(message["_job"]),
+                    "Cancel": cancel_button(project=project, jobid=message["_job"], base_path=self.base_path),
                 }
             )
             for project, queue in self.root.scheduler.queues.items()
-            for m in queue.list()
+            for message in queue.list()
         )
 
     def prep_tab_running(self):
         return "\n".join(
             self.prep_row(
                 {
-                    "Project": escape(p.project),
-                    "Spider": escape(p.spider),
-                    "Job": escape(p.job),
-                    "PID": p.pid,
-                    "Start": microsec_trunc(p.start_time),
-                    "Runtime": microsec_trunc(datetime.now() - p.start_time),
-                    "Log": f'<a href="{self.base_path}{job_log_url(p)}">Log</a>',
-                    "Items": f'<a href="{self.base_path}{job_items_url(p)}">Items</a>',
-                    "Cancel": cancel_button(project=p.project, jobid=p.job, base_path=self.base_path),
+                    "Project": escape(process.project),
+                    "Spider": escape(process.spider),
+                    "Job": escape(process.job),
+                    "PID": process.pid,
+                    "Start": microsec_trunc(process.start_time),
+                    "Runtime": microsec_trunc(datetime.now() - process.start_time),
+                    "Log": f'<a href="{self.base_path}{job_log_url(process)}">Log</a>',
+                    "Items": f'<a href="{self.base_path}{job_items_url(process)}">Items</a>',
+                    "Cancel": cancel_button(project=process.project, jobid=process.job, base_path=self.base_path),
                 }
             )
-            for p in self.root.launcher.processes.values()
+            for process in self.root.launcher.processes.values()
         )
 
     def prep_tab_finished(self):
         return "\n".join(
             self.prep_row(
                 {
-                    "Project": escape(p.project),
-                    "Spider": escape(p.spider),
-                    "Job": escape(p.job),
-                    "Start": microsec_trunc(p.start_time),
-                    "Runtime": microsec_trunc(p.end_time - p.start_time),
-                    "Finish": microsec_trunc(p.end_time),
-                    "Log": f'<a href="{self.base_path}{job_log_url(p)}">Log</a>',
-                    "Items": f'<a href="{self.base_path}{job_items_url(p)}">Items</a>',
+                    "Project": escape(job.project),
+                    "Spider": escape(job.spider),
+                    "Job": escape(job.job),
+                    "Start": microsec_trunc(job.start_time),
+                    "Runtime": microsec_trunc(job.end_time - job.start_time),
+                    "Finish": microsec_trunc(job.end_time),
+                    "Log": f'<a href="{self.base_path}{job_log_url(job)}">Log</a>',
+                    "Items": f'<a href="{self.base_path}{job_items_url(job)}">Items</a>',
                 }
             )
-            for p in self.root.launcher.finished
+            for job in self.root.launcher.finished
         )
 
     def render(self, txrequest):
