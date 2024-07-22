@@ -13,7 +13,7 @@ venv
 /docs/_build
 
 # Tests
-/.coverage
+/.coverage*
 /htmlcov
 /_trial_temp
 /tests.test_*

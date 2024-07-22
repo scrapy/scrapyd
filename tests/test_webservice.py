@@ -152,6 +152,19 @@ def test_invalid_type(txrequest, root):
     assert_error(txrequest, root, "POST", "schedule", args, message)
 
 
+def test_debug(txrequest, root):
+    root.debug = True
+
+    txrequest.method = "POST"
+    txrequest.args = {b"project": [b"p"], b"spider": [b"s"], b"priority": [b"x"]}
+    response = root.children[b"schedule.json"].render(txrequest).decode()
+
+    assert response.startswith("Traceback (most recent call last):")
+    assert response.endswith(
+        f"twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'{os.linesep}"
+    )
+
+
 def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
     expected = {"running": 0, "pending": 0, "finished": 0}
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
