@@ -25,14 +25,16 @@ def test_v(capsys, monkeypatch):
 def test_help(capsys, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["scrapyd", "--help"])
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as exc:
         main()
 
-    out = capsys.readouterr().out
+    captured = capsys.readouterr()
 
-    assert out.startswith("Usage: scrapyd [options]\n")
-    assert "--nodaemon" not in out
-    assert "python" not in out
-    assert "rundir" not in out
-    assert "ftp" not in out
-    assert "Commands:" not in out
+    assert exc.value.code == 0
+    assert captured.out.startswith("Usage: scrapyd [options]\n")
+    assert "--nodaemon" not in captured.out
+    assert "python" not in captured.out
+    assert "rundir" not in captured.out
+    assert "ftp" not in captured.out
+    assert "Commands:" not in captured.out
+    assert captured.err == ""

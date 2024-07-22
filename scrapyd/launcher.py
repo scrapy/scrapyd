@@ -59,14 +59,18 @@ class Launcher(Service):
         message["settings"].update(environ.get_settings(message))
         msg = native_stringify_dict(message)
         project = msg["_project"]
+
         args = [sys.executable, "-m", self.runner, "crawl"]
         args += get_crawl_args(msg)
+
         env = environ.get_environment(msg, slot)
         env = native_stringify_dict(env)
-        pp = ScrapyProcessProtocol(project, msg["_spider"], msg["_job"], env, args)
-        pp.deferred.addBoth(self._process_finished, slot)
-        reactor.spawnProcess(pp, sys.executable, args=args, env=env)
-        self.processes[slot] = pp
+
+        process = ScrapyProcessProtocol(project, msg["_spider"], msg["_job"], env, args)
+        process.deferred.addBoth(self._process_finished, slot)
+
+        reactor.spawnProcess(process, sys.executable, args=args, env=env)
+        self.processes[slot] = process
 
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)

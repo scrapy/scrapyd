@@ -29,9 +29,9 @@ def txrequest():
 
 # Use this fixture when testing the Scrapyd web UI or API or writing configuration files.
 @pytest.fixture()
-def chdir(monkeypatch, tmpdir):
-    monkeypatch.chdir(tmpdir)
-    return tmpdir
+def chdir(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
 
 
 @pytest.fixture(
@@ -44,7 +44,7 @@ def chdir(monkeypatch, tmpdir):
 )
 def root(request, chdir):
     if request.param == "scrapy.cfg":
-        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), os.path.join(chdir), dirs_exist_ok=True)
+        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), chdir, dirs_exist_ok=True)
 
     config = Config()
     if isinstance(request.param, tuple):
