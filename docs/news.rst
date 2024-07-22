@@ -67,6 +67,7 @@ Library
 
 -  Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
 -  Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
+-  Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by caller.
 -  Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
 -  Change the ``get_spider_list`` function to a ``SpiderList`` class.
 -  Merge the ``JsonResource`` class into the ``WsResource`` class, removing the ``render_object`` method.
@@ -107,7 +108,7 @@ Scrapyd is now tested on macOS and Windows, in addition to Linux.
 Removed
 ~~~~~~~
 
--  Remove the unused keyword arguments from the ``native_stringify_dict`` and ``to_native_str`` functions.
+-  Remove the unused keyword arguments from the ``native_stringify_dict`` function.
 -  Remove the ``JsonSqliteDict`` and ``UtilsCache`` classes.
 -  Remove undocumented and unused internal environment variables:
 

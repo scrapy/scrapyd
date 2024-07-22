@@ -57,18 +57,18 @@ def native_stringify_dict(dct_or_tuples):
     """
     d = {}
     for k, v in dct_or_tuples.items():
-        key = to_native_str(k)
+        key = _to_native_str(k)
         if isinstance(v, dict):
             value = native_stringify_dict(v)
         elif isinstance(v, list):
-            value = [to_native_str(e) for e in v]
+            value = [_to_native_str(e) for e in v]
         else:
-            value = to_native_str(v)
+            value = _to_native_str(v)
         d[key] = value
     return d
 
 
-def to_native_str(text):
+def _to_native_str(text):
     if isinstance(text, str):
         return text
     return text.decode()

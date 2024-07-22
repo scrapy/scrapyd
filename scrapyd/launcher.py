@@ -1,5 +1,6 @@
 import datetime
 import sys
+from itertools import chain
 from multiprocessing import cpu_count
 
 from twisted.application.service import Service
@@ -8,24 +9,21 @@ from twisted.python import log
 
 from scrapyd import __version__
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
-from scrapyd.utils import native_stringify_dict, to_native_str
+from scrapyd.utils import native_stringify_dict
 
 
 def get_crawl_args(message):
     """Return the command-line arguments to use for the scrapy crawl process
     that will be started for this message
     """
-    msg = message.copy()
-    args = [to_native_str(msg["_spider"])]
-    del msg["_project"], msg["_spider"]
-    settings = msg.pop("settings", {})
-    for k, v in native_stringify_dict(msg).items():
-        args += ["-a"]
-        args += [f"{k}={v}"]
-    for k, v in native_stringify_dict(settings).items():
-        args += ["-s"]
-        args += [f"{k}={v}"]
-    return args
+    copied = message.copy()
+    del copied["_project"]
+
+    return [
+        copied.pop("_spider"),
+        *chain.from_iterable(["-s", f"{key}={value}"] for key, value in copied.pop("settings", {}).items()),
+        *chain.from_iterable(["-a", f"{key}={value}"] for key, value in copied.items()),  # spider arguments
+    ]
 
 
 class Launcher(Service):
@@ -57,16 +55,16 @@ class Launcher(Service):
         environ = self.app.getComponent(IEnvironment)
         message.setdefault("settings", {})
         message["settings"].update(environ.get_settings(message))
-        msg = native_stringify_dict(message)
-        project = msg["_project"]
+        decoded = native_stringify_dict(message)
+        project = decoded["_project"]
 
         args = [sys.executable, "-m", self.runner, "crawl"]
-        args += get_crawl_args(msg)
+        args += get_crawl_args(decoded)
 
-        env = environ.get_environment(msg, slot)
+        env = environ.get_environment(decoded, slot)
         env = native_stringify_dict(env)
 
-        process = ScrapyProcessProtocol(project, msg["_spider"], msg["_job"], env, args)
+        process = ScrapyProcessProtocol(project, decoded["_spider"], decoded["_job"], env, args)
         process.deferred.addBoth(self._process_finished, slot)
 
         reactor.spawnProcess(process, sys.executable, args=args, env=env)
