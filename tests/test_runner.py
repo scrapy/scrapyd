@@ -57,6 +57,7 @@ def test_no_load_scrapy_conf(module):
     assert "scrapy.conf" not in sys.modules, f"module {module!r} must not cause the scrapy.conf module to be loaded"
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="The temporary file encounters a PermissionError")
 def test_bytesio(monkeypatch, capsys, chdir):
     (chdir / "scrapyd.conf").write_text("[scrapyd]\neggstorage = tests.test_runner.MockEggStorage")
     monkeypatch.setenv("SCRAPY_PROJECT", "bytesio")

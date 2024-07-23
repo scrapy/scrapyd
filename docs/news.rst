@@ -6,6 +6,8 @@ Release notes
 1.5.0b1 (2024-07-19)
 --------------------
 
+This release contains the most changes in a decade. Therefore, a beta release is made first.
+
 Added
 ~~~~~
 
