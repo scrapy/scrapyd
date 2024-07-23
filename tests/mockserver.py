@@ -23,7 +23,8 @@ class MockScrapydServer:
         self.password = password
 
     def __enter__(self):
-        command = [sys.executable, os.path.join(BASEDIR, "start_mock_app.py"), get_ephemeral_port()]
+        self.http_port = get_ephemeral_port()
+        command = [sys.executable, os.path.join(BASEDIR, "mockapp.py"), self.http_port]
         if self.username and self.password:
             command.extend([f"--username={self.username}", f"--password={self.password}"])
 
@@ -33,9 +34,11 @@ class MockScrapydServer:
         # 2001-02-03 04:05:06-0000 [-] Log opened.
         # 2001-02-03 04:05:06-0000 [-] Basic authentication disabled as either `username` or `password` is unset
         # 2001-02-03 04:05:06-0000 [-] Scrapyd web console available at http://127.0.0.1:53532/
+        self.head = []
         for _ in range(10):
-            line = self.process.stdout.readline().strip().decode("ascii")
-            if address := re.search("available at (.+/)", line):
+            line = self.process.stdout.readline()
+            self.head.append(line)
+            if address := re.search("available at (.+/)", line.decode()):
                 self.url = address.group(1)
                 break
 
@@ -43,7 +46,8 @@ class MockScrapydServer:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.process.terminate()
-        self.process.communicate()
+        self.stdout, _ = self.process.communicate()
+        self.stdout = b"".join(self.head) + self.stdout
 
     def urljoin(self, path):
         return urljoin(self.url, path)

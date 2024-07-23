@@ -12,7 +12,6 @@ from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
-from scrapyd.txapp import application
 from scrapyd.webservice import spider_list
 from tests import get_egg_data, has_settings, root_add_version
 
@@ -23,11 +22,6 @@ job1 = Job(
     start_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7),
     end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8),
 )
-
-
-@pytest.fixture()
-def app(chdir):
-    return application
 
 
 @pytest.fixture()

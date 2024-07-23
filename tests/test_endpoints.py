@@ -1,10 +1,12 @@
 import io
+import os
 import re
 
 import pytest
 import requests
 from requests.models import Response
 
+from scrapyd import __version__
 from tests import get_egg_data
 from tests.mockserver import MockScrapydServer
 
@@ -45,19 +47,51 @@ def test_root(mock_scrapyd):
 
 
 def test_auth():
-    username, password = "Leonardo", "hunter2"
-
-    with MockScrapydServer(username=username, password=password) as server:
+    with MockScrapydServer(username="bob", password="hunter2") as server:
         assert requests.get(server.url).status_code == 401
 
-        res = requests.get(server.url, auth=(username, password))
+        res = requests.get(server.url, auth=("bob", "hunter2"))
 
         assert res.status_code == 200
         assert re.search("To schedule a spider", res.text)
 
-        res = requests.get(server.url, auth=(username, "trying to hack"))
+        res = requests.get(server.url, auth=("bob", "invalid"))
 
         assert res.status_code == 401
+
+    stdout = server.stdout.decode()
+
+    # scrapyd.basicauth
+    assert f" [-] Basic authentication enabled{os.linesep}" in stdout
+    # scrapyd.app
+    assert f" [-] Scrapyd web console available at http://127.0.0.1:{server.http_port}/" in stdout
+    # scrapyd.launcher
+    assert re.search(
+        f" \\[Launcher\\] Scrapyd {__version__} started: max_proc=\\d+, runner='scrapyd.runner'{os.linesep}", stdout
+    )
+
+
+def test_noauth():
+    with MockScrapydServer() as server:
+        pass
+
+    # scrapyd.basicauth
+    assert (
+        f" [-] Basic authentication disabled as either `username` or `password` is unset{os.linesep}"
+        in server.stdout.decode()
+    )
+
+
+def test_error():
+    with MockScrapydServer() as server:
+        requests.get(server.urljoin("listversions.json"), params={"project": [b"\xc3\x28"]})
+
+    stdout = server.stdout.decode()
+
+    # scrapyd.webservice
+    assert f" [_GenericHTTPChannelProtocol,0,127.0.0.1] Unhandled Error{os.linesep}" in stdout
+    assert f"\tTraceback (most recent call last):{os.linesep}" in stdout
+    assert "\ttwisted.web.error.Error: 200 project is invalid: " in stdout
 
 
 @pytest.mark.parametrize(

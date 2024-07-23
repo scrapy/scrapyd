@@ -13,7 +13,6 @@ if __name__ == "__main__":
     parser.add_argument("http_port")
     parser.add_argument("--username")
     parser.add_argument("--password")
-
     args = parser.parse_args()
 
     config = Config()
@@ -24,7 +23,6 @@ if __name__ == "__main__":
 
     log.startLogging(sys.stdout)
 
-    application = application(config=config)
-    app.startApplication(application, save=False)
+    app.startApplication(application(config=config), save=False)
 
     reactor.run()

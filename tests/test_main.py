@@ -1,11 +1,9 @@
-import pkgutil
 import sys
 
 import pytest
 
+from scrapyd import __version__
 from scrapyd.__main__ import main
-
-__version__ = pkgutil.get_data(__package__, "../scrapyd/VERSION").decode("ascii").strip()
 
 
 def test_version(capsys, monkeypatch):
