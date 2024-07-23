@@ -9,6 +9,10 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(".."))
 
 
 # -- Project information -----------------------------------------------------
@@ -29,7 +33,10 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
     "sphinx.ext.extlinks",
+    "sphinx.ext.viewcode",
+    "sphinxcontrib.zopeext.autointerface",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,6 +62,13 @@ html_static_path = []
 
 
 # -- Extension configuration -------------------------------------------------
+
+autodoc_default_options = {
+    "members": None,
+    "member-order": "bysource",
+}
+autodoc_typehints = "description"
+autodoc_type_aliases = {}
 
 extlinks = {
     "issue": ("https://github.com/open-contracting/pelican-frontend/issues/%s", "#%s"),

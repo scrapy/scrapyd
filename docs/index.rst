@@ -52,5 +52,5 @@ See :doc:`api` for more details.
    config
    api
    deploy
-   contributing
+   contributing/index
    news

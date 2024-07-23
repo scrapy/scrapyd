@@ -2,7 +2,11 @@ from zope.interface import Interface
 
 
 class IEggStorage(Interface):
-    """A component that handles storing and retrieving eggs"""
+    """
+    A component that handles storing and retrieving eggs.
+
+    .. versionadded:: 1.0.0
+    """
 
     def put(eggfile, project, version):
         """Store the egg (passed in the file object) under the given project and
@@ -19,7 +23,12 @@ class IEggStorage(Interface):
         project) in order (the latest version is the currently used)."""
 
     def list_projects():
-        """Return the list of projects from the stored eggs"""
+        """
+        Return the list of projects from the stored eggs.
+
+        .. versionadded:: 1.3.0
+           Move this logic into the interface and its implementations, to allow customization.
+        """
 
     def delete(project, version=None):
         """Delete the egg stored for the given project and version. If should
@@ -27,7 +36,11 @@ class IEggStorage(Interface):
 
 
 class IPoller(Interface):
-    """A component that polls for projects that need to run"""
+    """
+    A component that polls for projects that need to run.
+
+    .. versionadded:: 1.0.0
+    """
 
     def poll():
         """Called periodically to poll for projects"""
@@ -54,10 +67,19 @@ class IPoller(Interface):
 
 
 class ISpiderQueue(Interface):
-    def add(name, priority, **spider_args):
-        """Add a spider to the queue given its name a some spider arguments.
+    """
+    .. versionadded:: 1.0.0
+    """
 
-        This method can return a deferred."""
+    def add(name, priority, **spider_args):
+        """
+        Add a spider to the queue given its name a some spider arguments.
+
+        This method can return a deferred.
+
+        .. versionchanged:: 1.3.0
+           Add the ``priority`` parameter.
+        """
 
     def pop():
         """Pop the next message from the queue. The messages is a dict
@@ -90,10 +112,19 @@ class ISpiderQueue(Interface):
 
 
 class ISpiderScheduler(Interface):
-    """A component to schedule spider runs"""
+    """
+    A component to schedule spider runs.
+
+    .. versionadded:: 1.0.0
+    """
 
     def schedule(project, spider_name, priority, **spider_args):
-        """Schedule a spider for the given project"""
+        """
+        Schedule a spider for the given project.
+
+        .. versionchanged:: 1.3.0
+           Add the ``priority`` parameter.
+        """
 
     def list_projects():
         """Return the list of available projects"""
@@ -104,12 +135,20 @@ class ISpiderScheduler(Interface):
 
 
 class IEnvironment(Interface):
-    """A component to generate the environment of crawler processes"""
+    """
+    A component to generate the environment of crawler processes.
+
+    .. versionadded:: 1.0.0
+    """
 
     def get_settings(message):
-        """Return the Scrapy settings to use for running the process.
+        """
+        Return the Scrapy settings to use for running the process.
 
         `message` is the message received from the IPoller.next() method.
+
+        .. versionadded:: 1.4.2
+           Support for overriding Scrapy settings via ``SCRAPY_`` environment variables was removed in Scrapy 2.8.
         """
 
     def get_environment(message, slot):
@@ -121,7 +160,11 @@ class IEnvironment(Interface):
 
 
 class IJobStorage(Interface):
-    """A component that handles storing and retrieving finished jobs."""
+    """
+    A component that handles storing and retrieving finished jobs.
+
+    .. versionadded:: 1.3.0
+    """
 
     def add(job):
         """Add a finished job in the storage."""

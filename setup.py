@@ -44,6 +44,7 @@ setup(
             "furo",
             "sphinx",
             "sphinx-autobuild",
+            "sphinxcontrib-zopeext",
         ],
     },
     classifiers=[

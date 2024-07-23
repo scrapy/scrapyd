@@ -3,6 +3,12 @@ Contributing
 
 .. important:: Read through the `Scrapy Contribution Docs <http://scrapy.readthedocs.org/en/latest/contributing.html>`__ for tips relating to writing patches, reporting bugs, and coding style.
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents
+
+   api
+
 Issues and bugs
 ---------------
 
