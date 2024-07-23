@@ -155,7 +155,7 @@ def test_debug(txrequest, root):
 
     assert response.startswith("Traceback (most recent call last):")
     assert response.endswith(
-        f"twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'{os.linesep}"
+        "twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'\n"
     )
 
 

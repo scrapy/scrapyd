@@ -9,7 +9,6 @@ from twisted.logger import Logger
 
 from scrapyd import __version__
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
-from scrapyd.utils import native_stringify_dict
 
 log = Logger()
 
@@ -54,19 +53,15 @@ class Launcher(Service):
         poller.next().addCallback(self._spawn_process, slot)
 
     def _spawn_process(self, message, slot):
+        project = message["_project"]
         environ = self.app.getComponent(IEnvironment)
         message.setdefault("settings", {})
         message["settings"].update(environ.get_settings(message))
-        decoded = native_stringify_dict(message)
-        project = decoded["_project"]
 
-        args = [sys.executable, "-m", self.runner, "crawl"]
-        args += get_crawl_args(decoded)
+        env = environ.get_environment(message, slot)
+        args = [sys.executable, "-m", self.runner, "crawl", *get_crawl_args(message)]
 
-        env = environ.get_environment(decoded, slot)
-        env = native_stringify_dict(env)
-
-        process = ScrapyProcessProtocol(project, decoded["_spider"], decoded["_job"], env, args)
+        process = ScrapyProcessProtocol(project, message["_spider"], message["_job"], env, args)
         process.deferred.addBoth(self._process_finished, slot)
 
         reactor.spawnProcess(process, sys.executable, args=args, env=env)

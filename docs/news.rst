@@ -115,8 +115,8 @@ Scrapyd is now tested on macOS and Windows, in addition to Linux.
 Removed
 ~~~~~~~
 
--  Remove the unused keyword arguments from the ``native_stringify_dict`` function.
 -  Remove the ``JsonSqliteDict`` and ``UtilsCache`` classes.
+-  Remove the ``native_stringify_dict`` function.
 -  Remove undocumented and unused internal environment variables:
 
   - ``SCRAPY_FEED_URI`` to ``SCRAPYD_FEED_URI``

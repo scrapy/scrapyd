@@ -48,27 +48,3 @@ def get_project_list(config):
     projects = eggstorage.list_projects()
     projects.extend(project for project, _ in config.items("settings", default=[]))
     return projects
-
-
-def native_stringify_dict(dct_or_tuples):
-    """Return a (new) dict with unicode keys and values
-    of the given dict converted to strings. `dct_or_tuples` can be a
-    dict or a list of tuples, like any dict constructor supports.
-    """
-    d = {}
-    for k, v in dct_or_tuples.items():
-        key = _to_native_str(k)
-        if isinstance(v, dict):
-            value = native_stringify_dict(v)
-        elif isinstance(v, list):
-            value = [_to_native_str(e) for e in v]
-        else:
-            value = _to_native_str(v)
-        d[key] = value
-    return d
-
-
-def _to_native_str(text):
-    if isinstance(text, str):
-        return text
-    return text.decode()

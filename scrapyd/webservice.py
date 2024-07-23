@@ -8,7 +8,6 @@ import traceback
 import uuid
 import zipfile
 from collections import defaultdict
-from copy import copy
 from io import BytesIO
 from subprocess import PIPE, Popen
 from typing import ClassVar
@@ -17,7 +16,6 @@ from twisted.logger import Logger
 from twisted.web import error, http, resource
 
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
-from scrapyd.utils import native_stringify_dict
 
 log = Logger()
 
@@ -186,7 +184,7 @@ class Schedule(WsResource):
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
 
-        spider_arguments = {k: v[0] for k, v in native_stringify_dict(copy(txrequest.args)).items()}
+        spider_arguments = {key.decode(): values[0].decode() for key, values in txrequest.args.items()}
 
         self.root.scheduler.schedule(
             project,
