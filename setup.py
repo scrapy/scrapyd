@@ -24,9 +24,10 @@ setup(
     zip_safe=False,
     install_requires=[
         "packaging",
-        "twisted>=17.9",
+        "pywin32;platform_system=='Windows'",
         "scrapy>=2.0.0",
         "setuptools",
+        "twisted>=17.9",
         "w3lib",
         "zope.interface",
     ],
