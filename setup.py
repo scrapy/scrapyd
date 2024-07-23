@@ -37,6 +37,7 @@ setup(
             "pytest-cov",
             "pytest-twisted",
             "requests",
+            "twisted>=19.7",  # twisted.logger.capturedLogs
         ],
         "docs": [
             "furo",

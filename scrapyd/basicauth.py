@@ -4,12 +4,14 @@ from twisted.cred import credentials, error
 from twisted.cred.checkers import ICredentialsChecker
 from twisted.cred.portal import IRealm, Portal
 from twisted.internet import defer
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.web.guard import BasicCredentialFactory, HTTPAuthSessionWrapper
 from twisted.web.resource import IResource
 from zope.interface import implementer
 
 from scrapyd.exceptions import InvalidUsernameError
+
+log = Logger()
 
 
 # https://docs.twisted.org/en/stable/web/howto/web-in-60/http-auth.html
@@ -46,11 +48,11 @@ def wrap_resource(resource, config):
         raise InvalidUsernameError
 
     if username and password:
-        log.msg("Basic authentication enabled")
+        log.info("Basic authentication enabled")
         return HTTPAuthSessionWrapper(
             Portal(PublicHTMLRealm(resource), [StringCredentialsChecker(username, password)]),
             [BasicCredentialFactory(b"Scrapyd")],
         )
 
-    log.msg("Basic authentication disabled as either `username` or `password` is unset")
+    log.info("Basic authentication disabled as either `username` or `password` is unset")
     return resource

@@ -50,6 +50,13 @@ API
 CLI
 ^^^
 
+- Scrapyd uses ``twisted.logger`` instead of the legacy ``twisted.python.log``. Some system information changes:
+
+  - ``[scrapyd.basicauth#info] Basic authentication ...``, instead of ``[-] ...``
+  - ``[scrapyd.app#info] Scrapyd web console available at ...``, instead of ``[-] ...``
+  - ``[-] Unhandled Error``, instead of ``[_GenericHTTPChannelProtocol,0,127.0.0.1] ...``
+  - Data received from standard error and non-zero exit status codes are logged at error level.
+
 - Correct the usage message and long description.
 - Remove the ``--rundir`` option, which only works if ``*_dir`` settings are absolute paths.
 - Remove the ``--nodaemon`` option, which Scrapyd enables.

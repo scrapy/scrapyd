@@ -8,7 +8,6 @@ from twisted.web.test.requesthelper import DummyChannel
 
 from scrapyd import Config
 from scrapyd.app import application
-from scrapyd.txapp import application as txapplication
 from scrapyd.webservice import spider_list
 from scrapyd.website import Root
 from tests import root_add_version
@@ -35,9 +34,18 @@ def chdir(monkeypatch, tmp_path):
     return tmp_path
 
 
-@pytest.fixture()
-def app(chdir):
-    return txapplication
+@pytest.fixture(
+    params=[
+        None,
+        (Config.SECTION, "items_dir", "items"),
+    ]
+)
+def app(request, chdir):
+    config = Config()
+    if isinstance(request.param, tuple):
+        config.cp.set(*request.param)
+
+    return application(config)
 
 
 @pytest.fixture(

@@ -2,7 +2,7 @@ import os
 
 from twisted.application.internet import TCPServer, TimerService, UNIXServer
 from twisted.application.service import Application
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.web import server
 
 from scrapyd.basicauth import wrap_resource
@@ -10,6 +10,8 @@ from scrapyd.environ import Environment
 from scrapyd.interfaces import IEggStorage, IEnvironment, IJobStorage, IPoller, ISpiderScheduler
 from scrapyd.scheduler import SpiderScheduler
 from scrapyd.utils import initialize_component
+
+log = Logger()
 
 
 def application(config):
@@ -41,16 +43,16 @@ def application(config):
     resource = server.Site(wrap_resource(webroot, config))
     if bind_address and http_port:
         webservice = TCPServer(http_port, resource, interface=bind_address)
-        log.msg(
-            format="Scrapyd web console available at http://%(bind_address)s:%(http_port)s/",
+        log.info(
+            "Scrapyd web console available at http://{bind_address}:{http_port}/",
             bind_address=bind_address,
             http_port=http_port,
         )
     if unix_socket_path:
         unix_socket_path = os.path.abspath(unix_socket_path)
         webservice = UNIXServer(unix_socket_path, resource, mode=0o660)
-        log.msg(
-            format="Scrapyd web console available at http+unix://%(unix_socket_path)s",
+        log.info(
+            "Scrapyd web console available at http+unix://{unix_socket_path}",
             unix_socket_path=unix_socket_path,
         )
 

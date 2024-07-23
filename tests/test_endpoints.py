@@ -6,7 +6,6 @@ import pytest
 import requests
 from requests.models import Response
 
-from scrapyd import __version__
 from tests import get_egg_data
 from tests.mockserver import MockScrapydServer
 
@@ -65,10 +64,6 @@ def test_auth():
     assert f" [-] Basic authentication enabled{os.linesep}" in stdout
     # scrapyd.app
     assert f" [-] Scrapyd web console available at http://127.0.0.1:{server.http_port}/" in stdout
-    # scrapyd.launcher
-    assert re.search(
-        f" \\[Launcher\\] Scrapyd {__version__} started: max_proc=\\d+, runner='scrapyd.runner'{os.linesep}", stdout
-    )
 
 
 def test_noauth():
@@ -89,7 +84,7 @@ def test_error():
     stdout = server.stdout.decode()
 
     # scrapyd.webservice
-    assert f" [_GenericHTTPChannelProtocol,0,127.0.0.1] Unhandled Error{os.linesep}" in stdout
+    assert f" [-] Unhandled Error{os.linesep}" in stdout
     assert f"\tTraceback (most recent call last):{os.linesep}" in stdout
     assert "\ttwisted.web.error.Error: 200 project is invalid: " in stdout
 

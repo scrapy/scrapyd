@@ -13,11 +13,13 @@ from io import BytesIO
 from subprocess import PIPE, Popen
 from typing import ClassVar
 
-from twisted.python import log
+from twisted.logger import Logger
 from twisted.web import error, http, resource
 
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
 from scrapyd.utils import native_stringify_dict
+
+log = Logger()
 
 
 def param(
@@ -121,7 +123,7 @@ class WsResource(resource.Resource):
         try:
             obj = super().render(txrequest)
         except Exception as e:  # noqa: BLE001
-            log.err()
+            log.failure("")
 
             if isinstance(e, error.Error):
                 txrequest.setResponseCode(int(e.status))

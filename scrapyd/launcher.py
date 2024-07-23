@@ -1,15 +1,17 @@
 import datetime
+import multiprocessing
 import sys
 from itertools import chain
-from multiprocessing import cpu_count
 
 from twisted.application.service import Service
 from twisted.internet import defer, error, protocol, reactor
-from twisted.python import log
+from twisted.logger import Logger
 
 from scrapyd import __version__
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
 from scrapyd.utils import native_stringify_dict
+
+log = Logger()
 
 
 def get_crawl_args(message):
@@ -38,16 +40,16 @@ class Launcher(Service):
 
     def startService(self):
         for slot in range(self.max_proc):
-            self._wait_for_project(slot)
-        log.msg(
-            format="Scrapyd %(version)s started: max_proc=%(max_proc)r, runner=%(runner)r",
+            self._get_message(slot)
+        log.info(
+            "Scrapyd {version} started: max_proc={max_proc!r}, runner={runner!r}",
             version=__version__,
             max_proc=self.max_proc,
             runner=self.runner,
-            system="Launcher",
+            log_system="Launcher",
         )
 
-    def _wait_for_project(self, slot):
+    def _get_message(self, slot):
         poller = self.app.getComponent(IPoller)
         poller.next().addCallback(self._spawn_process, slot)
 
@@ -74,19 +76,21 @@ class Launcher(Service):
         process = self.processes.pop(slot)
         process.end_time = datetime.datetime.now()
         self.finished.add(process)
-        self._wait_for_project(slot)
+        self._get_message(slot)
 
     def _get_max_proc(self, config):
         max_proc = config.getint("max_proc", 0)
-        if not max_proc:
-            try:
-                cpus = cpu_count()
-            except NotImplementedError:
-                cpus = 1
-            max_proc = cpus * config.getint("max_proc_per_cpu", 4)
-        return max_proc
+        if max_proc:
+            return max_proc
+
+        try:
+            cpus = multiprocessing.cpu_count()
+        except NotImplementedError:  # Windows 17520a3
+            cpus = 1
+        return cpus * config.getint("max_proc_per_cpu", 4)
 
 
+# https://docs.twisted.org/en/stable/api/twisted.internet.protocol.ProcessProtocol.html
 class ScrapyProcessProtocol(protocol.ProcessProtocol):
     def __init__(self, project, spider, job, env, args):
         self.pid = None
@@ -100,20 +104,21 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.deferred = defer.Deferred()
 
     def outReceived(self, data):
-        log.msg(data.rstrip(), system=f"Launcher,{self.pid}/stdout")
+        log.info(data.rstrip(), log_system=f"Launcher,{self.pid}/stdout")
 
     def errReceived(self, data):
-        log.msg(data.rstrip(), system=f"Launcher,{self.pid}/stderr")
+        log.error(data.rstrip(), log_system=f"Launcher,{self.pid}/stderr")
 
     def connectionMade(self):
         self.pid = self.transport.pid
-        self.log("Process started: ")
+        self.log("info", "Process started:")
 
+    # https://docs.twisted.org/en/stable/core/howto/process.html#things-that-can-happen-to-your-processprotocol
     def processEnded(self, status):
         if isinstance(status.value, error.ProcessDone):
-            self.log("Process finished: ")
+            self.log("info", "Process finished:")
         else:
-            self.log(f"Process died: exitstatus={status.value.exitCode!r} ")
+            self.log("error", f"Process died: exitstatus={status.value.exitCode!r}")
         self.deferred.callback(self)
 
     def asdict(self):
@@ -125,10 +130,9 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
             "start_time": str(self.start_time),
         }
 
-    def log(self, action):
-        fmt = "%(action)s project=%(project)r spider=%(spider)r job=%(job)r pid=%(pid)r args=%(args)r"
-        log.msg(
-            format=fmt,
+    def log(self, level, action):
+        getattr(log, level)(
+            "{action} project={project!r} spider={spider!r} job={job!r} pid={pid!r} args={args!r}",
             action=action,
             project=self.project,
             spider=self.spider,
