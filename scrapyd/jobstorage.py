@@ -7,9 +7,9 @@ import datetime
 
 from zope.interface import implementer
 
+from scrapyd import sqlite
 from scrapyd.interfaces import IJobStorage
-from scrapyd.sqlite import SqliteFinishedJobs
-from scrapyd.utils import job_items_url, job_log_url, sqlite_connection_string
+from scrapyd.utils import job_items_url, job_log_url
 
 
 class Job:
@@ -70,7 +70,7 @@ class MemoryJobStorage:
 @implementer(IJobStorage)
 class SqliteJobStorage:
     def __init__(self, config):
-        self.jobs = SqliteFinishedJobs(sqlite_connection_string(config, "jobs"), "finished_jobs")
+        self.jobs = sqlite.initialize(sqlite.SqliteFinishedJobs, config, "jobs", "finished_jobs")
         self.finished_to_keep = config.getint("finished_to_keep", 100)
 
     def add(self, job):

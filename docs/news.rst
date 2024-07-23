@@ -69,17 +69,18 @@ CLI
 Library
 ^^^^^^^
 
--  Move functions from ``scrapyd.utils`` into their callers:
+- Move functions from ``scrapyd.utils`` into their callers:
 
-  -  ``sorted_versions`` to ``scrapyd.eggstorage``
-  -  ``get_crawl_args`` to ``scrapyd.launcher``
+  - ``sorted_versions`` to ``scrapyd.eggstorage``
+  - ``get_crawl_args`` to ``scrapyd.launcher``
 
--  Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
--  Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
--  Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by caller.
--  Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
--  Change the ``get_spider_list`` function to a ``SpiderList`` class.
--  Merge the ``JsonResource`` class into the ``WsResource`` class, removing the ``render_object`` method.
+- Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
+- Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
+- Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by its caller.
+- Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
+- Change the ``scrapyd.utils.sqlite_connection_string`` function to an ``scrapyd.sqlite.initialize`` function.
+- Change the ``get_spider_list`` function to a ``SpiderList`` class.
+- Merge the ``JsonResource`` class into the ``WsResource`` class, removing the ``render_object`` method.
 
 Fixed
 ~~~~~
@@ -117,9 +118,10 @@ Scrapyd is now tested on macOS and Windows, in addition to Linux.
 Removed
 ~~~~~~~
 
--  Remove the ``JsonSqliteDict`` and ``UtilsCache`` classes.
--  Remove the ``native_stringify_dict`` function.
--  Remove undocumented and unused internal environment variables:
+- Remove support for parsing URLs in :ref:`dbs_dir`, since SQLite writes only to paths or ``:memory:`` (added in 1.4.2).
+- Remove the ``JsonSqliteDict`` and ``UtilsCache`` classes.
+- Remove the ``native_stringify_dict`` function.
+- Remove undocumented and unused internal environment variables:
 
   - ``SCRAPY_FEED_URI`` to ``SCRAPYD_FEED_URI``
   - ``SCRAPY_JOB`` to ``SCRAPYD_JOB``

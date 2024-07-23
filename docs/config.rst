@@ -467,6 +467,8 @@ The directory in which to write SQLite databases.
 
 Default
   ``dbs``
+Options
+  Any relative or absolute path, or `:memory: <https://docs.python.org/3/library/sqlite3.html#sqlite3.connect>`__
 Used by
   -  :ref:`spiderqueue` (``scrapyd.spiderqueue.SqliteSpiderQueue``)
   -  :ref:`jobstorage` (``scrapyd.jobstorage.SqliteJobStorage``)

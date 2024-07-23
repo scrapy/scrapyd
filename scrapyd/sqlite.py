@@ -1,6 +1,22 @@
 import json
+import os
 import sqlite3
 from datetime import datetime
+
+
+# The database argument is "jobs" (in SqliteJobStorage), or a project (in SqliteSpiderQueue) from get_spider_queues(),
+# which gets projects from get_project_list(), which gets projects from egg storage. We check for directory traversal
+# in egg storage, instead.
+def initialize(cls, config, database, table):
+    dbs_dir = config.get("dbs_dir", "dbs")
+    if dbs_dir == ":memory:":
+        connection_string = dbs_dir
+    else:
+        if not os.path.exists(dbs_dir):
+            os.makedirs(dbs_dir)
+        connection_string = os.path.join(dbs_dir, f"{database}.db")
+
+    return cls(connection_string, table)
 
 
 class SqliteMixin:
