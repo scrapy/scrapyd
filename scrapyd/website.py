@@ -141,7 +141,7 @@ class Root(resource.Resource):
 
         self.putChild(b"", Home(self, self.local_items))
         if logs_dir:
-            self.putChild(b"logs", File(logs_dir.encode("ascii", "ignore"), "text/plain"))
+            self.putChild(b"logs", File(logs_dir, "text/plain"))
         if self.local_items:
             self.putChild(b"items", File(items_dir, "text/plain"))
         self.putChild(b"jobs", Jobs(self, self.local_items))

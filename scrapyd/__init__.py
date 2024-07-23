@@ -5,7 +5,7 @@ from scrapyd.config import Config
 from scrapyd.exceptions import ConfigError
 from scrapyd.utils import initialize_component
 
-__version__ = pkgutil.get_data(__package__, "VERSION").decode("ascii").strip()
+__version__ = pkgutil.get_data(__package__, "VERSION").decode().strip()
 version_info = tuple(__version__.split(".")[:3])
 
 
