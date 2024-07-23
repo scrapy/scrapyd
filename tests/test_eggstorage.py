@@ -42,10 +42,16 @@ def eggstorage(tmpdir):
 @pytest.mark.parametrize(
     ("versions", "expected"),
     [
+        # letter
         (["zzz", "b", "ddd", "a", "x"], ["a", "b", "ddd", "x", "zzz"]),
+        # number
         (["10", "1", "9"], ["1", "9", "10"]),
+        # "r" number
         (["r10", "r1", "r9"], ["r1", "r10", "r9"]),
+        # version
         (["2.11", "2.01", "2.9"], ["2.01", "2.9", "2.11"]),
+        # number and letter
+        (["123456789", "b3b8fd2"], ["123456789", "b3b8fd2"]),
     ],
 )
 def test_sorted_versions(versions, expected):
