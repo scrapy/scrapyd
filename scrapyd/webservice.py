@@ -111,6 +111,11 @@ spider_list = SpiderList()
 
 # WebserviceResource
 class WsResource(resource.Resource):
+    """
+    .. versionchanged:: 1.1.0
+       Add ``node_name`` to the response in all subclasses.
+    """
+
     json_encoder = json.JSONEncoder()
 
     def __init__(self, root):
@@ -170,6 +175,13 @@ class DaemonStatus(WsResource):
 
 
 class Schedule(WsResource):
+    """
+    .. versionchanged:: 1.2.0
+       Add ``_version`` and ``jobid`` parameters.
+    .. versionchanged:: 1.3.0
+       Add ``priority`` parameter.
+    """
+
     @param("project")
     @param("spider")
     @param("_version", dest="version", required=False, default=None)
@@ -264,6 +276,11 @@ class ListVersions(WsResource):
 
 
 class ListSpiders(WsResource):
+    """
+    .. versionchanged:: 1.2.0
+       Add ``_version`` parameter.
+    """
+
     @param("project")
     @param("_version", dest="version", required=False, default=None)
     def render_GET(self, txrequest, project, version):
@@ -312,6 +329,17 @@ class Status(WsResource):
 
 
 class ListJobs(WsResource):
+    """
+    .. versionchanged:: 1.1.0
+       Add ``start_time`` to running jobs in the response.
+    .. versionchanged:: 1.2.0
+       Add ``pid`` to running jobs in the response.
+    .. versionchanged:: 1.3.0
+       The ``project`` parameter is optional. Add ``project`` to all jobs in the response.
+    .. versionchanged:: 1.4.0
+       Add ``log_url`` and ``items_url`` to finished jobs in the response.
+    """
+
     @param("project", required=False)
     def render_GET(self, txrequest, project):
         queues = self.root.scheduler.queues

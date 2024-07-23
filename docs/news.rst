@@ -172,7 +172,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``items_url`` and ``log_url`` to the response from the :ref:`listjobs.json` webservice. (@mxdev88)
+- Add ``log_url`` and ``items_url`` to the response from the :ref:`listjobs.json` webservice. (@mxdev88)
 - Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
 - Python 3.12 support. Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
@@ -212,6 +212,7 @@ Added
 
 - Add :ref:`username` and :ref:`password` settings, for HTTP authentication.
 - Add :ref:`jobstorage` and :ref:`eggstorage` settings.
+- Add a ``priority`` argument to the :ref:`schedule.json` webservice.
 - Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
 - Python 3.7, 3.8, 3.9, 3.10 support.
 
@@ -259,7 +260,7 @@ Added
 - Webservice
 
   - Add the :ref:`daemonstatus.json` webservice.
-  - Add a ``_version`` argument to the :ref:`schedule.json` webservice.
+  - Add a ``_version`` argument to the :ref:`schedule.json` and :ref:`listspiders.json` webservices.
   - Add a ``jobid`` argument to the :ref:`schedule.json` webservice.
   - Add the run's PID to the response of the :ref:`listjobs.json` webservice.
   - Include full tracebacks from Scrapy when failing to get spider list.
