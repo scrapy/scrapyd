@@ -21,8 +21,10 @@ class SqliteMixin:
 
 
 class JsonSqlitePriorityQueue(SqliteMixin):
-    """SQLite priority queue. It relies on SQLite concurrency support for
-    providing atomic inter-process operations.
+    """
+    SQLite priority queue. It relies on SQLite concurrency support for providing atomic inter-process operations.
+
+    .. versionadded:: 1.0.0
     """
 
     def __init__(self, database=None, table="queue"):
@@ -80,7 +82,12 @@ class JsonSqlitePriorityQueue(SqliteMixin):
 
 
 class SqliteFinishedJobs(SqliteMixin):
-    """SQLite finished jobs."""
+    """
+    SQLite finished jobs.
+
+    .. versionadded:: 1.3.0
+       Job storage was previously in-memory only.
+    """
 
     def __init__(self, database=None, table="finished_jobs"):
         super().__init__(database, table)

@@ -151,6 +151,10 @@ class WsResource(resource.Resource):
 
 
 class DaemonStatus(WsResource):
+    """
+    .. versionadded:: 1.2.0
+    """
+
     def render_GET(self, txrequest):
         pending = sum(queue.count() for queue in self.root.scheduler.queues.values())
         running = len(self.root.launcher.processes)
@@ -275,6 +279,10 @@ class ListSpiders(WsResource):
 
 
 class Status(WsResource):
+    """
+    .. versionadded:: 1.5.0
+    """
+
     @param("job")
     @param("project", required=False)
     def render_GET(self, txrequest, job, project):

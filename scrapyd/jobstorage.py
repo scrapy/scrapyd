@@ -1,3 +1,8 @@
+"""
+.. versionadded:: 1.3.0
+   Job storage was previously in-memory only and managed by the launcher.
+"""
+
 import datetime
 
 from zope.interface import implementer
