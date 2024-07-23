@@ -33,7 +33,7 @@ def scrapy_process():
 
 
 def get_local_projects(root):
-    return ["localproject"] if has_settings(root) else []
+    return ["localproject"] if has_settings() else []
 
 
 def add_test_version(app, project, version, basename):
@@ -185,7 +185,7 @@ def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
     ],
 )
 def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
-    if run_only_if_has_settings and not has_settings(root):
+    if run_only_if_has_settings and not has_settings():
         pytest.skip("[settings] section is not set")
 
     root_add_version(root, "myproject", "r1", "mybot")
@@ -205,7 +205,7 @@ def test_list_spiders(txrequest, root, args, spiders, run_only_if_has_settings):
     ],
 )
 def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_settings):
-    if run_only_if_has_settings and not has_settings(root):
+    if run_only_if_has_settings and not has_settings():
         pytest.skip("[settings] section is not set")
 
     root_add_version(root, "myproject", "r1", "mybot")
@@ -437,7 +437,7 @@ def test_add_version(txrequest, root):
 
 
 def test_add_version_settings(txrequest, root):
-    if not has_settings(root):
+    if not has_settings():
         pytest.skip("[settings] section is not set")
 
     args = {b"project": [b"localproject"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
@@ -461,7 +461,7 @@ def test_add_version_invalid(txrequest, root):
     ],
 )
 def test_schedule(txrequest, root, args, run_only_if_has_settings):
-    if run_only_if_has_settings and not has_settings(root):
+    if run_only_if_has_settings and not has_settings():
         pytest.skip("[settings] section is not set")
 
     project = args[b"project"][0].decode()
@@ -529,7 +529,7 @@ def test_schedule_parameters(txrequest, root_with_egg):
     ],
 )
 def test_schedule_nonexistent(txrequest, root, args, param, run_only_if_has_settings):
-    if run_only_if_has_settings and not has_settings(root):
+    if run_only_if_has_settings and not has_settings():
         pytest.skip("[settings] section is not set")
 
     root_add_version(root, "myproject", "r1", "mybot")

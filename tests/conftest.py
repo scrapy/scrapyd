@@ -38,9 +38,14 @@ def chdir(monkeypatch, tmp_path):
     params=[
         None,
         (Config.SECTION, "items_dir", "items"),
-    ]
+        "scrapy.cfg",
+    ],
+    ids=["default", "items_dir", "settings"],
 )
 def app(request, chdir):
+    if request.param == "scrapy.cfg":
+        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), chdir, dirs_exist_ok=True)
+
     config = Config()
     if isinstance(request.param, tuple):
         config.cp.set(*request.param)

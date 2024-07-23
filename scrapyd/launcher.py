@@ -103,6 +103,12 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         self.args = args
         self.deferred = defer.Deferred()
 
+    def __repr__(self):
+        return (
+            f"ScrapyProcessProtocol(pid={self.pid} project={self.project} spider={self.spider} job={self.job} "
+            f"start_time={self.start_time} end_time={self.end_time} env={self.env} args={self.args})"
+        )
+
     def outReceived(self, data):
         log.info(data.rstrip(), log_system=f"Launcher,{self.pid}/stdout")
 

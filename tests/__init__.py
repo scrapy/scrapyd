@@ -7,7 +7,7 @@ def get_egg_data(basename):
     return pkgutil.get_data("tests", f"fixtures/{basename}.egg")
 
 
-def has_settings(root):
+def has_settings():
     return os.path.exists("scrapy.cfg")
 
 

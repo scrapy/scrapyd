@@ -1,7 +1,8 @@
+import datetime
 import re
 
 import pytest
-from twisted.internet import error
+from twisted.internet import defer, error
 from twisted.logger import LogLevel, capturedLogs, eventAsText
 from twisted.python import failure
 
@@ -9,6 +10,7 @@ from scrapyd import __version__
 from scrapyd.config import Config
 from scrapyd.interfaces import IEnvironment
 from scrapyd.launcher import Launcher, get_crawl_args
+from tests import has_settings
 
 
 def message(captured):
@@ -71,6 +73,39 @@ def test_start_service_max_proc(app):
     assert re.search(
         f"\\[Launcher\\] Scrapyd {__version__} started: max_proc=8, runner='scrapyd.runner'", message(captured)
     )
+
+
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ({}, {}),
+        ({"_version": "v1"}, {"SCRAPYD_EGG_VERSION": "v1"}),
+    ],
+)
+def test_spawn_process(launcher, message, expected):
+    launcher._spawn_process({"_project": "localproject", "_spider": "s1", "_job": "j1", **message}, 1)  # noqa: SLF001
+
+    process = launcher.processes[1]
+
+    assert isinstance(process.pid, int)
+    assert process.project == "localproject"
+    assert process.spider == "s1"
+    assert process.job == "j1"
+    assert isinstance(process.start_time, datetime.datetime)
+    assert process.end_time is None
+    assert isinstance(process.args, list)  # see tests below
+    assert isinstance(process.deferred, defer.Deferred)
+
+    # scrapyd.environ.Environ.get_environment
+    assert process.env["SCRAPY_PROJECT"] == "localproject"
+    for key, value in expected.items():
+        assert process.env[key] == value
+    if "SCRAPYD_EGG_VERSION" not in expected:
+        assert "SCRAPYD_EGG_VERSION" not in process.env
+    if has_settings():
+        assert process.env["SCRAPY_SETTINGS_MODULE"] == "localproject.settings"
+    else:
+        assert "SCRAPY_SETTINGS_MODULE" not in process.env
 
 
 def test_out_received(process):
@@ -155,3 +190,7 @@ def test_process_ended_terminated(environ, process):
             "args=\\['\\S+', '-m', 'scrapyd\\.runner', 'crawl', 's1', '-s', 'LOG_FILE=\\S+', '-a', '_job=j1'\\]",
             message(captured),
         )
+
+
+def test_repr(process):
+    assert repr(process).startswith(f"ScrapyProcessProtocol(pid={process.pid} project=p1 spider=s1 job=j1 start_time=")

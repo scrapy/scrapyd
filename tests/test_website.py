@@ -28,11 +28,11 @@ def test_render_logs_dir(txrequest, root):
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
 def test_render_logs_file(txrequest, root):
     os.makedirs(os.path.join("logs", "quotesbot"))
-    with open(os.path.join("logs", "foo.bar"), "wb") as f:
+    with open(os.path.join("logs", "foo.txt"), "wb") as f:
         f.write(b"baz")
 
     file = root.children[b"logs"]
-    request = DummyRequest([b"foo.bar"])
+    request = DummyRequest([b"foo.txt"])
     child = resource.getChildForRequest(file, request)
 
     d = _render(child, request)
@@ -78,7 +78,7 @@ def test_render_home(txrequest, root_with_egg):
     content = root_with_egg.children[b""].render_GET(txrequest)
     expect_headers = {
         b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"736" if has_settings(root_with_egg) else b"714"],
+        b"Content-Length": [b"736" if has_settings() else b"714"],
     }
     if root_with_egg.local_items:
         expect_headers[b"Content-Length"] = [b"751"]
