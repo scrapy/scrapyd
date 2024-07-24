@@ -339,6 +339,8 @@ class ListJobs(WsResource):
        The ``project`` parameter is optional. Add ``project`` to all jobs in the response.
     .. versionchanged:: 1.4.0
        Add ``log_url`` and ``items_url`` to finished jobs in the response.
+    .. versionchanged:: 1.5.0
+       Add ``version``, ``settings`` and ``args`` to pending jobs in the response.
     """
 
     @param("project", required=False)
@@ -351,7 +353,14 @@ class ListJobs(WsResource):
             "node_name": self.root.nodename,
             "status": "ok",
             "pending": [
-                {"project": queue_name, "spider": message["name"], "id": message["_job"]}
+                {
+                    "project": queue_name,
+                    "spider": message["name"],
+                    "id": message["_job"],
+                    "version": message.get("_version"),
+                    "settings": message.get("settings", {}),
+                    "args": {k: v for k, v in message.items() if k not in ("name", "_job", "_version", "settings")},
+                }
                 for queue_name in (queues if project is None else [project])
                 for message in queues[queue_name].list()
             ],

@@ -11,6 +11,7 @@ This release contains the most changes in a decade. Therefore, a beta release is
 Added
 ~~~~~
 
+- Add ``version`` (egg version), ``settings`` (Scrapy settings) and ``args`` (spider arguments) to the pending jobs in the response from the :ref:`listjobs.json` webservice.
 - Add a :ref:`status.json` webservice, to get the status of a job.
 - Add a :ref:`unix_socket_path` setting, to listen on a Unix socket.
 - Add a :ref:`poller` setting.
@@ -172,7 +173,7 @@ Fixed
 Added
 ~~~~~
 
-- Add ``log_url`` and ``items_url`` to the response from the :ref:`listjobs.json` webservice. (@mxdev88)
+- Add ``log_url`` and ``items_url`` to the finished jobs in the response from the :ref:`listjobs.json` webservice. (@mxdev88)
 - Scrapy 2.8 support. Scrapyd sets ``LOG_FILE`` and ``FEEDS`` command-line arguments, instead of ``SCRAPY_LOG_FILE`` and ``SCRAPY_FEED_URI`` environment variables.
 - Python 3.11 support.
 - Python 3.12 support. Use ``packaging.version.Version`` instead of ``distutils.LooseVersion``. (@pawelmhm)
@@ -213,6 +214,7 @@ Added
 - Add :ref:`username` and :ref:`password` settings, for HTTP authentication.
 - Add :ref:`jobstorage` and :ref:`eggstorage` settings.
 - Add a ``priority`` argument to the :ref:`schedule.json` webservice.
+- Add ``project`` to all jobs in the response from the :ref:`listjobs.json` webservice.
 - Add shortcut to jobs page to cancel a job using the :ref:`cancel.json` webservice.
 - Python 3.7, 3.8, 3.9, 3.10 support.
 
@@ -262,7 +264,7 @@ Added
   - Add the :ref:`daemonstatus.json` webservice.
   - Add a ``_version`` argument to the :ref:`schedule.json` and :ref:`listspiders.json` webservices.
   - Add a ``jobid`` argument to the :ref:`schedule.json` webservice.
-  - Add the run's PID to the response of the :ref:`listjobs.json` webservice.
+  - Add ``pid`` to the running jobs in the response from the :ref:`listjobs.json` webservice.
   - Include full tracebacks from Scrapy when failing to get spider list.
     This makes debugging deployment problems easier, but webservice output noisier.
 
@@ -329,7 +331,7 @@ Added
 ~~~~~
 
 - Add ``node_name`` (hostname) to webservice responses. (:commit:`fac3a5c`, :commit:`4aebe1c`)
-- Add ``start_time`` to the response from the :ref:`listjobs.json` webservice. (:commit:`6712af9`, :commit:`acd460b`)
+- Add ``start_time`` to the running jobs in the response from the :ref:`listjobs.json` webservice. (:commit:`6712af9`, :commit:`acd460b`)
 
 Changed
 ~~~~~~~

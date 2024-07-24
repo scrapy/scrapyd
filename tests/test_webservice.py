@@ -312,13 +312,23 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
-    root.poller.queues["p1"].add("s1", _job="j1")
+    root.poller.queues["p1"].add(
+        "s1",
+        priority=5,
+        _job="j1",
+        _version="0.1",
+        settings={"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
+        other="one",
+    )
 
     expected["pending"].append(
         {
             "id": "j1",
             "project": "p1",
             "spider": "s1",
+            "version": "0.1",
+            "settings": {"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
+            "args": {"other": "one"},
         },
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
