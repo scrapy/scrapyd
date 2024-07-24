@@ -37,40 +37,28 @@ def chdir(monkeypatch, tmp_path):
 @pytest.fixture(
     params=[
         None,
-        (Config.SECTION, "items_dir", "items"),
-        "scrapy.cfg",
+        (("items_dir", "items"), ("jobstorage", "scrapyd.jobstorage.SqliteJobStorage")),
     ],
-    ids=["default", "items_dir", "settings"],
+    ids=["default", "custom"],
 )
-def app(request, chdir):
-    if request.param == "scrapy.cfg":
+def config(request, chdir):
+    if request.param:
         shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), chdir, dirs_exist_ok=True)
-
     config = Config()
-    if isinstance(request.param, tuple):
-        config.cp.set(*request.param)
+    if request.param:
+        for key, value in request.param:
+            config.cp.set(Config.SECTION, key, value)
+    return config
 
+
+@pytest.fixture()
+def app(config):
     return application(config)
 
 
-@pytest.fixture(
-    params=[
-        None,
-        (("items_dir", "items"), ("jobstorage", "scrapyd.jobstorage.SqliteJobStorage")),
-        "scrapy.cfg",
-    ],
-    ids=["default", "config", "settings"],
-)
-def root(request, chdir):
-    if request.param == "scrapy.cfg":
-        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), chdir, dirs_exist_ok=True)
-
-    config = Config()
-    if isinstance(request.param, tuple):
-        for key, value in request.param:
-            config.cp.set(Config.SECTION, key, value)
-
-    return Root(config, application(config))
+@pytest.fixture()
+def root(config, app):
+    return Root(config, app)
 
 
 @pytest.fixture()

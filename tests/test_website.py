@@ -57,10 +57,8 @@ def test_render_jobs(txrequest, root_with_egg):
     content = root_with_egg.children[b"jobs"].render(txrequest)
     expect_headers = {
         b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"1744"],
+        b"Content-Length": [b"1702" if root_with_egg.local_items else b"1744"],
     }
-    if root_with_egg.local_items:
-        expect_headers[b"Content-Length"] = [b"1702"]
 
     headers = dict(txrequest.responseHeaders.getAllRawHeaders())
 
@@ -78,10 +76,8 @@ def test_render_home(txrequest, root_with_egg):
     content = root_with_egg.children[b""].render_GET(txrequest)
     expect_headers = {
         b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"736" if has_settings() else b"714"],
+        b"Content-Length": [b"773" if root_with_egg.local_items else b"714"],
     }
-    if root_with_egg.local_items:
-        expect_headers[b"Content-Length"] = [b"751"]
 
     headers = dict(txrequest.responseHeaders.getAllRawHeaders())
 
@@ -91,3 +87,7 @@ def test_render_home(txrequest, root_with_egg):
         assert b"Items" in content
     else:
         assert b"Items" not in content
+    if has_settings():
+        assert b"localproject" in content
+    else:
+        assert b"localproject" not in content
