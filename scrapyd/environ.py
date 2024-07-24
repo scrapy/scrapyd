@@ -61,18 +61,19 @@ class Environment:
 
     def _get_file(self, message, directory, extension):
         resolvedir = os.path.realpath(directory)
-        projectdir = os.path.realpath(os.path.join(resolvedir, message["_project"]))
-        spiderdir = os.path.realpath(os.path.join(projectdir, message["_spider"]))
-        jobfile = os.path.realpath(os.path.join(spiderdir, f"{message['_job']}.{extension}"))
+        project = message["_project"]
+        spider = message["_spider"]
+        job = message["_job"]
+        projectdir = os.path.realpath(os.path.join(resolvedir, project))
+        spiderdir = os.path.realpath(os.path.join(projectdir, spider))
+        jobfile = os.path.realpath(os.path.join(spiderdir, f"{job}.{extension}"))
 
         if (
             os.path.commonprefix((projectdir, resolvedir)) != resolvedir
             or os.path.commonprefix((spiderdir, projectdir)) != projectdir
             or os.path.commonprefix((jobfile, spiderdir)) != spiderdir
         ):
-            raise DirectoryTraversalError(
-                os.path.join(message["_project"], message["_spider"], f"{message['_job']}.{extension}")
-            )
+            raise DirectoryTraversalError(os.path.join(project, spider, f"{job}.{extension}"))
 
         if not os.path.exists(spiderdir):
             os.makedirs(spiderdir)

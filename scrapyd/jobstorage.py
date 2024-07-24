@@ -19,6 +19,7 @@ class Job:
         self.start_time = start_time if start_time else datetime.datetime.now()
         self.end_time = end_time if end_time else datetime.datetime.now()
 
+    # For equality assertions in tests.
     def __eq__(self, other):
         return (
             self.project == other.project
@@ -28,6 +29,7 @@ class Job:
             and self.end_time == other.end_time
         )
 
+    # For error messsages in tests.
     def __repr__(self):
         return (
             f"Job(project={self.project}, spider={self.spider}, job={self.job}, "

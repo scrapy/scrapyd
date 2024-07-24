@@ -171,4 +171,4 @@ class IJobStorage(Interface):
         """Return a number of the finished jobs."""
 
     def __iter__():
-        """Iterate over the finished jobs."""
+        """Iterate over the finished jobs in reverse order by ``end_time``."""
