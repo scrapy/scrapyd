@@ -485,7 +485,7 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     jobs = root.poller.queues[project].list()
 
     assert len(jobs) == 1
-    assert jobs[0] == {"name": spider, "version": version, "_job": jobid, "settings": {}}
+    assert jobs[0] == {"name": spider, "_version": version, "_job": jobid, "settings": {}}
 
 
 def test_schedule_parameters(txrequest, root_with_egg):
@@ -508,7 +508,7 @@ def test_schedule_parameters(txrequest, root_with_egg):
     assert len(jobs) == 1
     assert jobs[0] == {
         "name": "toscrape-css",
-        "version": "0.1",
+        "_version": "0.1",
         "_job": "aaa",
         "settings": {
             "DOWNLOAD_DELAY": "2",

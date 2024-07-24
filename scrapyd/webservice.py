@@ -207,7 +207,7 @@ class Schedule(WsResource):
             spider,
             priority=priority,
             settings=dict(s.split("=", 1) for s in setting),
-            version=version,
+            _version=version,
             _job=jobid,
             **spider_arguments,
         )
