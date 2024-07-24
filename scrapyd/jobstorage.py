@@ -9,7 +9,6 @@ from zope.interface import implementer
 
 from scrapyd import sqlite
 from scrapyd.interfaces import IJobStorage
-from scrapyd.utils import job_items_url, job_log_url
 
 
 class Job:
@@ -34,17 +33,6 @@ class Job:
             f"Job(project={self.project}, spider={self.spider}, job={self.job}, "
             f"start_time={self.start_time}, end_time={self.end_time})"
         )
-
-    def asdict(self):
-        return {
-            "project": self.project,
-            "spider": self.spider,
-            "id": self.job,
-            "start_time": str(self.start_time),
-            "end_time": str(self.end_time),
-            "log_url": job_log_url(self),
-            "items_url": job_items_url(self),
-        }
 
 
 @implementer(IJobStorage)
