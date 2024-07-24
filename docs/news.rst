@@ -28,6 +28,7 @@ Documentation
 Changed
 ~~~~~~~
 
+- Every :ref:`poll_interval`, up to :ref:`max_proc` processes are started by the default :ref:`poller`, instead of only one process. (The number of running jobs will not exceed :ref:`max_proc`.)
 - Drop support for end-of-life Python version 3.7.
 
 Web UI
