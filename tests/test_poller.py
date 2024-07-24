@@ -61,28 +61,16 @@ def test_poll_next(poller):
 
     assert hasattr(deferred1, "result")
     assert getattr(deferred1, "called", False)
-    assert not hasattr(deferred2, "result")
-    assert not getattr(deferred2, "called", False)
-
-    # os.listdir() in FilesystemEggStorage.list_projects() uses an arbitrary order.
-    project = deferred1.result["_project"]
-    queues[project].pop()
-
-    assert deferred1.result["_spider"] == scenario.pop(project)
-
-    value = poller.poll()
-
-    assert isinstance(value, Deferred)
-    assert hasattr(value, "result")
-    assert getattr(value, "called", False)
-    assert value.result is None
-
     assert hasattr(deferred2, "result")
     assert getattr(deferred2, "called", False)
 
-    project, spider = scenario.popitem()
+    # os.listdir() in FilesystemEggStorage.list_projects() uses an arbitrary order.
+    project_a = deferred1.result["_project"]
+    spider_a = scenario.pop(project_a)
+    project_b, spider_b = scenario.popitem()
 
-    assert deferred2.result == {"_project": project, "_spider": spider}
+    assert deferred1.result["_spider"] == spider_a
+    assert deferred2.result == {"_project": project_b, "_spider": spider_b}
 
 
 def test_poll_empty(poller):

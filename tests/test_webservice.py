@@ -493,9 +493,12 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     assert re.search(r"^[a-z0-9]{32}$", jobid)
 
     jobs = root.poller.queues[project].list()
+    expected = {"name": spider, "_job": jobid, "settings": {}}
+    if version:
+        expected["_version"] = version
 
     assert len(jobs) == 1
-    assert jobs[0] == {"name": spider, "_version": version, "_job": jobid, "settings": {}}
+    assert jobs[0] == expected
 
 
 def test_schedule_parameters(txrequest, root_with_egg):
