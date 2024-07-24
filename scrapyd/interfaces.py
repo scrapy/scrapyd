@@ -1,11 +1,9 @@
-from zope.interface import Interface
+from zope.interface import Attribute, Interface
 
 
 class IEggStorage(Interface):
     """
     A component that handles storing and retrieving eggs.
-
-    .. versionadded:: 1.0.0
     """
 
     def put(eggfile, project, version):
@@ -38,9 +36,14 @@ class IEggStorage(Interface):
 class IPoller(Interface):
     """
     A component that polls for projects that need to run.
-
-    .. versionadded:: 1.0.0
     """
+
+    queues = Attribute(
+        """
+        An object (like a ``dict``) with a ``__getitem__`` method that accepts a project's name and returns its
+        :py:interface:`spider queue<scrapyd.interfaces.ISpiderQueue>`.
+        """
+    )
 
     def poll():
         """Called periodically to poll for projects"""
@@ -54,11 +57,11 @@ class IPoller(Interface):
 
         The message is a dict containing (at least):
 
-        -  the name of the project to be run in the '_project' key
-        -  the name of the spider to be run in the '_spider' key
-        -  a unique identifier for this run in the `_job` key
+        -  the name of the project to be run in the ``_project`` key
+        -  the name of the spider to be run in the ``_spider`` key
+        -  a unique identifier for this run in the ``_job`` key
 
-        This message will be passed later to IEnvironment.get_environment().
+        This message will be passed later to :meth:`scrapyd.interfaces.IEnvironment.get_environment`.
         """
 
     def update_projects():
@@ -67,10 +70,6 @@ class IPoller(Interface):
 
 
 class ISpiderQueue(Interface):
-    """
-    .. versionadded:: 1.0.0
-    """
-
     def add(name, priority, **spider_args):
         """
         Add a spider to the queue given its name a some spider arguments.
@@ -83,14 +82,14 @@ class ISpiderQueue(Interface):
 
     def pop():
         """Pop the next message from the queue. The messages is a dict
-        containing a key 'name' with the spider name and other keys as spider
+        containing a key ``name`` with the spider name and other keys as spider
         attributes.
 
         This method can return a deferred."""
 
     def list():
         """Return a list with the messages in the queue. Each message is a dict
-        which must have a 'name' key (with the spider name), and other optional
+        which must have a ``name`` key (with the spider name), and other optional
         keys that will be used as spider arguments, to create the spider.
 
         This method can return a deferred."""
@@ -114,8 +113,6 @@ class ISpiderQueue(Interface):
 class ISpiderScheduler(Interface):
     """
     A component to schedule spider runs.
-
-    .. versionadded:: 1.0.0
     """
 
     def schedule(project, spider_name, priority, **spider_args):
@@ -137,15 +134,13 @@ class ISpiderScheduler(Interface):
 class IEnvironment(Interface):
     """
     A component to generate the environment of crawler processes.
-
-    .. versionadded:: 1.0.0
     """
 
     def get_settings(message):
         """
         Return the Scrapy settings to use for running the process.
 
-        `message` is the message received from the IPoller.next() method.
+        ``message`` is the message received from the :meth:`scrapyd.interfaces.IPoller.next` method.
 
         .. versionadded:: 1.4.2
            Support for overriding Scrapy settings via ``SCRAPY_`` environment variables was removed in Scrapy 2.8.
@@ -154,8 +149,8 @@ class IEnvironment(Interface):
     def get_environment(message, slot):
         """Return the environment variables to use for running the process.
 
-        `message` is the message received from the IPoller.next() method.
-        `slot` is the Launcher slot where the process will be running.
+        ``message`` is the message received from the :meth:`scrapyd.interfaces.IPoller.next` method.
+        ``slot`` is the ``Launcher`` slot where the process will be running.
         """
 
 
