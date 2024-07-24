@@ -201,16 +201,17 @@ class Schedule(WsResource):
         if spider not in spiders:
             raise error.Error(code=http.OK, message=b"spider '%b' not found" % spider.encode())
 
-        spider_arguments = {key.decode(): values[0].decode() for key, values in txrequest.args.items()}
+        args = {key.decode(): values[0].decode() for key, values in txrequest.args.items()}
+        if version is not None:
+            args["_version"] = version
 
         self.root.scheduler.schedule(
             project,
             spider,
             priority=priority,
             settings=dict(s.split("=", 1) for s in setting),
-            _version=version,
             _job=jobid,
-            **spider_arguments,
+            **args,
         )
         return {"node_name": self.root.nodename, "status": "ok", "jobid": jobid}
 
