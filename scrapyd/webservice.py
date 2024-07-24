@@ -161,7 +161,7 @@ class DaemonStatus(WsResource):
     """
 
     def render_GET(self, txrequest):
-        pending = sum(queue.count() for queue in self.root.scheduler.queues.values())
+        pending = sum(queue.count() for queue in self.root.poller.queues.values())
         running = len(self.root.launcher.processes)
         finished = len(self.root.launcher.finished)
 
@@ -190,7 +190,7 @@ class Schedule(WsResource):
     @param("priority", required=False, default=0, type=float)
     @param("setting", required=False, default=list, multiple=True)
     def render_POST(self, txrequest, project, spider, version, jobid, priority, setting):
-        if project not in self.root.scheduler.queues:
+        if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         if version and self.root.eggstorage.get(project, version) == (None, None):
@@ -222,12 +222,12 @@ class Cancel(WsResource):
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
     @param("signal", required=False, default="INT" if sys.platform != "win32" else "BREAK")
     def render_POST(self, txrequest, project, job, signal):
-        if project not in self.root.scheduler.queues:
+        if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         prevstate = None
 
-        if self.root.scheduler.queues[project].remove(lambda message: message["_job"] == job):
+        if self.root.poller.queues[project].remove(lambda message: message["_job"] == job):
             prevstate = "pending"
 
         for process in self.root.launcher.processes.values():
@@ -284,7 +284,7 @@ class ListSpiders(WsResource):
     @param("project")
     @param("_version", dest="version", required=False, default=None)
     def render_GET(self, txrequest, project, version):
-        if project not in self.root.scheduler.queues:
+        if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
         if version and self.root.eggstorage.get(project, version) == (None, None):
@@ -303,7 +303,7 @@ class Status(WsResource):
     @param("job")
     @param("project", required=False)
     def render_GET(self, txrequest, job, project):
-        queues = self.root.scheduler.queues
+        queues = self.root.poller.queues
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 
@@ -342,7 +342,7 @@ class ListJobs(WsResource):
 
     @param("project", required=False)
     def render_GET(self, txrequest, project):
-        queues = self.root.scheduler.queues
+        queues = self.root.poller.queues
         if project is not None and project not in queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
 

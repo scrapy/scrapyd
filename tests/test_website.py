@@ -52,7 +52,7 @@ def test_render_logs_file(txrequest, root):
 def test_render_jobs(txrequest, root_with_egg):
     root_with_egg.launcher.finished.add(Job("p1", "s1", "j1"))
     root_with_egg.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
-    root_with_egg.scheduler.queues["quotesbot"].add("quotesbot", _job="j3")
+    root_with_egg.poller.queues["quotesbot"].add("quotesbot", _job="j3")
 
     content = root_with_egg.children[b"jobs"].render(txrequest)
     expect_headers = {

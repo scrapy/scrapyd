@@ -319,7 +319,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     "Cancel": cancel_button(project=project, jobid=message["_job"], base_path=self.base_path),
                 }
             )
-            for project, queue in self.root.scheduler.queues.items()
+            for project, queue in self.root.poller.queues.items()
             for message in queue.list()
         )
 

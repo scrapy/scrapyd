@@ -171,7 +171,7 @@ def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
     expected["running"] += 1
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
-    root_with_egg.scheduler.queues["quotesbot"].add("quotesbot")
+    root_with_egg.poller.queues["quotesbot"].add("quotesbot")
     expected["pending"] += 1
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
@@ -244,12 +244,12 @@ def test_status(txrequest, root, scrapy_process, args):
     if args:
         root.launcher.finished.add(Job(project="p2", spider="s2", job="j1"))
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j1", {}, [])
-        root.scheduler.queues["p2"].add("s2", _job="j1")
+        root.poller.queues["p2"].add("s2", _job="j1")
 
     expected = {"currstate": None}
     assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
 
-    root.scheduler.queues["p1"].add("s1", _job="j1")
+    root.poller.queues["p1"].add("s1", _job="j1")
 
     expected["currstate"] = "pending"
     assert_content(txrequest, root, "GET", "status", {b"job": [b"j1"], **args}, expected)
@@ -279,7 +279,7 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
     if args:
         root.launcher.finished.add(Job(project="p2", spider="s2", job="j2"))
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
-        root.scheduler.queues["p2"].add("s2", _job="j2")
+        root.poller.queues["p2"].add("s2", _job="j2")
 
     expected = {"pending": [], "running": [], "finished": []}
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -312,7 +312,7 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
 
-    root.scheduler.queues["p1"].add("s1", _job="j1")
+    root.poller.queues["p1"].add("s1", _job="j1")
 
     expected["pending"].append(
         {
@@ -472,7 +472,7 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     root_add_version(root, "myproject", "r2", "mybot2")
     root.update_projects()
 
-    assert root.scheduler.queues[project].list() == []
+    assert root.poller.queues[project].list() == []
 
     txrequest.args = args.copy()
     content = root.children[b"schedule.json"].render_POST(txrequest)
@@ -482,7 +482,7 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     assert content == {"status": "ok"}
     assert re.search(r"^[a-z0-9]{32}$", jobid)
 
-    jobs = root.scheduler.queues[project].list()
+    jobs = root.poller.queues[project].list()
 
     assert len(jobs) == 1
     assert jobs[0] == {"name": spider, "version": version, "_job": jobid, "settings": {}}
@@ -503,7 +503,7 @@ def test_schedule_parameters(txrequest, root_with_egg):
     assert content.pop("node_name")
     assert content == {"status": "ok", "jobid": "aaa"}
 
-    jobs = root_with_egg.scheduler.queues["quotesbot"].list()
+    jobs = root_with_egg.poller.queues["quotesbot"].list()
 
     assert len(jobs) == 1
     assert jobs[0] == {
@@ -552,14 +552,14 @@ def test_cancel(txrequest, root, scrapy_process, args):
     expected = {"prevstate": None}
     assert_content(txrequest, root, "POST", "cancel", args, expected)
 
-    root.scheduler.queues["p1"].add("s1", _job="j1")
-    root.scheduler.queues["p1"].add("s1", _job="j1")
-    root.scheduler.queues["p1"].add("s1", _job="j2")
+    root.poller.queues["p1"].add("s1", _job="j1")
+    root.poller.queues["p1"].add("s1", _job="j1")
+    root.poller.queues["p1"].add("s1", _job="j2")
 
-    assert root.scheduler.queues["p1"].count() == 3
+    assert root.poller.queues["p1"].count() == 3
     expected["prevstate"] = "pending"
     assert_content(txrequest, root, "POST", "cancel", args, expected)
-    assert root.scheduler.queues["p1"].count() == 1
+    assert root.poller.queues["p1"].count() == 1
 
     root.launcher.processes[0] = scrapy_process
     root.launcher.processes[1] = scrapy_process
