@@ -165,10 +165,18 @@ class IJobStorage(Interface):
         """Add a finished job in the storage."""
 
     def list():
-        """Return a list of the finished jobs."""
+        """
+        Return a list of the finished jobs.
+
+        .. seealso:: :meth:`scrapyd.interfaces.IJobStorage.__iter__`
+        """
 
     def __len__():
         """Return a number of the finished jobs."""
 
     def __iter__():
-        """Iterate over the finished jobs in reverse order by ``end_time``."""
+        """
+        Iterate over the finished jobs in reverse order by ``end_time``.
+
+        A job has the attributes ``project``, ``spider``, ``job``, ``start_time`` and ``end_time``.
+        """
