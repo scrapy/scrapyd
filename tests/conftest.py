@@ -56,10 +56,10 @@ def app(request, chdir):
 @pytest.fixture(
     params=[
         None,
-        (Config.SECTION, "items_dir", "items"),
+        (("items_dir", "items"), ("jobstorage", "scrapyd.jobstorage.SqliteJobStorage")),
         "scrapy.cfg",
     ],
-    ids=["default", "items_dir", "settings"],
+    ids=["default", "config", "settings"],
 )
 def root(request, chdir):
     if request.param == "scrapy.cfg":
@@ -67,7 +67,8 @@ def root(request, chdir):
 
     config = Config()
     if isinstance(request.param, tuple):
-        config.cp.set(*request.param)
+        for key, value in request.param:
+            config.cp.set(Config.SECTION, key, value)
 
     return Root(config, application(config))
 
