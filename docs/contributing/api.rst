@@ -7,6 +7,7 @@ Interfaces
 .. automodule:: scrapyd.interfaces
    :members:
    :undoc-members:
+   :special-members:
 
 Config
 ------
