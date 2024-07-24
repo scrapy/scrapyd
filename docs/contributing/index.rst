@@ -46,6 +46,14 @@ To install an editable version for development, clone the repository, change to 
 Developer documentation
 -----------------------
 
+Configuration
+~~~~~~~~~~~~~
+
+Pass the ``config`` object to a class' ``__init__`` method, but don't store it on the instance (:issue:`526`).
+
+Processes
+~~~~~~~~~
+
 Scrapyd starts Scrapy processes. It runs ``scrapy crawl`` in the :ref:`launcher`, and ``scrapy list`` in the :ref:`schedule.json` (to check the spider exists), :ref:`addversion.json` (to return the number of spiders) and :ref:`listspiders.json` (to return the names of spiders) webservices.
 
 Environment variables
