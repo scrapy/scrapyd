@@ -26,7 +26,7 @@ def test_auth():
         res = requests.get(server.url, auth=("bob", "hunter2"))
 
         assert res.status_code == 200
-        assert re.search("To schedule a spider", res.text)
+        assert re.search("use the API", res.text)
 
         res = requests.get(server.url, auth=("bob", "invalid"))
 
