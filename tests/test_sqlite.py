@@ -2,8 +2,8 @@ import datetime
 
 import pytest
 
-from scrapyd.jobstorage import Job
 from scrapyd.sqlite import JsonSqlitePriorityQueue, SqliteFinishedJobs
+from tests import get_finished_job
 
 
 @pytest.fixture()
@@ -14,9 +14,9 @@ def jsonsqlitepriorityqueue():
 @pytest.fixture()
 def sqlitefinishedjobs():
     q = SqliteFinishedJobs(":memory:")
-    q.add(Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7)))
-    q.add(Job("p2", "s2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8)))
-    q.add(Job("p3", "s3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9)))
+    q.add(get_finished_job("p1", "s1", "j1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7)))
+    q.add(get_finished_job("p2", "s2", "j2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8)))
+    q.add(get_finished_job("p3", "s3", "j3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9)))
     return q
 
 

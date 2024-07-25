@@ -4,7 +4,7 @@ import json
 import os
 import re
 import sys
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, PropertyMock, call
 
 import pytest
 from twisted.logger import LogLevel, capturedLogs
@@ -12,12 +12,11 @@ from twisted.web import error
 
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage
-from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.webservice import spider_list
-from tests import get_egg_data, get_message, has_settings, root_add_version
+from tests import get_egg_data, get_finished_job, get_message, has_settings, root_add_version
 
-job1 = Job(
+job1 = get_finished_job(
     project="p1",
     spider="s1",
     job="j1",
@@ -30,7 +29,9 @@ job1 = Job(
 def scrapy_process():
     process = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=[])
     process.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
+    process.end_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 10)
     process.transport = MagicMock()
+    type(process.transport).pid = PropertyMock(return_value=12345)
     return process
 
 
@@ -290,8 +291,8 @@ def test_status(txrequest, root, scrapy_process, args):
     root.update_projects()
 
     if args:
-        root.launcher.finished.add(Job(project="p2", spider="s2", job="j1"))
-        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j1", {}, [])
+        root.launcher.finished.add(get_finished_job("p2", "s2", "j1"))
+        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j1", env={}, args=[])
         root.poller.queues["p2"].add("s2", _job="j1")
 
     expected = {"currstate": None}
@@ -325,8 +326,8 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
     root.update_projects()
 
     if args:
-        root.launcher.finished.add(Job(project="p2", spider="s2", job="j2"))
-        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
+        root.launcher.finished.add(get_finished_job("p2", "s2", "j2"))
+        root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", env={}, args=[])
         root.poller.queues["p2"].add("s2", _job="j2")
 
     expected = {"pending": [], "running": [], "finished": []}
@@ -336,9 +337,9 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["finished"].append(
         {
-            "id": "j1",
             "project": "p1",
             "spider": "s1",
+            "id": "j1",
             "start_time": "2001-02-03 04:05:06.000007",
             "end_time": "2001-02-03 04:05:06.000008",
             "items_url": "/items/p1/s1/j1.jl",
@@ -351,11 +352,11 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["running"].append(
         {
-            "id": "j1",
             "project": "p1",
             "spider": "s1",
-            "start_time": "2001-02-03 04:05:06.000009",
+            "id": "j1",
             "pid": None,
+            "start_time": "2001-02-03 04:05:06.000009",
         }
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -371,9 +372,9 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["pending"].append(
         {
-            "id": "j1",
             "project": "p1",
             "spider": "s1",
+            "id": "j1",
             "version": "0.1",
             "settings": {"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
             "args": {"other": "one"},
@@ -645,7 +646,7 @@ def test_cancel(txrequest, root, scrapy_process, args):
 
     root.launcher.processes[0] = scrapy_process
     root.launcher.processes[1] = scrapy_process
-    root.launcher.processes[2] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
+    root.launcher.processes[2] = ScrapyProcessProtocol("p2", "s2", "j2", env={}, args=[])
 
     expected["prevstate"] = "running"
     assert_content(txrequest, root, "POST", "cancel", args, expected)

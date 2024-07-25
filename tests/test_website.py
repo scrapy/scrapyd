@@ -7,10 +7,9 @@ from twisted.web.test._util import _render
 from twisted.web.test.requesthelper import DummyRequest
 
 from scrapyd.app import application
-from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.website import Root
-from tests import has_settings, root_add_version
+from tests import get_finished_job, has_settings, root_add_version
 
 
 def assert_headers(txrequest):
@@ -33,7 +32,7 @@ def assert_hrefs(urls, text, header):
 
 # Derived from test_emptyChildUnicodeParent.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
-def test_render_logs_dir(txrequest, root):
+def test_logs_dir(txrequest, root):
     os.makedirs(os.path.join("logs", "quotesbot"))
 
     file = root.children[b"logs"]
@@ -49,7 +48,7 @@ def test_render_logs_dir(txrequest, root):
 
 # Derived from test_indexNames.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
-def test_render_logs_file(txrequest, root):
+def test_logs_file(txrequest, root):
     os.makedirs(os.path.join("logs", "quotesbot"))
     with open(os.path.join("logs", "foo.txt"), "wb") as f:
         f.write(b"baz")
@@ -74,7 +73,7 @@ def test_render_logs_file(txrequest, root):
 
 @pytest.mark.parametrize("cancel", [True, False], ids=["cancel", "no_cancel"])
 @pytest.mark.parametrize("header", [True, False], ids=["header", "no_header"])
-def test_render_jobs(txrequest, config, cancel, header):
+def test_jobs(txrequest, config, cancel, header):
     if not cancel:
         config.cp.remove_option("services", "cancel.json")
 
@@ -82,8 +81,8 @@ def test_render_jobs(txrequest, config, cancel, header):
     root_add_version(root, "quotesbot", "0.1", "quotesbot")
     root.update_projects()
 
-    root.launcher.finished.add(Job("p1", "s1", "j-finished"))
-    root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j-running", {}, [])
+    root.launcher.finished.add(get_finished_job("p1", "s1", "j-finished"))
+    root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j-running", env={}, args=[])
     root.poller.queues["quotesbot"].add("quotesbot", _job="j-pending")
 
     if header:
@@ -117,11 +116,12 @@ def test_render_jobs(txrequest, config, cancel, header):
     else:
         assert b"<th>Cancel</th>" not in content
         assert b'/cancel.json">' not in content
+    assert b' value="j-finished">' not in content
 
 
 @pytest.mark.parametrize("with_egg", [True, False])
 @pytest.mark.parametrize("header", [True, False])
-def test_render_home(txrequest, root, with_egg, header):
+def test_home(txrequest, root, with_egg, header):
     if with_egg:
         root_add_version(root, "quotesbot", "0.1", "quotesbot")
         root.update_projects()

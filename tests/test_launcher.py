@@ -183,4 +183,4 @@ def test_process_ended_terminated(environ, process):
 
 
 def test_repr(process):
-    assert repr(process).startswith(f"ScrapyProcessProtocol(pid={process.pid} project=p1 spider=s1 job=j1 start_time=")
+    assert repr(process).startswith(f"ScrapyProcessProtocol(project=p1 spider=s1 job=j1 pid={process.pid} start_time=")

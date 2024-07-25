@@ -42,7 +42,6 @@ Web UI
 API
 ^^^
 
-- The ``Access-Control-Allow-Methods`` response header contains only the HTTP methods to which webservices respond.
 - Clarify error messages, for example:
 
   - ``'project' parameter is required``, instead of ``'project'`` (KeyError)
@@ -79,6 +78,7 @@ Library
   - ``sorted_versions`` to ``scrapyd.eggstorage``
   - ``get_crawl_args`` to ``scrapyd.launcher``
 
+- :ref:`jobstorage` uses the ``ScrapyProcessProtocol`` class, by default. If :ref:`jobstorage` is set to ``scrapyd.jobstorage.SqliteJobStorage``, Scrapyd 1.3.0 uses a ``Job`` class, instead.
 - Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
 - Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
 - Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by its caller.
@@ -100,7 +100,8 @@ Fixed
 API
 ^^^
 
-- The Content-Length header counts the number of bytes, instead of the number of characters.
+- The ``Content-Length`` header counts the number of bytes, instead of the number of characters.
+- The ``Access-Control-Allow-Methods`` response header contains only the HTTP methods to which webservices respond.
 - The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
 - The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 

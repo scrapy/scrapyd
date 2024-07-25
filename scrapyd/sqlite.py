@@ -29,6 +29,8 @@ class SqliteMixin:
     def __len__(self):
         return self.conn.execute(f"SELECT COUNT(*) FROM {self.table}").fetchone()[0]
 
+    # SQLite JSON is enabled by default since 3.38.0 (2022-02-22), and JSONB is available since 3.45.0 (2024-01-15).
+    # https://sqlite.org/json1.html
     def encode(self, obj):
         return sqlite3.Binary(json.dumps(obj).encode("ascii"))
 

@@ -1,8 +1,11 @@
+import datetime
 import io
 import os.path
 import pkgutil
 
 from twisted.logger import eventAsText
+
+from scrapyd.launcher import ScrapyProcessProtocol
 
 
 def get_egg_data(basename):
@@ -19,3 +22,14 @@ def root_add_version(root, project, version, basename):
 
 def get_message(captured):
     return eventAsText(captured[0]).split(" ", 1)[1]
+
+
+def get_finished_job(project="p1", spider="s1", job="j1", start_time=None, end_time=None):
+    if start_time is None:
+        start_time = datetime.datetime.now()
+    if end_time is None:
+        end_time = datetime.datetime.now()
+    process = ScrapyProcessProtocol(project, spider, job, {}, [])
+    process.start_time = start_time
+    process.end_time = end_time
+    return process

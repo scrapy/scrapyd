@@ -4,11 +4,12 @@ from zope.interface.verify import verifyObject
 
 from scrapyd.config import Config
 from scrapyd.interfaces import IJobStorage
-from scrapyd.jobstorage import Job, MemoryJobStorage, SqliteJobStorage
+from scrapyd.jobstorage import MemoryJobStorage, SqliteJobStorage
+from tests import get_finished_job
 
-job1 = Job("p1", "s1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
-job2 = Job("p2", "s2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8))
-job3 = Job("p3", "s3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9))
+job1 = get_finished_job("p1", "s1", "j1", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 7))
+job2 = get_finished_job("p2", "s2", "j2", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 8))
+job3 = get_finished_job("p3", "s3", "j3", end_time=datetime.datetime(2001, 2, 3, 4, 5, 6, 9))
 
 
 def pytest_generate_tests(metafunc):
