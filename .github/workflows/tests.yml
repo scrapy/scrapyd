@@ -18,11 +18,7 @@ jobs:
       - run: pip install -e .[test]
       # Python 3.12 deprecates pkg_resources (also used by py-html-checker).
       - run: |
-          pytest -W error -W ignore::ResourceWarning \
-            -W ignore::DeprecationWarning:scrapyd.runner \
-            -W ignore::DeprecationWarning:html_checker \
-            -W ignore::DeprecationWarning:pkg_resources \
-            tests --cov scrapyd
+          pytest -W error -W ignore::ResourceWarning -W ignore::DeprecationWarning:scrapyd.runner -W ignore::DeprecationWarning:html_checker -W ignore::DeprecationWarning:pkg_resources tests --cov scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
         run: |
