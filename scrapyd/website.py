@@ -135,15 +135,18 @@ class Root(resource.Resource):
         self.local_items = local_items(items_dir, urlsplit(items_dir))
         self.node_name = config.get("node_name", socket.gethostname())
 
-        self.putChild(b"", Home(self))
-        self.putChild(b"jobs", Jobs(self))
         if logs_dir:
             self.putChild(b"logs", File(logs_dir, "text/plain"))
         if self.local_items:
             self.putChild(b"items", File(items_dir, "text/plain"))
+
         for service_name, service_path in config.items("services", default=[]):
             service_cls = load_object(service_path)
             self.putChild(service_name.encode(), service_cls(self))
+
+        # Add web UI last, since its behavior can depend on others' presence.
+        self.putChild(b"", Home(self))
+        self.putChild(b"jobs", Jobs(self))
 
     def update_projects(self):
         self.poller.update_projects()
@@ -257,16 +260,16 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
         if self.root.local_items:
             self.headers.append("Items")
         # Hide the Cancel column if no cancel.json webservice.
-        if b"cancel.json" not in self.root.children:
+        if b"cancel.json" in self.root.children:
             self.headers.append("Cancel")
 
     def cancel_button(self, project, job):
         return dedent(
             f"""
             <form method="post" onsubmit="return confirm('Are you sure?');" action="{self.base_path}/cancel.json">
-            <input type="hidden" name="project" value="{escape(project)}"/>
-            <input type="hidden" name="job" value="{escape(job)}"/>
-            <input type="submit" style="float: left;" value="Cancel"/>
+            <input type="hidden" name="project" value="{escape(project)}">
+            <input type="hidden" name="job" value="{escape(job)}">
+            <input type="submit" style="float: left;" value="Cancel">
             </form>
             """
         )

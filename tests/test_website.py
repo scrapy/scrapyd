@@ -6,8 +6,10 @@ from twisted.web import http_headers, resource
 from twisted.web.test._util import _render
 from twisted.web.test.requesthelper import DummyRequest
 
+from scrapyd.app import application
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
+from scrapyd.website import Root
 from tests import has_settings, root_add_version
 
 
@@ -19,6 +21,14 @@ def assert_headers(txrequest):
     assert isinstance(content_length[0], bytes)
     assert int(content_length[0])
     assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
+
+
+def assert_hrefs(urls, text, header):
+    for href, name in urls:
+        if header:
+            assert f'<a href="/path/to/{href}">{name}</a>' in text
+        else:
+            assert f'<a href="/{href}">{name}</a>' in text
 
 
 # Derived from test_emptyChildUnicodeParent.
@@ -62,19 +72,51 @@ def test_render_logs_file(txrequest, root):
     return d
 
 
-def test_render_jobs(txrequest, root_with_egg):
-    root_with_egg.launcher.finished.add(Job("p1", "s1", "j1"))
-    root_with_egg.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
-    root_with_egg.poller.queues["quotesbot"].add("quotesbot", _job="j3")
+@pytest.mark.parametrize("cancel", [True, False], ids=["cancel", "no_cancel"])
+@pytest.mark.parametrize("header", [True, False], ids=["header", "no_header"])
+def test_render_jobs(txrequest, config, cancel, header):
+    if not cancel:
+        config.cp.remove_option("services", "cancel.json")
 
-    content = root_with_egg.children[b"jobs"].render_GET(txrequest)
+    root = Root(config, application(config))
+    root_add_version(root, "quotesbot", "0.1", "quotesbot")
+    root.update_projects()
+
+    root.launcher.finished.add(Job("p1", "s1", "j-finished"))
+    root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j-running", {}, [])
+    root.poller.queues["quotesbot"].add("quotesbot", _job="j-pending")
+
+    if header:
+        txrequest.requestHeaders = http_headers.Headers({b"X-Forwarded-Prefix": [b"/path/to"]})
+    txrequest.method = "GET"
+    content = root.children[b"jobs"].render(txrequest)
+    text = content.decode()
+
+    urls = [("logs/p1/s1/j-finished.log", "Log"), ("logs/p2/s2/j-running.log", "Log")]
+    if root.local_items:
+        urls.extend([("items/p1/s1/j-finished.jl", "Items"), ("items/p2/s2/j-running.jl", "Items")])
 
     assert_headers(txrequest)
+    assert_hrefs(urls, text, header)
+    assert b"j-pending.log" not in content
+    assert b"j-pending.jl" not in content
 
-    if root_with_egg.local_items:
-        assert b"Items</th>" in content
+    if root.local_items:
+        assert b"<th>Items</th>" in content
     else:
-        assert b"Items</th>" not in content
+        assert b"<th>Items</th>" not in content
+
+    if cancel:
+        assert b"<th>Cancel</th>" in content
+        if header:
+            assert b' action="/path/to/cancel.json">' in content
+        else:
+            assert b' action="/cancel.json">' in content
+        for job in ("j-running", "j-pending"):
+            assert f' value="{job}">' in text
+    else:
+        assert b"<th>Cancel</th>" not in content
+        assert b'/cancel.json">' not in content
 
 
 @pytest.mark.parametrize("with_egg", [True, False])
@@ -86,20 +128,16 @@ def test_render_home(txrequest, root, with_egg, header):
 
     if header:
         txrequest.requestHeaders = http_headers.Headers({b"X-Forwarded-Prefix": [b"/path/to"]})
-    content = root.children[b""].render_GET(txrequest)
+    txrequest.method = "GET"
+    content = root.children[b""].render(txrequest)
     text = content.decode()
-
-    assert_headers(txrequest)
 
     urls = [("jobs", "Jobs"), ("logs/", "Logs")]
     if root.local_items:
         urls.append(("items/", "Items"))
 
-    for href, name in urls:
-        if header:
-            assert f'<a href="/path/to/{href}">{name}</a>' in text
-        else:
-            assert f'<a href="/{href}">{name}</a>' in text
+    assert_headers(txrequest)
+    assert_hrefs(urls, text, header)
 
     if root.local_items:
         assert b'/items/">Items</a>' in content
