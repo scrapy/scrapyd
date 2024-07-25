@@ -54,39 +54,40 @@ def test_render_jobs(txrequest, root_with_egg):
     root_with_egg.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", {}, [])
     root_with_egg.poller.queues["quotesbot"].add("quotesbot", _job="j3")
 
-    content = root_with_egg.children[b"jobs"].render(txrequest)
-    expect_headers = {
-        b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"1702" if root_with_egg.local_items else b"1744"],
-    }
+    content = root_with_egg.children[b"jobs"].render_GET(txrequest)
 
     headers = dict(txrequest.responseHeaders.getAllRawHeaders())
+    content_length = headers.pop(b"Content-Length")
 
-    assert headers == expect_headers
+    assert len(content_length) == 1
+    assert isinstance(content_length[0], bytes)
+    assert int(content_length[0])
+    assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
     assert content.decode().startswith(
-        '<html><head><title>Scrapyd</title><style type="text/css">#jobs>thead td {text-align: center; font-weight'
+        '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <meta name="viewport" content='
     )
     if root_with_egg.local_items:
-        assert b"display: none" not in content
+        assert b"Items</th>" in content
     else:
-        assert b"display: none" in content
+        assert b"Items</th>" not in content
 
 
 def test_render_home(txrequest, root_with_egg):
     content = root_with_egg.children[b""].render_GET(txrequest)
-    expect_headers = {
-        b"Content-Type": [b"text/html; charset=utf-8"],
-        b"Content-Length": [b"773" if root_with_egg.local_items else b"714"],
-    }
 
     headers = dict(txrequest.responseHeaders.getAllRawHeaders())
+    content_length = headers.pop(b"Content-Length")
 
-    assert headers == expect_headers
-    assert b"Available projects" in content
+    assert len(content_length) == 1
+    assert isinstance(content_length[0], bytes)
+    assert int(content_length[0])
+    assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
+    assert b"<p>Scrapy projects:</p>" in content
+    assert b"<li>quotesbot</li>" in content
     if root_with_egg.local_items:
-        assert b"Items" in content
+        assert b"Items</a>" in content
     else:
-        assert b"Items" not in content
+        assert b"Items</a>" not in content
     if has_settings():
         assert b"localproject" in content
     else:

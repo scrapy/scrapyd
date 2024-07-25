@@ -34,8 +34,10 @@ Changed
 Web UI
 ^^^^^^
 
+- Add basic CSS.
 - Add a confirmation dialog to the Cancel button.
 - Add "Last modified" column to the directory listings of log files and item feeds.
+- The Jobs page responds only to HTTP ``GET`` and ``HEAD`` method requests.
 
 API
 ^^^

@@ -1,6 +1,7 @@
 import socket
 from datetime import datetime, timedelta
 from html import escape
+from textwrap import dedent, indent
 from urllib.parse import quote, urlsplit
 
 from scrapy.utils.misc import load_object
@@ -10,11 +11,6 @@ from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
 from scrapyd.utils import job_items_url, job_log_url, local_items
-
-
-class PrefixHeaderMixin:
-    def get_base_path(self, txrequest):
-        return txrequest.getHeader(self.prefix_header) or ""
 
 
 # Use local DirectoryLister class.
@@ -127,7 +123,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 
 class Root(resource.Resource):
     def __init__(self, config, app):
-        resource.Resource.__init__(self)
+        super().__init__()
 
         logs_dir = config.get("logs_dir")
         items_dir = config.get("items_dir")
@@ -139,12 +135,12 @@ class Root(resource.Resource):
         self.local_items = items_dir and local_items(items_dir, urlsplit(items_dir))
         self.nodename = config.get("node_name", socket.gethostname())
 
-        self.putChild(b"", Home(self, self.local_items))
+        self.putChild(b"", Home(self))
+        self.putChild(b"jobs", Jobs(self))
         if logs_dir:
             self.putChild(b"logs", File(logs_dir, "text/plain"))
         if self.local_items:
             self.putChild(b"items", File(items_dir, "text/plain"))
-        self.putChild(b"jobs", Jobs(self, self.local_items))
         for service_name, service_path in config.items("services", default=[]):
             service_cls = load_object(service_path)
             self.putChild(service_name.encode(), service_cls(self))
@@ -155,8 +151,7 @@ class Root(resource.Resource):
 
     @property
     def launcher(self):
-        app = IServiceCollection(self.app, self.app)
-        return app.getServiceNamed("launcher")
+        return IServiceCollection(self.app, self.app).getServiceNamed("launcher")
 
     @property
     def scheduler(self):
@@ -171,186 +166,164 @@ class Root(resource.Resource):
         return self.app.getComponent(IPoller)
 
 
+class PrefixHeaderMixin:
+    def get_base_path(self, txrequest):
+        return txrequest.getHeader(self.prefix_header) or ""
+
+
 class Home(PrefixHeaderMixin, resource.Resource):
-    def __init__(self, root, local_items):
-        resource.Resource.__init__(self)
+    def __init__(self, root):
+        super().__init__()
         self.root = root
-        self.local_items = local_items
+        self.local_items = root.local_items
         self.prefix_header = root.prefix_header
+
+    def prepare_projects(self):
+        if projects := self.root.scheduler.list_projects():
+            lis = "\n".join(f"<li>{escape(project_name)}</li>" for project_name in sorted(projects))
+            return f"<p>Scrapy projects:</p>\n<ul>\n{indent(lis, '    ')}\n</ul>"
+        return "<p>No Scrapy projects yet.</p>"
 
     def render_GET(self, txrequest):
         base_path = self.get_base_path(txrequest)
 
-        s = f"""\
-<html>
-<head><title>Scrapyd</title></head>
-<body>
-<h1>Scrapyd</h1>
-<ul>
-<li><a href="{base_path}/jobs">Jobs</a></li>
-"""
-        if self.local_items:
-            s += f'<li><a href="{base_path}/items/">Items</a></li>\n'
-        s += f"""\
-<li><a href="{base_path}/logs/">Logs</a></li>
-<li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
-</ul>
-"""
-        if projects := self.root.scheduler.list_projects():
-            s += "<p>Available projects:<p>\n<ul>\n"
-            for project_name in sorted(projects):
-                s += f"<li>{escape(project_name)}</li>\n"
-            s += "</ul>\n"
-        else:
-            s += "<p>No projects available.</p>\n"
-        s += """
-<h2>How to schedule a spider?</h2>
+        content = dedent(
+            f"""\
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Scrapyd</title>
+                <style type="text/css">
+                    body {{ font-family: sans-serif; }}
+                </style>
+            </head>
+            <body>
+                <h1>Scrapyd</h1>
 
-<p>To schedule a spider you need to use the API (this web UI is only for
-monitoring)</p>
+                <ul>
+                    <li><a href="{base_path}/jobs">Jobs</a></li>
+                    {f'<li><a href="{base_path}/items/">Items</a></li>' if self.local_items else ''}
+                    <li><a href="{base_path}/logs/">Logs</a></li>
+                    <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
+                </ul>
 
-<p>Example using <a href="https://curl.se/">curl</a>:</p>
-<p><code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code></p>
+{indent(self.prepare_projects(), "                ")}
 
-<p>For more information about the API, see the
-<a href="https://scrapyd.readthedocs.io/en/latest/">Scrapyd documentation</a></p>
-</body>
-</html>
-"""
+                <p>
+                    This web UI is for monitoring only. To upload projects and schedule crawls, use the API.
+                    For example, using <a href="https://curl.se/">curl</a>:
+                </p>
+
+                <p>
+                    <code>curl http://localhost:6800/schedule.json -d project=default -d spider=somespider</code>
+                </p>
+
+                <p>
+                    See the <a href="https://scrapyd.readthedocs.io/en/latest/">Scrapyd documentation</a> for details.
+                </p>
+            </body>
+            </html>
+            """
+        )
+        content = content.encode()
+
         txrequest.setHeader("Content-Type", "text/html; charset=utf-8")
-        s = s.encode()
-        txrequest.setHeader("Content-Length", str(len(s)))
-        return s
+        txrequest.setHeader("Content-Length", str(len(content)))
+        return content
 
 
-def microsec_trunc(timelike):
+def no_microseconds(timelike):
     # microsecond for datetime, microseconds for timedelta.
     ms = timelike.microsecond if hasattr(timelike, "microsecond") else timelike.microseconds
     return timelike - timedelta(microseconds=ms)
 
 
-def cancel_button(project, jobid, base_path):
-    return f"""
-    <form method="post" onsubmit="return confirm('Are you sure?');" action="{base_path}/cancel.json">
-    <input type="hidden" name="project" value="{escape(project)}"/>
-    <input type="hidden" name="job" value="{escape(jobid)}"/>
-    <input type="submit" style="float: left;" value="Cancel"/>
-    </form>
-    """
-
-
 class Jobs(PrefixHeaderMixin, resource.Resource):
-    def __init__(self, root, local_items):
-        resource.Resource.__init__(self)
+    def __init__(self, root):
+        super().__init__()
         self.root = root
-        self.local_items = local_items
+        self.local_items = root.local_items
         self.prefix_header = root.prefix_header
-
-    header_cols = (
-        "Project",
-        "Spider",
-        "Job",
-        "PID",
-        "Start",
-        "Runtime",
-        "Finish",
-        "Log",
-        "Items",
-        "Cancel",
-    )
-
-    def gen_css(self):
-        css = [
-            "#jobs>thead td {text-align: center; font-weight: bold}",
-            "#jobs>tbody>tr:first-child {background-color: #eee}",
+        self.headers = [
+            "Project",
+            "Spider",
+            "Job",
+            "PID",
+            "Start",
+            "Runtime",
+            "Finish",
+            "Log",
         ]
-        if not self.local_items:
-            col_idx = self.header_cols.index("Items") + 1
-            css.append(f"#jobs>*>tr>*:nth-child({col_idx}) {{display: none}}")
+        # Hide the Items column if items_dir isn't local.
+        if self.local_items:
+            self.headers.append("Items")
+        # Hide the Cancel column if no cancel.json webservice.
         if b"cancel.json" not in self.root.children:
-            col_idx = self.header_cols.index("Cancel") + 1
-            css.append(f"#jobs>*>tr>*:nth-child({col_idx}) {{display: none}}")
-        return "\n".join(css)
+            self.headers.append("Cancel")
 
-    def prep_row(self, cells):
-        if isinstance(cells, dict):
-            cells = [cells.get(key) for key in self.header_cols]
-        cells = [f"<td>{'' if cell is None else cell}</td>" for cell in cells]
-        return f"<tr>{''.join(cells)}</tr>"
-
-    def prep_doc(self):
-        return (
-            "<html>"
-            "<head>"
-            "<title>Scrapyd</title>"
-            '<style type="text/css">' + self.gen_css() + "</style>"
-            "</head>"
-            "<body><h1>Jobs</h1>"
-            '<p><a href="./">Go up</a></p>' + self.prep_table() + "</body>"
-            "</html>"
+    def cancel_button(self, project, job):
+        return dedent(
+            f"""
+            <form method="post" onsubmit="return confirm('Are you sure?');" action="{self.base_path}/cancel.json">
+            <input type="hidden" name="project" value="{escape(project)}"/>
+            <input type="hidden" name="job" value="{escape(job)}"/>
+            <input type="submit" style="float: left;" value="Cancel"/>
+            </form>
+            """
         )
 
-    def prep_table(self):
-        return (
-            '<table id="jobs" border="1">'
-            "<thead>" + self.prep_row(self.header_cols) + "</thead>"
-            "<tbody>"
-            + f'<tr><th colspan="{len(self.header_cols)}">Pending</th></tr>'
-            + self.prep_tab_pending()
-            + "</tbody>"
-            "<tbody>"
-            + f'<tr><th colspan="{len(self.header_cols)}">Running</th></tr>'
-            + self.prep_tab_running()
-            + "</tbody>"
-            "<tbody>"
-            + f'<tr><th colspan="{len(self.header_cols)}">Finished</th></tr>'
-            + self.prep_tab_finished()
-            + "</tbody>"
-            "</table>"
-        )
+    def prepare_headers(self):
+        ths = "\n".join(f"<th>{header}</th>" for header in self.headers)
+        return f"<tr>\n{indent(ths, '    ')}\n</tr>"
 
-    def prep_tab_pending(self):
+    def prepare_row(self, row):
+        tds = "\n".join(f"<td>{'' if row.get(header) is None else row[header]}</td>" for header in self.headers)
+        return f"<tr>\n{indent(tds, '    ')}\n</tr>"
+
+    def prepare_pending(self):
         return "\n".join(
-            self.prep_row(
+            self.prepare_row(
                 {
                     "Project": escape(project),
                     "Spider": escape(message["name"]),
                     "Job": escape(message["_job"]),
-                    "Cancel": cancel_button(project=project, jobid=message["_job"], base_path=self.base_path),
+                    "Cancel": self.cancel_button(project, message["_job"]),
                 }
             )
             for project, queue in self.root.poller.queues.items()
             for message in queue.list()
         )
 
-    def prep_tab_running(self):
+    def prepare_running(self):
         return "\n".join(
-            self.prep_row(
+            self.prepare_row(
                 {
                     "Project": escape(process.project),
                     "Spider": escape(process.spider),
                     "Job": escape(process.job),
                     "PID": process.pid,
-                    "Start": microsec_trunc(process.start_time),
-                    "Runtime": microsec_trunc(datetime.now() - process.start_time),
+                    "Start": no_microseconds(process.start_time),
+                    "Runtime": no_microseconds(datetime.now() - process.start_time),
                     "Log": f'<a href="{self.base_path}{job_log_url(process)}">Log</a>',
                     "Items": f'<a href="{self.base_path}{job_items_url(process)}">Items</a>',
-                    "Cancel": cancel_button(project=process.project, jobid=process.job, base_path=self.base_path),
+                    "Cancel": self.cancel_button(process.project, process.job),
                 }
             )
             for process in self.root.launcher.processes.values()
         )
 
-    def prep_tab_finished(self):
+    def prepare_finished(self):
         return "\n".join(
-            self.prep_row(
+            self.prepare_row(
                 {
                     "Project": escape(job.project),
                     "Spider": escape(job.spider),
                     "Job": escape(job.job),
-                    "Start": microsec_trunc(job.start_time),
-                    "Runtime": microsec_trunc(job.end_time - job.start_time),
-                    "Finish": microsec_trunc(job.end_time),
+                    "Start": no_microseconds(job.start_time),
+                    "Runtime": no_microseconds(job.end_time - job.start_time),
+                    "Finish": no_microseconds(job.end_time),
                     "Log": f'<a href="{self.base_path}{job_log_url(job)}">Log</a>',
                     "Items": f'<a href="{self.base_path}{job_items_url(job)}">Items</a>',
                 }
@@ -358,10 +331,56 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             for job in self.root.launcher.finished
         )
 
-    def render(self, txrequest):
+    def render_GET(self, txrequest):
         self.base_path = self.get_base_path(txrequest)
-        doc = self.prep_doc()
+
+        content = dedent(
+            f"""\
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Scrapyd</title>
+                <style type="text/css">
+                    body {{ font-family: sans-serif; }}
+                    table {{ border-collapse: collapse; }}
+                    th, td {{ border: 1px solid #495057; }}
+                    tbody > tr:first-child {{ background-color: #eee; }}
+                    th, td {{ padding: .5rem; }}
+                </style>
+            </head>
+            <body>
+                <h1>Jobs</h1>
+                <p><a href="./">Go up</a></p>
+                <table id="jobs" border="1">
+                    <thead>
+{indent(self.prepare_headers(), "                        ")}
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th colspan="{len(self.headers)}">Pending</th>
+                        </tr>
+{indent(self.prepare_pending(), "                        ")}
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th colspan="{len(self.headers)}">Running</th>
+                        </tr>
+{indent(self.prepare_running(), "                        ")}
+                    </tbody>
+                    <tbody>
+                        <tr>
+                            <th colspan="{len(self.headers)}">Finished</th>
+                        </tr>
+{indent(self.prepare_finished(), "                        ")}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+            """
+        ).encode()
+
         txrequest.setHeader("Content-Type", "text/html; charset=utf-8")
-        doc = doc.encode()
-        txrequest.setHeader("Content-Length", str(len(doc)))
-        return doc
+        txrequest.setHeader("Content-Length", str(len(content)))
+        return content
