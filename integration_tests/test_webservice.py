@@ -21,22 +21,22 @@ def assert_response(method, path, expected, **kwargs):
 
 
 @pytest.mark.parametrize(
-    ("basename", "method"),
+    ("method", "basename"),
     [
-        ("daemonstatus", "GET"),
-        ("addversion", "POST"),
-        ("schedule", "POST"),
-        ("cancel", "POST"),
-        ("status", "GET"),
-        ("listprojects", "GET"),
-        ("listversions", "GET"),
-        ("listspiders", "GET"),
-        ("listjobs", "GET"),
-        ("delversion", "POST"),
-        ("delproject", "POST"),
+        ("GET", "daemonstatus"),
+        ("POST", "addversion"),
+        ("POST", "schedule"),
+        ("POST", "cancel"),
+        ("GET", "status"),
+        ("GET", "listprojects"),
+        ("GET", "listversions"),
+        ("GET", "listspiders"),
+        ("GET", "listjobs"),
+        ("POST", "delversion"),
+        ("POST", "delproject"),
     ],
 )
-def test_options(basename, method):
+def test_options(method, basename):
     response = requests.options(
         f"http://127.0.0.1:6800/{basename}.json",
         auth=("hello12345", "67890world"),
@@ -51,15 +51,15 @@ def test_options(basename, method):
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
-    ("basename", "method", "params"),
+    ("method", "basename", "params"),
     [
-        ("addversion", "post", {"version": "v", "egg": EGG}),
-        ("listversions", "get", {}),
-        ("delversion", "post", {"version": "v"}),
-        ("delproject", "post", {}),
+        ("post", "addversion", {"version": "v", "egg": EGG}),
+        ("get", "listversions", {}),
+        ("post", "delversion", {"version": "v"}),
+        ("post", "delproject", {}),
     ],
 )
-def test_project_directory_traversal(basename, method, params):
+def test_project_directory_traversal(method, basename, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{basename}.json",
         auth=("hello12345", "67890world"),

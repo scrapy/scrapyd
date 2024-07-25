@@ -151,22 +151,22 @@ def test_invalid_type(txrequest, root):
 
 
 @pytest.mark.parametrize(
-    ("basename", "method"),
+    ("method", "basename"),
     [
-        ("daemonstatus", "GET"),
-        ("addversion", "POST"),
-        ("schedule", "POST"),
-        ("cancel", "POST"),
-        ("status", "GET"),
-        ("listprojects", "GET"),
-        ("listversions", "GET"),
-        ("listspiders", "GET"),
-        ("listjobs", "GET"),
-        ("delversion", "POST"),
-        ("delproject", "POST"),
+        ("GET", "daemonstatus"),
+        ("POST", "addversion"),
+        ("POST", "schedule"),
+        ("POST", "cancel"),
+        ("GET", "status"),
+        ("GET", "listprojects"),
+        ("GET", "listversions"),
+        ("GET", "listspiders"),
+        ("GET", "listjobs"),
+        ("POST", "delversion"),
+        ("POST", "delproject"),
     ],
 )
-def test_options(txrequest, root, basename, method):
+def test_options(txrequest, root, method, basename):
     txrequest.method = "OPTIONS"
 
     content = root.children[b"%b.json" % basename.encode()].render(txrequest)
@@ -196,7 +196,8 @@ def test_debug(txrequest, root):
     assert txrequest.code == 200
     assert len(captured) == 1
     assert captured[0]["log_level"] == LogLevel.critical
-    assert message.startswith("[scrapyd.webservice#critical] \nTraceback (most recent call last):")
+    # The service is "scrapyd.webservice#critical" or "-" depending on whether twisted.python.log was loaded.
+    assert re.search(r"^\[\S+\] \nTraceback \(most recent call last\):", message)
     assert message.endswith(
         "twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'\n"
     )
@@ -674,22 +675,22 @@ def test_project_directory_traversal_notfound(txrequest, root, method, basename,
 
 
 @pytest.mark.parametrize(
-    ("endpoint", "attach_egg", "method"),
+    ("method", "basename", "attach_egg"),
     [
-        (b"addversion.json", True, "POST"),
-        (b"listversions.json", False, "GET"),
-        (b"delproject.json", False, "POST"),
-        (b"delversion.json", False, "POST"),
+        ("POST", "addversion", True),
+        ("GET", "listversions", False),
+        ("POST", "delproject", False),
+        ("POST", "delversion", False),
     ],
 )
-def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, method):
+def test_project_directory_traversal(txrequest, root, method, basename, attach_egg):
     txrequest.args = {b"project": [b"../p"], b"version": [b"0.1"]}
 
     if attach_egg:
         txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
-        getattr(root.children[endpoint], f"render_{method}")(txrequest)
+        getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
 
     assert str(exc.value) == "../p"
 

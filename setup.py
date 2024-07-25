@@ -34,6 +34,7 @@ setup(
     extras_require={
         "test": [
             "coveralls",
+            "py-html-checker",
             "pytest",
             "pytest-cov",
             "pytest-twisted",

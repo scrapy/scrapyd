@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from html_checker.validator import ValidatorInterface
 from twisted.web import http_headers, resource
 from twisted.web.test._util import _render
 from twisted.web.test.requesthelper import DummyRequest
@@ -8,6 +9,16 @@ from twisted.web.test.requesthelper import DummyRequest
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
 from tests import has_settings, root_add_version
+
+
+def assert_headers(txrequest):
+    headers = dict(txrequest.responseHeaders.getAllRawHeaders())
+    content_length = headers.pop(b"Content-Length")
+
+    assert len(content_length) == 1
+    assert isinstance(content_length[0], bytes)
+    assert int(content_length[0])
+    assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
 
 
 # Derived from test_emptyChildUnicodeParent.
@@ -58,13 +69,8 @@ def test_render_jobs(txrequest, root_with_egg):
 
     content = root_with_egg.children[b"jobs"].render_GET(txrequest)
 
-    headers = dict(txrequest.responseHeaders.getAllRawHeaders())
-    content_length = headers.pop(b"Content-Length")
+    assert_headers(txrequest)
 
-    assert len(content_length) == 1
-    assert isinstance(content_length[0], bytes)
-    assert int(content_length[0])
-    assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
     if root_with_egg.local_items:
         assert b"Items</th>" in content
     else:
@@ -83,13 +89,7 @@ def test_render_home(txrequest, root, with_egg, header):
     content = root.children[b""].render_GET(txrequest)
     text = content.decode()
 
-    headers = dict(txrequest.responseHeaders.getAllRawHeaders())
-    content_length = headers.pop(b"Content-Length")
-
-    assert len(content_length) == 1
-    assert isinstance(content_length[0], bytes)
-    assert int(content_length[0])
-    assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
+    assert_headers(txrequest)
 
     urls = [("jobs", "Jobs"), ("logs/", "Logs")]
     if root.local_items:
@@ -120,3 +120,14 @@ def test_render_home(txrequest, root, with_egg, header):
         assert b"<p>No Scrapy projects yet.</p>" in content
         for project in projects:
             assert f"<li>{project}</li>" not in text
+
+
+@pytest.mark.parametrize("basename", ["", "jobs"])
+def test_validate(tmp_path, txrequest, root, basename, caplog):
+    txrequest.method = "GET"
+    content = root.children[basename.encode()].render(txrequest)
+    path = tmp_path / "page.html"
+    path.write_bytes(content)
+    report = ValidatorInterface().validate([str(path)]).registry[str(path)]
+
+    assert report is None, repr(report)

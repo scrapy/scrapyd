@@ -193,7 +193,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>Scrapyd</title>
-                <style type="text/css">
+                <style>
                     body {{ font-family: sans-serif; }}
                 </style>
             </head>
@@ -339,10 +339,10 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>Scrapyd</title>
-                <style type="text/css">
+                <style>
                     body {{ font-family: sans-serif; }}
                     table {{ border-collapse: collapse; }}
-                    th, td {{ border: 1px solid #495057; }}
+                    th, td {{ border-style: solid; border-width: 1px; }}
                     tbody > tr:first-child {{ background-color: #eee; }}
                     th, td {{ padding: .5rem; }}
                 </style>
@@ -350,7 +350,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             <body>
                 <h1>Jobs</h1>
                 <p><a href="./">Go up</a></p>
-                <table id="jobs" border="1">
+                <table id="jobs">
                     <thead>
 {indent(self.prepare_headers(), "                        ")}
                     </thead>

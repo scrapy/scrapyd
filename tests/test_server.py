@@ -64,23 +64,23 @@ def test_error():
 
 
 @pytest.mark.parametrize(
-    ("webservice", "method"),
+    ("method", "basename"),
     [
-        ("daemonstatus", "GET"),
-        ("addversion", "POST"),
-        ("schedule", "POST"),
-        ("cancel", "POST"),
-        ("status", "GET"),
-        ("listprojects", "GET"),
-        ("listversions", "GET"),
-        ("listspiders", "GET"),
-        ("listjobs", "GET"),
-        ("delversion", "POST"),
-        ("delproject", "POST"),
+        ("GET", "daemonstatus"),
+        ("POST", "addversion"),
+        ("POST", "schedule"),
+        ("POST", "cancel"),
+        ("GET", "status"),
+        ("GET", "listprojects"),
+        ("GET", "listversions"),
+        ("GET", "listspiders"),
+        ("GET", "listjobs"),
+        ("POST", "delversion"),
+        ("POST", "delproject"),
     ],
 )
-def test_options(mock_scrapyd, webservice, method):
-    response = requests.options(mock_scrapyd.urljoin(f"{webservice}.json"))
+def test_options(mock_scrapyd, method, basename):
+    response = requests.options(mock_scrapyd.urljoin(f"{basename}.json"))
 
     assert response.status_code == 204, f"204 != {response.status_code}"
     assert response.content == b""
