@@ -88,6 +88,7 @@ Fixed
 ~~~~~
 
 - Restore support for :ref:`eggstorage` implementations whose ``get()`` methods return file-like objects without ``name`` attributes (1.4.3 regression).
+- If the :ref:`items_dir` setting is a URL and the path component ends with ``/``, the ``FEEDS`` setting no longer contains double slashes.
 - The ``MemoryJobStorage`` class returns finished jobs in reverse chronological order, like the ``SqliteJobStorage`` class.
 - The ``list_projects`` method of the ``SpiderScheduler`` class returns a ``list``, instead of ``dict_keys``.
 - Log errors to Scrapyd's log, even when :ref:`debug` mode is enabled.
@@ -115,6 +116,7 @@ Scrapyd is now tested on macOS and Windows, in addition to Linux.
 
 - The :ref:`cancel.json` webservice now works on Windows, by using SIGBREAK instead of SIGINT or SIGTERM.
 - The :ref:`dbs_dir` setting no longer causes an error if it contains a drive letter on Windows.
+- The :ref:`items_dir` setting is considered a local path if it contains a drive letter on Windows.
 - The :ref:`jobs_to_keep` setting no longer causes an error if a file to delete can't be deleted (for example, if the file is open on Windows).
 
 Removed

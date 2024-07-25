@@ -1,13 +1,15 @@
 import json
 import os
 from contextlib import suppress
-from urllib.parse import urlparse, urlunparse
+from posixpath import join as urljoin
+from urllib.parse import urlsplit
 
 from w3lib.url import path_to_file_uri
 from zope.interface import implementer
 
 from scrapyd.exceptions import DirectoryTraversalError
 from scrapyd.interfaces import IEnvironment
+from scrapyd.utils import local_items
 
 
 @implementer(IEnvironment)
@@ -25,7 +27,7 @@ class Environment:
         if self.logs_dir:
             settings["LOG_FILE"] = self._get_file(message, self.logs_dir, "log")
         if self.items_dir:
-            settings["FEEDS"] = json.dumps({self._get_feed_uri(message, "jl"): {"format": "jsonlines"}})
+            settings["FEEDS"] = json.dumps({self._get_feeds(message, "jl"): {"format": "jsonlines"}})
         return settings
 
     def get_environment(self, message, slot):
@@ -44,20 +46,15 @@ class Environment:
 
         return env
 
-    def _get_feed_uri(self, message, extension):
-        url = urlparse(self.items_dir)
-        if url.scheme.lower() in ["", "file"]:
-            return path_to_file_uri(self._get_file(message, url.path, extension))
-        return urlunparse(
-            (
-                url.scheme,
-                url.netloc,
-                "/".join([url.path, message["_project"], message["_spider"], f"{message['_job']}.{extension}"]),
-                url.params,
-                url.query,
-                url.fragment,
-            )
-        )
+    def _get_feeds(self, message, extension):
+        parsed = urlsplit(self.items_dir)
+
+        if local_items(self.items_dir, parsed):
+            # File URLs do not have query or fragment components. https://www.rfc-editor.org/rfc/rfc8089#section-2
+            return path_to_file_uri(self._get_file(message, parsed.path, extension))
+
+        path = urljoin(parsed.path, message["_project"], message["_spider"], f"{message['_job']}.{extension}")
+        return parsed._replace(path=path).geturl()
 
     def _get_file(self, message, directory, extension):
         resolvedir = os.path.realpath(directory)

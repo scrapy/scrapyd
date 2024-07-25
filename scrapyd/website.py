@@ -1,7 +1,7 @@
 import socket
 from datetime import datetime, timedelta
 from html import escape
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlsplit
 
 from scrapy.utils.misc import load_object
 from twisted.application.service import IServiceCollection
@@ -9,7 +9,7 @@ from twisted.python import filepath
 from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
-from scrapyd.utils import job_items_url, job_log_url
+from scrapyd.utils import job_items_url, job_log_url, local_items
 
 
 class PrefixHeaderMixin:
@@ -136,7 +136,7 @@ class Root(resource.Resource):
         self.debug = config.getboolean("debug", False)
         self.runner = config.get("runner", "scrapyd.runner")
         self.prefix_header = config.get("prefix_header")
-        self.local_items = items_dir and (urlparse(items_dir).scheme.lower() in ["", "file"])
+        self.local_items = items_dir and local_items(items_dir, urlsplit(items_dir))
         self.nodename = config.get("node_name", socket.gethostname())
 
         self.putChild(b"", Home(self, self.local_items))

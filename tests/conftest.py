@@ -8,6 +8,7 @@ from twisted.web.test.requesthelper import DummyChannel
 
 from scrapyd import Config
 from scrapyd.app import application
+from scrapyd.interfaces import IEnvironment
 from scrapyd.webservice import spider_list
 from scrapyd.website import Root
 from tests import root_add_version
@@ -54,6 +55,11 @@ def config(request, chdir):
 @pytest.fixture()
 def app(config):
     return application(config)
+
+
+@pytest.fixture()
+def environ(app):
+    return app.getComponent(IEnvironment)
 
 
 @pytest.fixture()

@@ -8,18 +8,12 @@ from twisted.python import failure
 
 from scrapyd import __version__
 from scrapyd.config import Config
-from scrapyd.interfaces import IEnvironment
 from scrapyd.launcher import Launcher, get_crawl_args
 from tests import has_settings
 
 
 def message(captured):
     return eventAsText(captured[0]).split(" ", 1)[1]
-
-
-@pytest.fixture()
-def environ(app):
-    return app.getComponent(IEnvironment)
 
 
 @pytest.fixture()
@@ -137,7 +131,7 @@ def test_connection_made(environ, process):
         assert re.match(
             f"\\[scrapyd\\.launcher#info\\] Process started: project='p1' spider='s1' job='j1' pid={pid} "
             "args=\\['\\S+', '-m', 'scrapyd\\.runner', 'crawl', 's1', '-s', 'LOG_FILE=\\S+j1\\.log', '-s', "
-            """'FEEDS={"file://\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
+            """'FEEDS={"file:///\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
             message(captured),
         )
     else:
@@ -159,7 +153,7 @@ def test_process_ended_done(environ, process):
         assert re.match(
             f"\\[scrapyd\\.launcher#info\\] Process finished: project='p1' spider='s1' job='j1' pid={pid} "
             "args=\\['\\S+', '-m', 'scrapyd\\.runner', 'crawl', 's1', '-s', 'LOG_FILE=\\S+j1\\.log', '-s', "
-            """'FEEDS={"file://\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
+            """'FEEDS={"file:///\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
             message(captured),
         )
     else:
@@ -181,7 +175,7 @@ def test_process_ended_terminated(environ, process):
         assert re.match(
             f"\\[scrapyd\\.launcher#error\\] Process died: exitstatus=1 project='p1' spider='s1' job='j1' pid={pid} "
             "args=\\['\\S+', '-m', 'scrapyd\\.runner', 'crawl', 's1', '-s', 'LOG_FILE=\\S+j1\\.log', '-s', "
-            """'FEEDS={"file://\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
+            """'FEEDS={"file:///\\S+j1\\.jl": {"format": "jsonlines"}}', '-a', '_job=j1'\\]""",
             message(captured),
         )
     else:

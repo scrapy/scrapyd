@@ -1,3 +1,5 @@
+import os.path
+
 from scrapy.utils.misc import load_object
 
 
@@ -5,6 +7,10 @@ def initialize_component(config, setting, default, *args):
     path = config.get(setting, default)
     cls = load_object(path)
     return cls(config, *args)
+
+
+def local_items(items_dir, parsed):
+    return parsed.scheme.lower() in ("", "file", os.path.splitdrive(items_dir)[0].rstrip(":").lower())
 
 
 def job_log_url(job):
