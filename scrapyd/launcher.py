@@ -55,11 +55,11 @@ class Launcher(Service):
 
     def _spawn_process(self, message, slot):
         project = message["_project"]
-        environ = self.app.getComponent(IEnvironment)
+        environment = self.app.getComponent(IEnvironment)
         message.setdefault("settings", {})
-        message["settings"].update(environ.get_settings(message))
+        message["settings"].update(environment.get_settings(message))
 
-        env = environ.get_environment(message, slot)
+        env = environment.get_environment(message, slot)
         args = [sys.executable, "-m", self.runner, "crawl", *get_crawl_args(message)]
 
         process = ScrapyProcessProtocol(project, message["_spider"], message["_job"], env, args)
