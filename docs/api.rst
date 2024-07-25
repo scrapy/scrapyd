@@ -245,6 +245,8 @@ Get the pending, running and finished jobs of a project.
 
    .. note:: The default :ref:`jobstorage` setting stores jobs in memory, such that jobs are lost when the Scrapyd process ends.
 
+   .. note:: ``items_url`` in the response returns HTTP 404 Not Found if :ref:`items_dir` is disabled (or was disabled at the time the job was run). Similarly, if a log file or item feed is deleted (for example, by :ref:`jobs_to_keep`), ``log_url`` or ``items_url`` returns HTTP 404.
+
 Supported request methods
   ``GET``
 Parameters
@@ -263,7 +265,10 @@ Example:
            {
                "id": "78391cc0fcaf11e1b0090800272a6d06",
                "project": "myproject",
-               "spider": "spider1"
+               "spider": "spider1",
+               "version": "0.1",
+               "settings": {"DOWNLOAD_DELAY=2"},
+               "args": {"arg1": "val1"},
            }
        ],
        "running": [
@@ -271,8 +276,10 @@ Example:
                "id": "422e608f9f28cef127b3d5ef93fe9399",
                "project": "myproject",
                "spider": "spider2",
+               "pid": 93956,
                "start_time": "2012-09-12 10:14:03.594664",
-               "pid": 93956
+               "log_url": "/logs/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.log",
+               "items_url": "/items/myproject/spider3/2f16646cfcaf11e1b0090800272a6d06.jl"
            }
        ],
        "finished": [

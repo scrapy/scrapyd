@@ -29,7 +29,7 @@ def get_finished_job(project="p1", spider="s1", job="j1", start_time=None, end_t
         start_time = datetime.datetime.now()
     if end_time is None:
         end_time = datetime.datetime.now()
-    process = ScrapyProcessProtocol(project, spider, job, {}, [])
+    process = ScrapyProcessProtocol(project, spider, job, env={}, args=[])
     process.start_time = start_time
     process.end_time = end_time
     return process

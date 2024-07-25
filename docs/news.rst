@@ -12,6 +12,7 @@ Added
 ~~~~~
 
 - Add ``version`` (egg version), ``settings`` (Scrapy settings) and ``args`` (spider arguments) to the pending jobs in the response from the :ref:`listjobs.json` webservice.
+- Add ``log_url`` and ``items_url`` to the running jobs in the response from the :ref:`listjobs.json` webservice.
 - Add a :ref:`status.json` webservice, to get the status of a job.
 - Add a :ref:`unix_socket_path` setting, to listen on a Unix socket.
 - Add a :ref:`poller` setting.
@@ -78,7 +79,7 @@ Library
   - ``sorted_versions`` to ``scrapyd.eggstorage``
   - ``get_crawl_args`` to ``scrapyd.launcher``
 
-- :ref:`jobstorage` uses the ``ScrapyProcessProtocol`` class, by default. If :ref:`jobstorage` is set to ``scrapyd.jobstorage.SqliteJobStorage``, Scrapyd 1.3.0 uses a ``Job`` class, instead.
+- :ref:`jobstorage` uses the ``ScrapyProcessProtocol`` class, by default. If :ref:`jobstorage` is set to ``scrapyd.jobstorage.SqliteJobStorage``, Scrapyd 1.3.0 uses a ``Job`` class, instead. To promote parity, the ``Job`` class is removed.
 - Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
 - Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
 - Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by its caller.

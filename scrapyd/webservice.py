@@ -349,9 +349,9 @@ class ListJobs(WsResource):
         return {
             "pending": [
                 {
+                    "id": message["_job"],
                     "project": queue_name,
                     "spider": message["name"],
-                    "id": message["_job"],
                     "version": message.get("_version"),
                     "settings": message.get("settings", {}),
                     "args": {k: v for k, v in message.items() if k not in ("name", "_job", "_version", "settings")},
@@ -366,9 +366,9 @@ class ListJobs(WsResource):
             ],
             "finished": [
                 {
+                    "id": finished.job,
                     "project": finished.project,
                     "spider": finished.spider,
-                    "id": finished.job,
                     "start_time": str(finished.start_time),
                     "end_time": str(finished.end_time),
                     "log_url": job_log_url(finished),

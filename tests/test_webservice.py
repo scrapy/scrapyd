@@ -337,13 +337,13 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["finished"].append(
         {
+            "id": "j1",
             "project": "p1",
             "spider": "s1",
-            "id": "j1",
             "start_time": "2001-02-03 04:05:06.000007",
             "end_time": "2001-02-03 04:05:06.000008",
-            "items_url": "/items/p1/s1/j1.jl",
             "log_url": "/logs/p1/s1/j1.log",
+            "items_url": "/items/p1/s1/j1.jl",
         },
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -352,11 +352,13 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["running"].append(
         {
+            "id": "j1",
             "project": "p1",
             "spider": "s1",
-            "id": "j1",
             "pid": None,
             "start_time": "2001-02-03 04:05:06.000009",
+            "log_url": "/logs/p1/s1/j1.log",
+            "items_url": "/items/p1/s1/j1.jl",
         }
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -372,9 +374,9 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
 
     expected["pending"].append(
         {
+            "id": "j1",
             "project": "p1",
             "spider": "s1",
-            "id": "j1",
             "version": "0.1",
             "settings": {"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
             "args": {"other": "one"},
