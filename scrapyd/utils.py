@@ -10,7 +10,7 @@ def initialize_component(config, setting, default, *args):
 
 
 def local_items(items_dir, parsed):
-    return parsed.scheme.lower() in ("", "file", os.path.splitdrive(items_dir)[0].rstrip(":").lower())
+    return items_dir and parsed.scheme.lower() in ("", "file", os.path.splitdrive(items_dir)[0].rstrip(":").lower())
 
 
 def job_log_url(job):
