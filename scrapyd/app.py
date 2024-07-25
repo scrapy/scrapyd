@@ -17,7 +17,7 @@ log = Logger()
 def application(config):
     app = Application("Scrapyd")
     bind_address = os.getenv("SCRAPYD_BIND_ADDRESS") or config.get("bind_address", "127.0.0.1")
-    http_port = int(os.getenv("SCRAPYD_HTTP_PORT") or config.getint("http_port", 6800))
+    http_port = int(os.getenv("SCRAPYD_HTTP_PORT") or config.getint("http_port", "6800"))
     unix_socket_path = os.getenv("SCRAPYD_UNIX_SOCKET_PATH") or config.get("unix_socket_path", "")
     poll_interval = config.getfloat("poll_interval", 5)
 

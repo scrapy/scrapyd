@@ -125,15 +125,15 @@ class Root(resource.Resource):
     def __init__(self, config, app):
         super().__init__()
 
-        logs_dir = config.get("logs_dir")
-        items_dir = config.get("items_dir")
+        logs_dir = config.get("logs_dir", "logs")
+        items_dir = config.get("items_dir", "")
 
         self.app = app
         self.debug = config.getboolean("debug", False)
         self.runner = config.get("runner", "scrapyd.runner")
-        self.prefix_header = config.get("prefix_header")
-        self.local_items = items_dir and local_items(items_dir, urlsplit(items_dir))
-        self.nodename = config.get("node_name", socket.gethostname())
+        self.prefix_header = config.get("prefix_header", "x-forwarded-prefix")
+        self.local_items = local_items(items_dir, urlsplit(items_dir))
+        self.node_name = config.get("node_name", socket.gethostname())
 
         self.putChild(b"", Home(self))
         self.putChild(b"jobs", Jobs(self))
@@ -168,15 +168,13 @@ class Root(resource.Resource):
 
 class PrefixHeaderMixin:
     def get_base_path(self, txrequest):
-        return txrequest.getHeader(self.prefix_header) or ""
+        return txrequest.getHeader(self.root.prefix_header) or ""
 
 
 class Home(PrefixHeaderMixin, resource.Resource):
     def __init__(self, root):
         super().__init__()
         self.root = root
-        self.local_items = root.local_items
-        self.prefix_header = root.prefix_header
 
     def prepare_projects(self):
         if projects := self.root.scheduler.list_projects():
@@ -204,7 +202,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
 
                 <ul>
                     <li><a href="{base_path}/jobs">Jobs</a></li>
-                    {f'<li><a href="{base_path}/items/">Items</a></li>' if self.local_items else ''}
+                    {f'<li><a href="{base_path}/items/">Items</a></li>' if self.root.local_items else ''}
                     <li><a href="{base_path}/logs/">Logs</a></li>
                     <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
                 </ul>
@@ -244,8 +242,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
     def __init__(self, root):
         super().__init__()
         self.root = root
-        self.local_items = root.local_items
-        self.prefix_header = root.prefix_header
+
         self.headers = [
             "Project",
             "Spider",
@@ -257,7 +254,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             "Log",
         ]
         # Hide the Items column if items_dir isn't local.
-        if self.local_items:
+        if self.root.local_items:
             self.headers.append("Items")
         # Hide the Cancel column if no cancel.json webservice.
         if b"cancel.json" not in self.root.children:

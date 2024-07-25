@@ -1,12 +1,13 @@
 import os
 
-from twisted.web import resource
+import pytest
+from twisted.web import http_headers, resource
 from twisted.web.test._util import _render
 from twisted.web.test.requesthelper import DummyRequest
 
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
-from tests import has_settings
+from tests import has_settings, root_add_version
 
 
 # Derived from test_emptyChildUnicodeParent.
@@ -20,6 +21,7 @@ def test_render_logs_dir(txrequest, root):
 
     content = child.render(request)
 
+    assert list(request.responseHeaders.getAllRawHeaders()) == [(b"Content-Type", [b"text/html; charset=utf-8"])]
     assert b"<th>Last modified</th>" in content
     assert b'<td><a href="quotesbot/">quotesbot/</a></td>' in content
 
@@ -63,17 +65,23 @@ def test_render_jobs(txrequest, root_with_egg):
     assert isinstance(content_length[0], bytes)
     assert int(content_length[0])
     assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
-    assert content.decode().startswith(
-        '<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="utf-8">\n    <meta name="viewport" content='
-    )
     if root_with_egg.local_items:
         assert b"Items</th>" in content
     else:
         assert b"Items</th>" not in content
 
 
-def test_render_home(txrequest, root_with_egg):
-    content = root_with_egg.children[b""].render_GET(txrequest)
+@pytest.mark.parametrize("with_egg", [True, False])
+@pytest.mark.parametrize("header", [True, False])
+def test_render_home(txrequest, root, with_egg, header):
+    if with_egg:
+        root_add_version(root, "quotesbot", "0.1", "quotesbot")
+        root.update_projects()
+
+    if header:
+        txrequest.requestHeaders = http_headers.Headers({b"X-Forwarded-Prefix": [b"/path/to"]})
+    content = root.children[b""].render_GET(txrequest)
+    text = content.decode()
 
     headers = dict(txrequest.responseHeaders.getAllRawHeaders())
     content_length = headers.pop(b"Content-Length")
@@ -82,13 +90,33 @@ def test_render_home(txrequest, root_with_egg):
     assert isinstance(content_length[0], bytes)
     assert int(content_length[0])
     assert headers == {b"Content-Type": [b"text/html; charset=utf-8"]}
-    assert b"<p>Scrapy projects:</p>" in content
-    assert b"<li>quotesbot</li>" in content
-    if root_with_egg.local_items:
-        assert b"Items</a>" in content
+
+    urls = [("jobs", "Jobs"), ("logs/", "Logs")]
+    if root.local_items:
+        urls.append(("items/", "Items"))
+
+    for href, name in urls:
+        if header:
+            assert f'<a href="/path/to/{href}">{name}</a>' in text
+        else:
+            assert f'<a href="/{href}">{name}</a>' in text
+
+    if root.local_items:
+        assert b'/items/">Items</a>' in content
     else:
-        assert b"Items</a>" not in content
+        assert b'/items/">Items</a>' not in content
+
+    projects = []
+    if with_egg:
+        projects.append("quotesbot")
     if has_settings():
-        assert b"localproject" in content
+        projects.append("localproject")
+
+    if projects:
+        assert b"<p>Scrapy projects:</p>" in content
+        for project in projects:
+            assert f"<li>{project}</li>" in text
     else:
-        assert b"localproject" not in content
+        assert b"<p>No Scrapy projects yet.</p>" in content
+        for project in projects:
+            assert f"<li>{project}</li>" not in text

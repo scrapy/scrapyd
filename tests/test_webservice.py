@@ -1,5 +1,6 @@
 import datetime
 import io
+import json
 import os
 import re
 import sys
@@ -42,10 +43,12 @@ def add_test_version(app, project, version, basename):
 
 def assert_content(txrequest, root, method, basename, args, expected):
     txrequest.args = args.copy()
-    content = getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
+    txrequest.method = method
+    content = root.children[b"%b.json" % basename.encode()].render(txrequest)
+    data = json.loads(content)
 
-    assert content.pop("node_name")
-    assert content == {"status": "ok", **expected}
+    assert data.pop("node_name")
+    assert data == {"status": "ok", **expected}
 
 
 def assert_error(txrequest, root, method, basename, args, message):
@@ -485,11 +488,13 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     assert root.poller.queues[project].list() == []
 
     txrequest.args = args.copy()
-    content = root.children[b"schedule.json"].render_POST(txrequest)
-    jobid = content.pop("jobid")
+    txrequest.method = "POST"
+    content = root.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
+    jobid = data.pop("jobid")
 
-    assert content.pop("node_name")
-    assert content == {"status": "ok"}
+    assert data.pop("node_name")
+    assert data == {"status": "ok"}
     assert re.search(r"^[a-z0-9]{32}$", jobid)
 
     jobs = root.poller.queues[project].list()
@@ -503,16 +508,19 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
 
 def test_schedule_unique(txrequest, root_with_egg):
     args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
+    txrequest.method = "POST"
 
     txrequest.args = args.copy()
-    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+    content = root_with_egg.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
 
-    jobid = content.pop("jobid")
+    jobid = data.pop("jobid")
 
     txrequest.args = args.copy()
-    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+    content = root_with_egg.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
 
-    assert content.pop("jobid") != jobid
+    assert data.pop("jobid") != jobid
 
 
 def test_schedule_parameters(txrequest, root_with_egg):
@@ -525,10 +533,12 @@ def test_schedule_parameters(txrequest, root_with_egg):
         b"setting": [b"DOWNLOAD_DELAY=2", b"TRACK=Cause = Time"],
         b"other": [b"one", b"two"],
     }
-    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+    txrequest.method = "POST"
+    content = root_with_egg.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
 
-    assert content.pop("node_name")
-    assert content == {"status": "ok", "jobid": "aaa"}
+    assert data.pop("node_name")
+    assert data == {"status": "ok", "jobid": "aaa"}
 
     jobs = root_with_egg.poller.queues["quotesbot"].list()
 
@@ -622,10 +632,10 @@ def test_project_directory_traversal_notfound(txrequest, root, method, basename,
 @pytest.mark.parametrize(
     ("endpoint", "attach_egg", "method"),
     [
-        (b"addversion.json", True, "render_POST"),
-        (b"listversions.json", False, "render_GET"),
-        (b"delproject.json", False, "render_POST"),
-        (b"delversion.json", False, "render_POST"),
+        (b"addversion.json", True, "POST"),
+        (b"listversions.json", False, "GET"),
+        (b"delproject.json", False, "POST"),
+        (b"delversion.json", False, "POST"),
     ],
 )
 def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, method):
@@ -635,7 +645,7 @@ def test_project_directory_traversal(txrequest, root, endpoint, attach_egg, meth
         txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
-        getattr(root.children[endpoint], method)(txrequest)
+        getattr(root.children[endpoint], f"render_{method}")(txrequest)
 
     assert str(exc.value) == "../p"
 
