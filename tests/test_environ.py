@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import time
 from unittest.mock import patch
 
 import pytest
@@ -103,7 +102,8 @@ def test_jobs_to_keep(chdir):
 
     (directory / "j1.a").touch()
     (directory / "j2.b").touch()
-    time.sleep(1)
+    os.utime(directory / "j1.a", (1000000000, 1000000000))
+    os.utime(directory / "j2.b", (1000000000, 1000000000))
     (directory / "j3.c").touch()
     (directory / "j4.d").touch()
 
