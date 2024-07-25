@@ -185,7 +185,7 @@ Options
   -  ``scrapyd.poller.QueuePoller``. When using the default :ref:`application` and :ref:`launcher` values:
 
     -  The launcher adds :ref:`max_proc` capacity at startup, and one capacity each time a Scrapy process ends.
-    -  The :ref:`application` starts a timer so that, every :ref:`poll_interval` seconds, a job starts if there's capacity: that is, if the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
+    -  The :ref:`application` starts a timer so that, every :ref:`poll_interval` seconds, jobs start if there's capacity: that is, if the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
 
   -  Implement your own, using the ``IPoller`` interface
 
