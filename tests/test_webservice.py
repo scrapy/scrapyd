@@ -7,6 +7,7 @@ import sys
 from unittest.mock import MagicMock, call
 
 import pytest
+from twisted.logger import LogLevel, capturedLogs
 from twisted.web import error
 
 from scrapyd.exceptions import DirectoryTraversalError, RunnerError
@@ -14,7 +15,7 @@ from scrapyd.interfaces import IEggStorage
 from scrapyd.jobstorage import Job
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.webservice import spider_list
-from tests import get_egg_data, has_settings, root_add_version
+from tests import get_egg_data, get_message, has_settings, root_add_version
 
 job1 = Job(
     project="p1",
@@ -149,13 +150,56 @@ def test_invalid_type(txrequest, root):
     assert_error(txrequest, root, "POST", "schedule", args, message)
 
 
+@pytest.mark.parametrize(
+    ("basename", "method"),
+    [
+        ("daemonstatus", "GET"),
+        ("addversion", "POST"),
+        ("schedule", "POST"),
+        ("cancel", "POST"),
+        ("status", "GET"),
+        ("listprojects", "GET"),
+        ("listversions", "GET"),
+        ("listspiders", "GET"),
+        ("listjobs", "GET"),
+        ("delversion", "POST"),
+        ("delproject", "POST"),
+    ],
+)
+def test_options(txrequest, root, basename, method):
+    txrequest.method = "OPTIONS"
+
+    content = root.children[b"%b.json" % basename.encode()].render(txrequest)
+
+    assert txrequest.code == 204
+    assert list(txrequest.responseHeaders.getAllRawHeaders()) == [
+        (b"Allow", [b"OPTIONS, HEAD, %b" % method.encode()]),
+        (b"Content-Type", [b"application/json"]),
+        (b"Access-Control-Allow-Origin", [b"*"]),
+        (b"Access-Control-Allow-Methods", [b"GET, POST, PATCH, PUT, DELETE"]),
+        (b"Access-Control-Allow-Headers", [b" X-Requested-With"]),
+        (b"Content-Length", [b"0"]),
+    ]
+    assert content == b""
+
+
 def test_debug(txrequest, root):
     root.debug = True
 
-    txrequest.method = "POST"
     txrequest.args = {b"project": [b"p"], b"spider": [b"s"], b"priority": [b"x"]}
-    response = root.children[b"schedule.json"].render(txrequest).decode()
+    txrequest.method = "POST"
 
+    with capturedLogs() as captured:
+        response = root.children[b"schedule.json"].render(txrequest).decode()
+    message = get_message(captured)
+
+    assert txrequest.code == 200
+    assert len(captured) == 1
+    assert captured[0]["log_level"] == LogLevel.critical
+    assert message.startswith("[scrapyd.webservice#critical] \nTraceback (most recent call last):")
+    assert message.endswith(
+        "twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'\n"
+    )
     assert response.startswith("Traceback (most recent call last):")
     assert response.endswith(
         "twisted.web.error.Error: 200 priority is invalid: could not convert string to float: b'x'\n"

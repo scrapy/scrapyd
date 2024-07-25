@@ -125,7 +125,7 @@ class WsResource(resource.Resource):
 
     def render(self, txrequest):
         try:
-            obj = super().render(txrequest)
+            data = super().render(txrequest)
         except Exception as e:  # noqa: BLE001
             log.failure("")
 
@@ -136,15 +136,17 @@ class WsResource(resource.Resource):
                 return traceback.format_exc().encode()
 
             message = e.message.decode() if isinstance(e, error.Error) else f"{type(e).__name__}: {e}"
-            obj = {"node_name": self.root.node_name, "status": "error", "message": message}
+            data = {"status": "error", "message": message}
+        else:
+            if data is not None:
+                data["status"] = "ok"
 
-        if obj is None:
+        if data is None:  # render_OPTIONS
             content = b""
         else:
-            obj["node_name"] = self.root.node_name
-            obj["status"] = "ok"
-            content = self.json_encoder.encode(obj).encode()
-        content += b"\n"
+            # Add the node name to all success and error responses.
+            data["node_name"] = self.root.node_name
+            content = self.json_encoder.encode(data).encode() + b"\n"
 
         txrequest.setHeader("Content-Type", "application/json")
         txrequest.setHeader("Access-Control-Allow-Origin", "*")

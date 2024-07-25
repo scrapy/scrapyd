@@ -93,6 +93,7 @@ def test_badegg(monkeypatch, capsys, chdir):
 
 
 # This confirms that entry_points are required, as documented.
+@pytest.mark.filterwarnings("ignore:Module quotesbot was already imported from:UserWarning")  # fixture reuses module
 def test_noentrypoint(monkeypatch, capsys, chdir):
     (chdir / "scrapyd.conf").write_text("[scrapyd]\neggstorage = tests.test_runner.MockEggStorage")
     monkeypatch.setenv("SCRAPY_PROJECT", "noentrypoint")

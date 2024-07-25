@@ -17,10 +17,11 @@ def assert_webservice(method, path, expected, **kwargs):
     data.pop("node_name")
 
     assert data == expected
+    assert response.content.endswith(b"\n")
 
 
 @pytest.mark.parametrize(
-    ("webservice", "method"),
+    ("basename", "method"),
     [
         ("daemonstatus", "GET"),
         ("addversion", "POST"),
@@ -35,22 +36,22 @@ def assert_webservice(method, path, expected, **kwargs):
         ("delproject", "POST"),
     ],
 )
-def test_options(webservice, method):
+def test_options(basename, method):
     response = requests.options(
-        f"http://127.0.0.1:6800/{webservice}.json",
+        f"http://127.0.0.1:6800/{basename}.json",
         auth=("hello12345", "67890world"),
     )
 
     assert response.status_code == 204, f"204 != {response.status_code}"
-    assert response.content == b""
     assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
+    assert response.content == b""
 
 
 # ListSpiders, Schedule, Cancel, Status and ListJobs return "project '%b' not found" on directory traversal attempts.
 # The egg storage (in get_project_list, called by get_spider_queues, called by QueuePoller, used by these webservices)
 # would need to find a project like "../project" (which is impossible with the default eggstorage) to not error.
 @pytest.mark.parametrize(
-    ("webservice", "method", "params"),
+    ("basename", "method", "params"),
     [
         ("addversion", "post", {"version": "v", "egg": EGG}),
         ("listversions", "get", {}),
@@ -58,9 +59,9 @@ def test_options(webservice, method):
         ("delproject", "post", {}),
     ],
 )
-def test_project_directory_traversal(webservice, method, params):
+def test_project_directory_traversal(basename, method, params):
     response = getattr(requests, method)(
-        f"http://127.0.0.1:6800/{webservice}.json",
+        f"http://127.0.0.1:6800/{basename}.json",
         auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )

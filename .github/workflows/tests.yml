@@ -16,7 +16,7 @@ jobs:
           cache: pip
           cache-dependency-path: setup.py
       - run: pip install -e .[test]
-      - run: pytest tests --cov scrapyd
+      - run: pytest -W error -W ignore::ResourceWarning tests --cov scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
         run: |
@@ -24,7 +24,7 @@ jobs:
           mkdir logs
           scrapyd > scrapyd.log 2>&1 &
           sleep 1
-          pytest integration_tests
+          pytest -W error -W ignore::ResourceWarning integration_tests
           cat scrapyd.log
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
