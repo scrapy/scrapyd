@@ -83,6 +83,28 @@ def test_get_settings_secure(values, key, value):
     )
 
 
+def test_jobs_to_keep(chdir):
+    config = Config(values={"jobs_to_keep": "2"})
+    environ = Environment(config, initenv={})
+    directory = chdir / "logs" / "p1" / "s1"
+
+    assert not directory.exists()
+
+    environ.get_settings({"_project": "p1", "_spider": "s1", "_job": "j1"})
+
+    assert directory.exists()
+
+    (directory / "j1.a").touch()
+    (directory / "j2.b").touch()
+    (directory / "j3.c").touch()
+    (directory / "j4.d").touch()
+
+    environ.get_settings({"_project": "p1", "_spider": "s1", "_job": "j1"})
+
+    assert not (directory / "j1.a").exists()
+    assert not (directory / "j2.b").exists()
+
+
 @pytest.mark.parametrize(
     ("message", "run_only_if_has_settings"),
     [
@@ -91,12 +113,14 @@ def test_get_settings_secure(values, key, value):
         ({"_project": "localproject"}, True),
     ],
 )
-def test_get_environment(environ, message, run_only_if_has_settings):
+def test_get_environment(monkeypatch, environ, message, run_only_if_has_settings):
     if run_only_if_has_settings and not has_settings():
         pytest.skip("[settings] section is not set")
 
+    monkeypatch.setenv("CUSTOM", "value")
     env = environ.get_environment(message, 3)
 
+    assert env["CUSTOM"] == "value"
     assert env["SCRAPY_PROJECT"] == message["_project"]
 
     if "_version" in message:

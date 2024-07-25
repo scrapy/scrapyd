@@ -4,6 +4,7 @@ import shutil
 from glob import escape, glob
 
 from packaging.version import InvalidVersion, Version
+from twisted.python import filepath
 from zope.interface import implementer
 
 from scrapyd.exceptions import DirectoryTraversalError, EggNotFoundError, ProjectNotFoundError
@@ -72,10 +73,9 @@ class FilesystemEggStorage:
         return self._get_path(project, f"{sanitized_version}.egg")
 
     def _get_path(self, project, *trusted):
-        resolvedir = os.path.realpath(self.basedir)
-        projectdir = os.path.realpath(os.path.join(resolvedir, project))
+        try:
+            file = filepath.FilePath(self.basedir).child(project)
+        except filepath.InsecurePath as e:
+            raise DirectoryTraversalError(project) from e
 
-        if os.path.commonprefix((projectdir, resolvedir)) != resolvedir:
-            raise DirectoryTraversalError(project)
-
-        return os.path.join(projectdir, *trusted)
+        return os.path.join(file.path, *trusted)

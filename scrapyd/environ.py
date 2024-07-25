@@ -4,6 +4,7 @@ from contextlib import suppress
 from posixpath import join as urljoin
 from urllib.parse import urlsplit
 
+from twisted.python import filepath
 from w3lib.url import path_to_file_uri
 from zope.interface import implementer
 
@@ -57,26 +58,22 @@ class Environment:
         return parsed._replace(path=path).geturl()
 
     def _get_file(self, message, directory, extension):
-        resolvedir = os.path.realpath(directory)
         project = message["_project"]
         spider = message["_spider"]
         job = message["_job"]
-        projectdir = os.path.realpath(os.path.join(resolvedir, project))
-        spiderdir = os.path.realpath(os.path.join(projectdir, spider))
-        jobfile = os.path.realpath(os.path.join(spiderdir, f"{job}.{extension}"))
 
-        if (
-            os.path.commonprefix((projectdir, resolvedir)) != resolvedir
-            or os.path.commonprefix((spiderdir, projectdir)) != projectdir
-            or os.path.commonprefix((jobfile, spiderdir)) != spiderdir
-        ):
-            raise DirectoryTraversalError(os.path.join(project, spider, f"{job}.{extension}"))
+        # https://docs.twisted.org/en/stable/api/twisted.python.filepath.FilePath.html
+        try:
+            file = filepath.FilePath(directory).child(project).child(spider).child(f"{job}.{extension}")
+        except filepath.InsecurePath as e:
+            raise DirectoryTraversalError(os.path.join(project, spider, f"{job}.{extension}")) from e
 
-        if not os.path.exists(spiderdir):
-            os.makedirs(spiderdir)
+        parent = file.dirname()  # returns a str
+        if not os.path.exists(parent):
+            os.makedirs(parent)
 
         to_delete = sorted(
-            (os.path.join(spiderdir, name) for name in os.listdir(spiderdir)),
+            (os.path.join(parent, name) for name in os.listdir(parent)),
             key=os.path.getmtime,
         )[: -self.jobs_to_keep]
 
@@ -84,4 +81,4 @@ class Environment:
             with suppress(OSError):
                 os.remove(path)
 
-        return jobfile
+        return file.path
