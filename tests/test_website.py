@@ -9,7 +9,7 @@ from twisted.web.test.requesthelper import DummyRequest
 from scrapyd.app import application
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.website import Root
-from tests import get_finished_job, has_settings, root_add_version
+from tests import get_finished_job, has_settings, root_add_version, touch
 
 
 def assert_headers(txrequest):
@@ -73,7 +73,8 @@ def test_logs_file(txrequest, root):
 
 @pytest.mark.parametrize("cancel", [True, False], ids=["cancel", "no_cancel"])
 @pytest.mark.parametrize("header", [True, False], ids=["header", "no_header"])
-def test_jobs(txrequest, config, cancel, header):
+@pytest.mark.parametrize("exists", [True, False], ids=["exists", "no_exists"])
+def test_jobs(txrequest, config, cancel, header, exists, chdir):
     if not cancel:
         config.cp.remove_option("services", "cancel.json")
 
@@ -81,9 +82,37 @@ def test_jobs(txrequest, config, cancel, header):
     root_add_version(root, "quotesbot", "0.1", "quotesbot")
     root.update_projects()
 
-    root.launcher.finished.add(get_finished_job("p1", "s1", "j-finished"))
-    root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j-running", env={}, args=[])
-    root.poller.queues["quotesbot"].add("quotesbot", _job="j-pending")
+    urls = [
+        ("logs/p1/s1/j1-finished.log", "Log"),
+        ("logs/p2/s2/j2-running.log", "Log"),
+        ("logs/p3/s3/j3-pending.log", "Log"),
+    ]
+    if root.local_items:
+        urls.extend(
+            [
+                ("items/p1/s1/j1-finished.jl", "Items"),
+                ("items/p2/s2/j2-running.jl", "Items"),
+                ("items/p3/s3/j3-pending.jl", "Items"),
+            ]
+        )
+    if exists:
+        touch(chdir / "logs" / "p1" / "s1" / "j1-finished.log")
+        touch(chdir / "logs" / "p2" / "s2" / "j2-running.log")
+        exist = urls[0:2]
+        no_exist = urls[2:3]
+
+        if root.local_items:
+            touch(chdir / "items" / "p1" / "s1" / "j1-finished.jl")
+            touch(chdir / "items" / "p2" / "s2" / "j2-running.jl")
+            exist += urls[3:5]
+            no_exist += urls[5:6]
+    else:
+        exist = []
+        no_exist = urls
+
+    root.launcher.finished.add(get_finished_job("p1", "s1", "j1-finished"))
+    root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2-running", env={}, args=[])
+    root.poller.queues["quotesbot"].add("quotesbot", _job="j3-pending")
 
     if header:
         txrequest.requestHeaders = http_headers.Headers({b"X-Forwarded-Prefix": [b"/path/to"]})
@@ -91,14 +120,10 @@ def test_jobs(txrequest, config, cancel, header):
     content = root.children[b"jobs"].render(txrequest)
     text = content.decode()
 
-    urls = [("logs/p1/s1/j-finished.log", "Log"), ("logs/p2/s2/j-running.log", "Log")]
-    if root.local_items:
-        urls.extend([("items/p1/s1/j-finished.jl", "Items"), ("items/p2/s2/j-running.jl", "Items")])
-
     assert_headers(txrequest)
-    assert_hrefs(urls, text, header)
-    assert b"j-pending.log" not in content
-    assert b"j-pending.jl" not in content
+    assert_hrefs(exist, text, header)
+    for url, _ in no_exist:
+        assert url not in text
 
     if root.local_items:
         assert b"<th>Items</th>" in content
@@ -111,12 +136,12 @@ def test_jobs(txrequest, config, cancel, header):
             assert b' action="/path/to/cancel.json">' in content
         else:
             assert b' action="/cancel.json">' in content
-        for job in ("j-running", "j-pending"):
+        for job in ("j2-running", "j3-pending"):
             assert f' value="{job}">' in text
     else:
         assert b"<th>Cancel</th>" not in content
         assert b'/cancel.json">' not in content
-    assert b' value="j-finished">' not in content
+    assert b' value="j1-finished">' not in content
 
 
 @pytest.mark.parametrize("with_egg", [True, False])

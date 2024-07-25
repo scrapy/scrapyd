@@ -1,6 +1,9 @@
 import os.path
 
 from scrapy.utils.misc import load_object
+from twisted.python import filepath
+
+from scrapyd.exceptions import DirectoryTraversalError
 
 
 def initialize_component(config, setting, default, *args):
@@ -13,12 +16,12 @@ def local_items(items_dir, parsed):
     return items_dir and parsed.scheme.lower() in ("", "file", os.path.splitdrive(items_dir)[0].rstrip(":").lower())
 
 
-def job_log_url(job):
-    return f"/logs/{job.project}/{job.spider}/{job.job}.log"
-
-
-def job_items_url(job):
-    return f"/items/{job.project}/{job.spider}/{job.job}.jl"
+def get_file_path(directory, project, spider, job, extension):
+    # https://docs.twisted.org/en/stable/api/twisted.python.filepath.FilePath.html
+    try:
+        return filepath.FilePath(directory).child(project).child(spider).child(f"{job}.{extension}")
+    except filepath.InsecurePath as e:
+        raise DirectoryTraversalError(os.path.join(project, spider, f"{job}.{extension}")) from e
 
 
 def get_spider_queues(config):

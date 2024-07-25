@@ -249,6 +249,8 @@ logs_dir
 
 The directory in which to write Scrapy logs.
 
+A log file is written to ``{logs_dir}/{project}/{spider}/{job}.log``.
+
 To disable log storage, set this option to empty:
 
 .. code-block:: ini
@@ -279,6 +281,8 @@ items_dir
 ~~~~~~~~~
 
 The directory in which to write Scrapy items.
+
+An item feed is written to ``{items_dir}/{project}/{spider}/{job}.jl``.
 
 If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in feeds being written to the specified directory as JSON lines:
 

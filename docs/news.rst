@@ -81,7 +81,7 @@ Library
 
 - :ref:`jobstorage` uses the ``ScrapyProcessProtocol`` class, by default. If :ref:`jobstorage` is set to ``scrapyd.jobstorage.SqliteJobStorage``, Scrapyd 1.3.0 uses a ``Job`` class, instead. To promote parity, the ``Job`` class is removed.
 - Move the ``activate_egg`` function from the ``scrapyd.eggutils`` module to its caller, the ``scrapyd.runner`` module.
-- Move the ``job_items_url`` and ``job_log_url`` functions from the ``scrapyd.jobstorage`` module to the ``scrapyd.utils`` module. :ref:`jobstorage` is not responsible for URLs.
+- Move the ``job_log_url`` and ``job_items_url`` functions into the ``Root`` class, since the ``Root`` class is responsible for file URLs.
 - Change the ``get_crawl_args`` function to no longer convert ``bytes`` to ``str``, as already done by its caller.
 - Change the ``scrapyd.app.create_wrapped_resource`` function to a ``scrapyd.basicauth.wrap_resource`` function.
 - Change the ``scrapyd.utils.sqlite_connection_string`` function to an ``scrapyd.sqlite.initialize`` function.
@@ -103,6 +103,7 @@ API
 
 - The ``Content-Length`` header counts the number of bytes, instead of the number of characters.
 - The ``Access-Control-Allow-Methods`` response header contains only the HTTP methods to which webservices respond.
+- The :ref:`listjobs.json` webservice sets the ``log_url`` and ``items_url`` fields to ``null`` if the files don't exist.
 - The :ref:`schedule.json` webservice sets the ``node_name`` field in error responses.
 - The next pending job for all but one project was unreported by the :ref:`daemonstatus.json` and :ref:`listjobs.json` webservices, and was not cancellable by the :ref:`cancel.json` webservice.
 

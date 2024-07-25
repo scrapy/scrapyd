@@ -243,9 +243,11 @@ Get the pending, running and finished jobs of a project.
 -  Running jobs have Scrapy processes.
 -  Finished jobs are in job storage.
 
-   .. note:: The default :ref:`jobstorage` setting stores jobs in memory, such that jobs are lost when the Scrapyd process ends.
+   .. note::
 
-   .. note:: ``items_url`` in the response returns HTTP 404 Not Found if :ref:`items_dir` is disabled (or was disabled at the time the job was run). Similarly, if a log file or item feed is deleted (for example, by :ref:`jobs_to_keep`), ``log_url`` or ``items_url`` returns HTTP 404.
+      -  The default :ref:`jobstorage` setting stores jobs in memory, such that jobs are lost when the Scrapyd process ends.
+      -  ``log_url`` is ``null`` in the response if :ref:`logs_dir` is disabled or the file doesn't exist.
+      -  ``items_url`` is ``null`` in the response if :ref:`items_dir` is disabled or the file doesn't exist.
 
 Supported request methods
   ``GET``

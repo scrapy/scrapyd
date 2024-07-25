@@ -8,6 +8,11 @@ from twisted.logger import eventAsText
 from scrapyd.launcher import ScrapyProcessProtocol
 
 
+def touch(path):
+    path.parent.mkdir(parents=True)
+    path.touch()
+
+
 def get_egg_data(basename):
     return pkgutil.get_data("tests", f"fixtures/{basename}.egg")
 

@@ -14,7 +14,7 @@ from scrapyd.exceptions import DirectoryTraversalError, RunnerError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.webservice import spider_list
-from tests import get_egg_data, get_finished_job, get_message, has_settings, root_add_version
+from tests import get_egg_data, get_finished_job, get_message, has_settings, root_add_version, touch
 
 job1 = get_finished_job(
     project="p1",
@@ -320,7 +320,8 @@ def test_status_nonexistent(txrequest, root):
 
 
 @pytest.mark.parametrize("args", [{}, {b"project": [b"p1"]}])
-def test_list_jobs(txrequest, root, scrapy_process, args):
+@pytest.mark.parametrize("exists", [True, False])
+def test_list_jobs(txrequest, root, scrapy_process, args, exists, chdir):
     root_add_version(root, "p1", "r1", "mybot")
     root_add_version(root, "p2", "r2", "mybot2")
     root.update_projects()
@@ -329,6 +330,10 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
         root.launcher.finished.add(get_finished_job("p2", "s2", "j2"))
         root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2", env={}, args=[])
         root.poller.queues["p2"].add("s2", _job="j2")
+
+    if exists:
+        touch(chdir / "logs" / "p1" / "s1" / "j1.log")
+        touch(chdir / "items" / "p1" / "s1" / "j1.jl")
 
     expected = {"pending": [], "running": [], "finished": []}
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -342,8 +347,8 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
             "spider": "s1",
             "start_time": "2001-02-03 04:05:06.000007",
             "end_time": "2001-02-03 04:05:06.000008",
-            "log_url": "/logs/p1/s1/j1.log",
-            "items_url": "/items/p1/s1/j1.jl",
+            "log_url": "/logs/p1/s1/j1.log" if exists else None,
+            "items_url": "/items/p1/s1/j1.jl" if exists and root.local_items else None,
         },
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -357,8 +362,8 @@ def test_list_jobs(txrequest, root, scrapy_process, args):
             "spider": "s1",
             "pid": None,
             "start_time": "2001-02-03 04:05:06.000009",
-            "log_url": "/logs/p1/s1/j1.log",
-            "items_url": "/items/p1/s1/j1.jl",
+            "log_url": "/logs/p1/s1/j1.log" if exists else None,
+            "items_url": "/items/p1/s1/j1.jl" if exists and root.local_items else None,
         }
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)

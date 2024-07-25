@@ -1,3 +1,4 @@
+import os.path
 import socket
 from datetime import datetime, timedelta
 from html import escape
@@ -10,7 +11,7 @@ from twisted.python import filepath
 from twisted.web import resource, static
 
 from scrapyd.interfaces import IEggStorage, IPoller, ISpiderScheduler
-from scrapyd.utils import job_items_url, job_log_url, local_items
+from scrapyd.utils import local_items
 
 
 # Use local DirectoryLister class.
@@ -121,24 +122,29 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
         return dirs, files
 
 
+def _get_file_url(base, directory, job, extension):
+    if os.path.exists(os.path.join(directory, job.project, job.spider, f"{job.job}.{extension}")):
+        return f"/{base}/{job.project}/{job.spider}/{job.job}.{extension}"
+    return None
+
+
 class Root(resource.Resource):
     def __init__(self, config, app):
         super().__init__()
 
-        logs_dir = config.get("logs_dir", "logs")
-        items_dir = config.get("items_dir", "")
-
         self.app = app
+        self.logs_dir = config.get("logs_dir", "logs")
+        self.items_dir = config.get("items_dir", "")
         self.debug = config.getboolean("debug", False)
         self.runner = config.get("runner", "scrapyd.runner")
         self.prefix_header = config.get("prefix_header", "x-forwarded-prefix")
-        self.local_items = local_items(items_dir, urlsplit(items_dir))
+        self.local_items = local_items(self.items_dir, urlsplit(self.items_dir))
         self.node_name = config.get("node_name", socket.gethostname())
 
-        if logs_dir:
-            self.putChild(b"logs", File(logs_dir, "text/plain"))
+        if self.logs_dir:
+            self.putChild(b"logs", File(self.logs_dir, "text/plain"))
         if self.local_items:
-            self.putChild(b"items", File(items_dir, "text/plain"))
+            self.putChild(b"items", File(self.items_dir, "text/plain"))
 
         for service_name, service_path in config.items("services", default=[]):
             service_cls = load_object(service_path)
@@ -151,6 +157,14 @@ class Root(resource.Resource):
     def update_projects(self):
         self.poller.update_projects()
         self.scheduler.update_projects()
+
+    def get_log_url(self, job):
+        return _get_file_url("logs", self.logs_dir, job, "log")
+
+    def get_item_url(self, job):
+        if self.local_items:
+            return _get_file_url("items", self.items_dir, job, "jl")
+        return None
 
     @property
     def launcher(self):
@@ -274,6 +288,16 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             """
         )
 
+    def html_log_url(self, job):
+        if url := self.root.get_log_url(job):
+            return f'<a href="{self.base_path}{url}">Log</a>'
+        return None
+
+    def html_item_url(self, job):
+        if url := self.root.get_item_url(job):
+            return f'<a href="{self.base_path}{url}">Items</a>'
+        return None
+
     def prepare_headers(self):
         ths = "\n".join(f"<th>{header}</th>" for header in self.headers)
         return f"<tr>\n{indent(ths, '    ')}\n</tr>"
@@ -306,8 +330,8 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     "PID": process.pid,
                     "Start": no_microseconds(process.start_time),
                     "Runtime": no_microseconds(datetime.now() - process.start_time),
-                    "Log": f'<a href="{self.base_path}{job_log_url(process)}">Log</a>',
-                    "Items": f'<a href="{self.base_path}{job_items_url(process)}">Items</a>',
+                    "Log": self.html_log_url(process),
+                    "Items": self.html_item_url(process),
                     "Cancel": self.cancel_button(process.project, process.job),
                 }
             )
@@ -324,8 +348,8 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     "Start": no_microseconds(job.start_time),
                     "Runtime": no_microseconds(job.end_time - job.start_time),
                     "Finish": no_microseconds(job.end_time),
-                    "Log": f'<a href="{self.base_path}{job_log_url(job)}">Log</a>',
-                    "Items": f'<a href="{self.base_path}{job_items_url(job)}">Items</a>',
+                    "Log": self.html_log_url(job),
+                    "Items": self.html_item_url(job),
                 }
             )
             for job in self.root.launcher.finished

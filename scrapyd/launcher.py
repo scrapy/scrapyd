@@ -9,7 +9,6 @@ from twisted.logger import Logger
 
 from scrapyd import __version__
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
-from scrapyd.utils import job_items_url, job_log_url
 
 log = Logger()
 
@@ -136,17 +135,6 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
         else:
             self.log("error", f"Process died: exitstatus={status.value.exitCode!r}")
         self.deferred.callback(self)
-
-    def asdict(self):
-        return {
-            "id": self.job,
-            "project": self.project,
-            "spider": self.spider,
-            "pid": self.pid,
-            "start_time": str(self.start_time),
-            "log_url": job_log_url(self),
-            "items_url": job_items_url(self),
-        }
 
     def log(self, level, action):
         getattr(log, level)(

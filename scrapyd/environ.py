@@ -4,13 +4,11 @@ from contextlib import suppress
 from posixpath import join as urljoin
 from urllib.parse import urlsplit
 
-from twisted.python import filepath
 from w3lib.url import path_to_file_uri
 from zope.interface import implementer
 
-from scrapyd.exceptions import DirectoryTraversalError
 from scrapyd.interfaces import IEnvironment
-from scrapyd.utils import local_items
+from scrapyd.utils import get_file_path, local_items
 
 
 @implementer(IEnvironment)
@@ -26,7 +24,7 @@ class Environment:
     def get_settings(self, message):
         settings = {}
         if self.logs_dir:
-            settings["LOG_FILE"] = self._get_file(message, self.logs_dir, "log")
+            settings["LOG_FILE"] = self._prepare_file(message, self.logs_dir, "log")
         if self.items_dir:
             settings["FEEDS"] = json.dumps({self._get_feeds(message, "jl"): {"format": "jsonlines"}})
         return settings
@@ -52,23 +50,15 @@ class Environment:
 
         if local_items(self.items_dir, parsed):
             # File URLs do not have query or fragment components. https://www.rfc-editor.org/rfc/rfc8089#section-2
-            return path_to_file_uri(self._get_file(message, parsed.path, extension))
+            return path_to_file_uri(self._prepare_file(message, parsed.path, extension))
 
         path = urljoin(parsed.path, message["_project"], message["_spider"], f"{message['_job']}.{extension}")
         return parsed._replace(path=path).geturl()
 
-    def _get_file(self, message, directory, extension):
-        project = message["_project"]
-        spider = message["_spider"]
-        job = message["_job"]
+    def _prepare_file(self, message, directory, extension):
+        file_path = get_file_path(directory, message["_project"], message["_spider"], message["_job"], extension)
 
-        # https://docs.twisted.org/en/stable/api/twisted.python.filepath.FilePath.html
-        try:
-            file = filepath.FilePath(directory).child(project).child(spider).child(f"{job}.{extension}")
-        except filepath.InsecurePath as e:
-            raise DirectoryTraversalError(os.path.join(project, spider, f"{job}.{extension}")) from e
-
-        parent = file.dirname()  # returns a str
+        parent = file_path.dirname()  # returns a str
         if not os.path.exists(parent):
             os.makedirs(parent)
 
@@ -76,9 +66,8 @@ class Environment:
             (os.path.join(parent, name) for name in os.listdir(parent)),
             key=os.path.getmtime,
         )[: -self.jobs_to_keep]
-
         for path in to_delete:
             with suppress(OSError):
                 os.remove(path)
 
-        return file.path
+        return file_path.path

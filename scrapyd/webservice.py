@@ -16,7 +16,6 @@ from twisted.logger import Logger
 from twisted.web import error, http, resource
 
 from scrapyd.exceptions import EggNotFoundError, ProjectNotFoundError, RunnerError
-from scrapyd.utils import job_items_url, job_log_url
 
 log = Logger()
 
@@ -360,7 +359,15 @@ class ListJobs(WsResource):
                 for message in queues[queue_name].list()
             ],
             "running": [
-                process.asdict()
+                {
+                    "id": process.job,
+                    "project": process.project,
+                    "spider": process.spider,
+                    "pid": process.pid,
+                    "start_time": str(process.start_time),
+                    "log_url": self.root.get_log_url(process),
+                    "items_url": self.root.get_item_url(process),
+                }
                 for process in self.root.launcher.processes.values()
                 if project is None or process.project == project
             ],
@@ -371,8 +378,8 @@ class ListJobs(WsResource):
                     "spider": finished.spider,
                     "start_time": str(finished.start_time),
                     "end_time": str(finished.end_time),
-                    "log_url": job_log_url(finished),
-                    "items_url": job_items_url(finished),
+                    "log_url": self.root.get_log_url(finished),
+                    "items_url": self.root.get_item_url(finished),
                 }
                 for finished in self.root.launcher.finished
                 if project is None or finished.project == project
