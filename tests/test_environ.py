@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import time
 from unittest.mock import patch
 
 import pytest
@@ -23,20 +24,21 @@ def test_get_settings(environ):
     assert re.search(r"^\S+j1\.log$", settings["LOG_FILE"])
 
     if environ.items_dir:
-        feeds = json.loads(settings["FEEDS"])
+        feeds = json.loads(settings.pop("FEEDS"))
         path, value = feeds.popitem()
 
+        assert list(settings) == ["LOG_FILE"]
         assert feeds == {}
         assert re.search(r"^file:///\S+j1\.jl$", path)
         assert value == {"format": "jsonlines"}
 
 
 @pytest.mark.parametrize(
-    ("items_dir", "expected"),
+    ("items_dir", "pattern"),
     [
         (
             "https://host.example/path?query=value#fragment",
-            "https://host.example/path/p1/s1/j1.jl?query=value#fragment",
+            r"https://host\.example/path/p1/s1/j1\.jl\?query=value#fragment",
         ),
         (
             "https://host.example/path/",
@@ -44,27 +46,32 @@ def test_get_settings(environ):
         ),
         (
             "file:/root.dir/path?ignored#ignored",
-            "file:///root.dir/path/p1/s1/j1.jl",
+            r"file:///([A-Z]:/)?root\.dir/path/p1/s1/j1\.jl",
         ),
         (
             "file://hostname/root.dir/path?ignored#ignored",
-            "file:///root.dir/path/p1/s1/j1.jl",
+            r"file:///([A-Z]:/)?root.dir/path/p1/s1/j1.jl",
         ),
         (
             "file:///root.dir/path?ignored#ignored",
-            "file:///root.dir/path/p1/s1/j1.jl",
+            r"file:///([A-Z]:/)?root.dir/path/p1/s1/j1.jl",
         ),
     ],
 )
 @patch("os.listdir", lambda _: [])
 @patch("os.makedirs", lambda _: _)
-def test_get_settings_url(items_dir, expected):
+def test_get_settings_url(items_dir, pattern):
     config = Config(values={"logs_dir": "", "items_dir": items_dir})
     environ = Environment(config, initenv={})
 
     settings = environ.get_settings({"_project": "p1", "_spider": "s1", "_job": "j1"})
+    feeds = json.loads(settings.pop("FEEDS"))
+    path, value = feeds.popitem()
 
-    assert settings == {"FEEDS": f'{{"{expected}": {{"format": "jsonlines"}}}}'}
+    assert settings == {}
+    assert feeds == {}
+    assert re.search(pattern, path)
+    assert value == {"format": "jsonlines"}
 
 
 @pytest.mark.parametrize("values", [{"items_dir": "../items"}, {"logs_dir": "../logs"}])
@@ -96,6 +103,7 @@ def test_jobs_to_keep(chdir):
 
     (directory / "j1.a").touch()
     (directory / "j2.b").touch()
+    time.sleep(1)
     (directory / "j3.c").touch()
     (directory / "j4.d").touch()
 
