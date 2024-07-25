@@ -11,7 +11,7 @@ with (Path(__file__).absolute().parent.parent / "tests" / "fixtures" / "quotesbo
     EGG = f.read()
 
 
-def assert_webservice(method, path, expected, **kwargs):
+def assert_response(method, path, expected, **kwargs):
     response = req(method, path, **kwargs)
     data = response.json()
     data.pop("node_name")
@@ -74,23 +74,20 @@ def test_project_directory_traversal(basename, method, params):
 
 
 def test_daemonstatus():
-    assert_webservice("get", "/daemonstatus.json", {"status": "ok", "running": 0, "pending": 0, "finished": 0})
+    assert_response("get", "/daemonstatus.json", {"status": "ok", "running": 0, "pending": 0, "finished": 0})
 
 
-def test_schedule():
-    assert_webservice(
+def test_schedule_nonexistent_project():
+    assert_response(
         "post",
         "/schedule.json",
-        {
-            "status": "error",
-            "message": "project 'nonexistent' not found",
-        },
+        {"status": "error", "message": "project 'nonexistent' not found"},
         data={"project": "nonexistent", "spider": "nospider"},
     )
 
 
 def test_status_nonexistent_job():
-    assert_webservice(
+    assert_response(
         "get",
         "/status.json",
         {"status": "ok", "currstate": None},
@@ -99,7 +96,7 @@ def test_status_nonexistent_job():
 
 
 def test_status_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "get",
         "/status.json",
         {"status": "error", "message": "project 'nonexistent' not found"},
@@ -108,7 +105,7 @@ def test_status_nonexistent_project():
 
 
 def test_cancel_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "post",
         "/cancel.json",
         {"status": "error", "message": "project 'nonexistent' not found"},
@@ -117,7 +114,7 @@ def test_cancel_nonexistent_project():
 
 
 def test_listprojects():
-    assert_webservice(
+    assert_response(
         "get",
         "/listprojects.json",
         {"status": "ok", "projects": []},
@@ -125,7 +122,7 @@ def test_listprojects():
 
 
 def test_listversions():
-    assert_webservice(
+    assert_response(
         "get",
         "/listversions.json",
         {"status": "ok", "versions": []},
@@ -134,19 +131,16 @@ def test_listversions():
 
 
 def test_listspiders_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "get",
         "/listspiders.json",
-        {
-            "status": "error",
-            "message": "project 'nonexistent' not found",
-        },
+        {"status": "error", "message": "project 'nonexistent' not found"},
         params={"project": "nonexistent"},
     )
 
 
 def test_listjobs():
-    assert_webservice(
+    assert_response(
         "get",
         "/listjobs.json",
         {"status": "ok", "pending": [], "running": [], "finished": []},
@@ -154,7 +148,7 @@ def test_listjobs():
 
 
 def test_listjobs_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "get",
         "/listjobs.json",
         {"status": "error", "message": "project 'nonexistent' not found"},
@@ -163,24 +157,18 @@ def test_listjobs_nonexistent_project():
 
 
 def test_delversion_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "post",
         "/delversion.json",
-        {
-            "status": "error",
-            "message": "version 'nonexistent' not found",
-        },
+        {"status": "error", "message": "version 'nonexistent' not found"},
         data={"project": "sample", "version": "nonexistent"},
     )
 
 
 def test_delproject_nonexistent_project():
-    assert_webservice(
+    assert_response(
         "post",
         "/delproject.json",
-        {
-            "status": "error",
-            "message": "project 'nonexistent' not found",
-        },
+        {"status": "error", "message": "project 'nonexistent' not found"},
         data={"project": "nonexistent"},
     )

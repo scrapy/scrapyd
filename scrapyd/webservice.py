@@ -144,25 +144,29 @@ class WsResource(resource.Resource):
         if data is None:  # render_OPTIONS
             content = b""
         else:
-            # Add the node name to all success and error responses.
             data["node_name"] = self.root.node_name
             content = self.json_encoder.encode(data).encode() + b"\n"
+            txrequest.setHeader("Content-Type", "application/json")
 
-        txrequest.setHeader("Content-Type", "application/json")
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#preflighted_requests
         txrequest.setHeader("Access-Control-Allow-Origin", "*")
-        txrequest.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE")
-        txrequest.setHeader("Access-Control-Allow-Headers", " X-Requested-With")
+        txrequest.setHeader("Access-Control-Allow-Methods", self.methods)
+        txrequest.setHeader("Access-Control-Allow-Headers", "X-Requested-With")
         txrequest.setHeader("Content-Length", str(len(content)))
         return content
 
     def render_OPTIONS(self, txrequest):
+        txrequest.setHeader("Allow", self.methods)
+        txrequest.setResponseCode(http.NO_CONTENT)
+
+    @functools.cached_property
+    def methods(self):
         methods = ["OPTIONS", "HEAD"]
         if hasattr(self, "render_GET"):
             methods.append("GET")
         if hasattr(self, "render_POST"):
             methods.append("POST")
-        txrequest.setHeader("Allow", ", ".join(methods))
-        txrequest.setResponseCode(http.NO_CONTENT)
+        return ", ".join(methods)
 
 
 class DaemonStatus(WsResource):

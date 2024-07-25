@@ -42,6 +42,7 @@ Web UI
 API
 ^^^
 
+- The ``Access-Control-Allow-Methods`` response header contains only the HTTP methods to which webservices respond.
 - Clarify error messages, for example:
 
   - ``'project' parameter is required``, instead of ``'project'`` (KeyError)

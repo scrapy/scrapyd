@@ -18,7 +18,7 @@ def test_paths(path, content):
 
 
 def test_base_path():
-    response = req("get", "/", headers={"X-Forwarded-Prefix": "/base/path"})
+    response = req("get", "/", headers={"X-Forwarded-Prefix": "/path/to"})
 
-    assert '"/base/path/jobs"' in response.text
-    assert '"/base/path/logs/"' in response.text
+    assert '"/path/to/jobs"' in response.text
+    assert '"/path/to/logs/"' in response.text

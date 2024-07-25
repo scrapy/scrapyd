@@ -170,14 +170,14 @@ def test_options(txrequest, root, basename, method):
     txrequest.method = "OPTIONS"
 
     content = root.children[b"%b.json" % basename.encode()].render(txrequest)
+    expected = [b"OPTIONS, HEAD, %b" % method.encode()]
 
     assert txrequest.code == 204
     assert list(txrequest.responseHeaders.getAllRawHeaders()) == [
-        (b"Allow", [b"OPTIONS, HEAD, %b" % method.encode()]),
-        (b"Content-Type", [b"application/json"]),
+        (b"Allow", expected),
         (b"Access-Control-Allow-Origin", [b"*"]),
-        (b"Access-Control-Allow-Methods", [b"GET, POST, PATCH, PUT, DELETE"]),
-        (b"Access-Control-Allow-Headers", [b" X-Requested-With"]),
+        (b"Access-Control-Allow-Methods", expected),
+        (b"Access-Control-Allow-Headers", [b"X-Requested-With"]),
         (b"Content-Length", [b"0"]),
     ]
     assert content == b""
