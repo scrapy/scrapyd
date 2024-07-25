@@ -33,17 +33,17 @@ def param(
     encoded = decoded.encode()
     if dest is None:
         dest = decoded
-    if callable(default):
-        default = default()
 
     def decorator(func):
         @functools.wraps(func)
         def wrapper(self, txrequest, *args, **kwargs):
+            default_value = default() if callable(default) else default
+
             if encoded not in txrequest.args:
                 if required:
                     raise error.Error(code=http.OK, message=b"'%b' parameter is required" % encoded)
 
-                value = default
+                value = default_value
             else:
                 values = (value.decode() if type is str else type(value) for value in txrequest.args.pop(encoded))
                 try:

@@ -501,6 +501,20 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
     assert jobs[0] == expected
 
 
+def test_schedule_unique(txrequest, root_with_egg):
+    args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
+
+    txrequest.args = args.copy()
+    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+
+    jobid = content.pop("jobid")
+
+    txrequest.args = args.copy()
+    content = root_with_egg.children[b"schedule.json"].render_POST(txrequest)
+
+    assert content.pop("jobid") != jobid
+
+
 def test_schedule_parameters(txrequest, root_with_egg):
     txrequest.args = {
         b"project": [b"quotesbot"],
