@@ -133,11 +133,11 @@ Removed
 - Remove the ``native_stringify_dict`` function.
 - Remove undocumented and unused internal environment variables:
 
-  - ``SCRAPY_FEED_URI`` to ``SCRAPYD_FEED_URI``
-  - ``SCRAPY_JOB`` to ``SCRAPYD_JOB``
-  - ``SCRAPY_LOG_FILE`` to ``SCRAPYD_LOG_FILE``
-  - ``SCRAPY_SLOT`` to ``SCRAPYD_SLOT``
-  - ``SCRAPY_SPIDER`` to ``SCRAPYD_SPIDER``
+  - ``SCRAPYD_FEED_URI``
+  - ``SCRAPYD_JOB``
+  - ``SCRAPYD_LOG_FILE``
+  - ``SCRAPYD_SLOT``
+  - ``SCRAPYD_SPIDER``
 
 1.4.3 (2023-09-25)
 ------------------

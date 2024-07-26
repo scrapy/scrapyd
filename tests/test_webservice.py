@@ -16,6 +16,8 @@ from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.webservice import spider_list
 from tests import get_egg_data, get_finished_job, get_message, has_settings, root_add_version, touch
 
+cliargs = [sys.executable, "-m", "scrapyd.runner", "crawl", "s2", "-s", "DOWNLOAD_DELAY=2", "-a", "arg1=val1"]
+
 job1 = get_finished_job(
     project="p1",
     spider="s1",
@@ -27,7 +29,7 @@ job1 = get_finished_job(
 
 @pytest.fixture()
 def scrapy_process():
-    process = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=[])
+    process = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=cliargs)
     process.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
     process.end_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 10)
     process.transport = MagicMock()
@@ -374,7 +376,7 @@ def test_list_jobs(txrequest, root, scrapy_process, args, exists, chdir):
         _job="j1",
         _version="0.1",
         settings={"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
-        other="one",
+        arg1="val1",
     )
 
     expected["pending"].append(
@@ -384,7 +386,7 @@ def test_list_jobs(txrequest, root, scrapy_process, args, exists, chdir):
             "spider": "s1",
             "version": "0.1",
             "settings": {"DOWNLOAD_DELAY=2": "TRACK=Cause = Time"},
-            "args": {"other": "one"},
+            "args": {"arg1": "val1"},
         },
     )
     assert_content(txrequest, root, "GET", "listjobs", args, expected)
@@ -584,7 +586,7 @@ def test_schedule_parameters(txrequest, root_with_egg):
         b"jobid": [b"aaa"],
         b"priority": [b"5"],
         b"setting": [b"DOWNLOAD_DELAY=2", b"TRACK=Cause = Time"],
-        b"other": [b"one", b"two"],
+        b"arg1": [b"val1", b"val2"],
     }
     txrequest.method = "POST"
     content = root_with_egg.children[b"schedule.json"].render(txrequest)
@@ -604,7 +606,7 @@ def test_schedule_parameters(txrequest, root_with_egg):
             "DOWNLOAD_DELAY": "2",
             "TRACK": "Cause = Time",
         },
-        "other": "one",  # users are encouraged in api.rst to open an issue if they want multiple values
+        "arg1": "val1",  # users are encouraged in api.rst to open an issue if they want multiple values
     }
 
 
