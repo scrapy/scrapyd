@@ -11,6 +11,11 @@ Added
 
 - Default webservices can be disabled. See :ref:`config-services`.
 
+Fixed
+~~~~~
+
+- Restore the ``--nodaemon`` (``-n``) option (which Scrapyd enables, regardless), to avoid "option --nodaemon not recognized".
+
 1.5.0b1 (2024-07-25)
 --------------------
 
@@ -74,8 +79,8 @@ CLI
 
 - Correct the usage message and long description.
 - Remove the ``--rundir`` option, which only works if ``*_dir`` settings are absolute paths.
-- Remove the ``--nodaemon`` option, which Scrapyd enables.
-- Remove the ``--python=`` option, which Scrapyd needs to set to its application.
+- Remove the ``--nodaemon`` (``-n``) option, which Scrapyd enables.
+- Remove the ``--python=`` (``-y``) option, which Scrapyd needs to set to its application.
 - Remove all ``twistd`` subcommands (FTP servers, etc.). Run ``twistd``, if needed.
 - Run the ``scrapyd.__main__`` module, instead of the ``scrapyd.scripts.scrapyd_run`` module.
 
