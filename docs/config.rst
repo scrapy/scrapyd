@@ -161,11 +161,7 @@ Also used by
   -  :ref:`daemonstatus.json` webservice, to count the pending jobs
   -  :ref:`webui`, to list the pending jobs and, if queues are transient, to create the queues per project at startup
 
-..
-
-   Community PostgreSQL and RabbitMQ queues:
-
-   https://github.com/scrapy/scrapyd/pull/140/files#diff-c479470812a00776da54c3cefc15bb5bb244b4056996ae972f4daba7f6ec5bd5
+.. Community PostgreSQL and RabbitMQ queues: https://github.com/scrapy/scrapyd/pull/140/files#diff-c479470812a00776da54c3cefc15bb5bb244b4056996ae972f4daba7f6ec5bd5
 
 Poller options
 --------------
