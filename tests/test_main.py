@@ -30,7 +30,7 @@ def test_help(capsys, monkeypatch):
 
     assert exc.value.code == 0
     assert captured.out.startswith("Usage: scrapyd [options]\n")
-    assert "--nodaemon" not in captured.out
+    assert "--nodaemon" in captured.out
     assert "python" not in captured.out
     assert "rundir" not in captured.out
     assert "ftp" not in captured.out
