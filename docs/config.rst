@@ -491,6 +491,13 @@ If you want to add a webservice (endpoint), add, for example:
 
 You can use code for webservices in `webservice.py <https://github.com/scrapy/scrapyd/blob/master/scrapyd/webservice.py>`__ as inspiration.
 
+To remove a :ref:`default webservice<config-default>`, set it to empty:
+
+.. code-block:: ini
+
+   [services]
+   daemonstatus.json =
+
 .. _config-settings:
 
 settings section (scrapy.cfg)

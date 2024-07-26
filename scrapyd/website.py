@@ -147,8 +147,9 @@ class Root(resource.Resource):
             self.putChild(b"items", File(self.items_dir, "text/plain"))
 
         for service_name, service_path in config.items("services", default=[]):
-            service_cls = load_object(service_path)
-            self.putChild(service_name.encode(), service_cls(self))
+            if service_path:
+                service_cls = load_object(service_path)
+                self.putChild(service_name.encode(), service_cls(self))
 
         # Add web UI last, since its behavior can depend on others' presence.
         self.putChild(b"", Home(self))
