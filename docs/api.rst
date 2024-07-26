@@ -57,7 +57,7 @@ Parameters
            entry_points = {'scrapy': ['settings = projectname.settings']},
        )
 
-    Do this easily with the `scrapyd-deploy` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package.
+    Do this easily with the ``scrapyd-deploy`` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package.
 
 Example:
 
@@ -241,7 +241,7 @@ Get the pending, running and finished jobs of a project.
 
 -  Pending jobs are in :ref:`spider queues<spiderqueue>`.
 -  Running jobs have Scrapy processes.
--  Finished jobs are in job storage.
+-  Finished jobs are in :ref:job storage<jobstorage>`.
 
    .. note::
 

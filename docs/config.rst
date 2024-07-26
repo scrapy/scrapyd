@@ -152,7 +152,7 @@ Default
   ``scrapyd.spiderqueue.SqliteSpiderQueue``
 Options
   -  ``scrapyd.spiderqueue.SqliteSpiderQueue`` stores spider queues in SQLite databases named after each project, in the :ref:`dbs_dir` directory
-  -  Implement your own, using the ``ISpiderQueue`` interface
+  -  Implement your own, using the :py:interface:`~scrapyd.interfaces.ISpiderQueue` interface
 Also used by
   -  :ref:`addversion.json` webservice, to create a queue if the project is new
   -  :ref:`schedule.json` webservice, to add a pending job
@@ -183,7 +183,7 @@ Options
     -  The launcher adds :ref:`max_proc` capacity at startup, and one capacity each time a Scrapy process ends.
     -  The :ref:`application` starts a timer so that, every :ref:`poll_interval` seconds, jobs start if there's capacity: that is, if the number of Scrapy processes that are running is less than the :ref:`max_proc` value.
 
-  -  Implement your own, using the ``IPoller`` interface
+  -  Implement your own, using the :py:interface:`~scrapyd.interfaces.IPoller` interface
 
 .. _poll_interval:
 
@@ -280,11 +280,11 @@ The directory in which to write Scrapy items.
 
 An item feed is written to ``{items_dir}/{project}/{spider}/{job}.jl``.
 
-If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in feeds being written to the specified directory as JSON lines:
+If this option is non-empty, the `FEEDS <https://docs.scrapy.org/en/latest/topics/feed-exports.html#std-setting-FEEDS>`__ Scrapy setting is set as follows, resulting in items being written to the above path as JSON lines:
 
 .. code-block:: json
 
-   {"value from items_dir": {"format": "jsonlines"}}
+   {"file:///path/to/items_dir/project/spider/job.jl": {"format": "jsonlines"}}
 
 Default
   ``""`` (empty), because it is recommended to instead use either:
@@ -408,7 +408,7 @@ Options
   -  ``scrapyd.eggstorage.FilesystemEggStorage`` writes eggs in the :ref:`eggs_dir` directory
 
      .. note:: Eggs are named after the ``version``, replacing characters other than ``A-Za-z0-9_-`` with underscores. Therefore, if you frequently use non-word, non-hyphen characters, the eggs for different versions can collide.
-  -  Implement your own, using the ``IEggStorage`` interface: for example, to store eggs remotely
+  -  Implement your own, using the :py:interface:`~scrapyd.interfaces.IEggStorage` interface: for example, to store eggs remotely
 
 .. _eggs_dir:
 
@@ -439,7 +439,7 @@ Default
 Options
   -  ``scrapyd.jobstorage.MemoryJobStorage`` stores jobs in memory, such that jobs are lost when the Scrapyd process ends
   -  ``scrapyd.jobstorage.SqliteJobStorage`` stores jobs in a SQLite database named ``jobs.db``, in the :ref:`dbs_dir` directory
-  -  Implement your own, using the ``IJobStorage`` interface
+  -  Implement your own, using the :py:interface:`~scrapyd.interfaces.IJobStorage` interface
 
 .. _finished_to_keep:
 

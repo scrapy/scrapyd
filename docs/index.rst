@@ -28,7 +28,7 @@ Upload a project
 
 This involves building a `Python egg <https://setuptools.pypa.io/en/latest/deprecated/python_eggs.html>`__ and uploading it to Scrapyd via the `addversion.json <https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json>`_ webservice.
 
-Do this easily with the `scrapyd-deploy` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package. Once configured:
+Do this easily with the ``scrapyd-deploy`` command from the `scrapyd-client <https://github.com/scrapy/scrapyd-client>`__ package. Once configured:
 
 .. code-block:: shell
 

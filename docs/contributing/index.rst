@@ -41,7 +41,7 @@ To install an editable version for development, clone the repository, change to 
 
 .. code-block:: shell
 
-   pip install -e .
+   pip install -e .[test,docs]
 
 Developer documentation
 -----------------------
@@ -99,7 +99,7 @@ A **finished job** is an object with the attributes ``project``, ``spider``, ``j
      - ISpiderQueue
      - IPoller
      - ScrapyProcessProtocol
-     - Job
+     - IJobStorage
    * - Project
      - *not specified*
      - _project

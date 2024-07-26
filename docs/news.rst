@@ -3,6 +3,14 @@ Release notes
 
 .. changelog
 
+Unreleased
+----------
+
+Added
+~~~~~
+
+- Default webservices can be disabled. See :ref:`config-services`.
+
 1.5.0b1 (2024-07-25)
 --------------------
 
@@ -345,7 +353,7 @@ Added
 Changed
 ~~~~~~~
 
-- Move scrapyd-deploy command to `scrapyd-client <https://pypi.org/project/scrapyd-client/>`__ package. (:commit:`c1358dc`, :commit:`c9d66ca`, :commit:`191353e`)
+- Move ``scrapyd-deploy`` command to `scrapyd-client <https://pypi.org/project/scrapyd-client/>`__ package. (:commit:`c1358dc`, :commit:`c9d66ca`, :commit:`191353e`)
 - Allow the :ref:`items_dir` setting to be a URL. (:commit:`e261591`, :commit:`35a21db`)
 - Look for a ``~/.scrapyd.conf`` file in the user's home directory. (:commit:`1fce99b`)
 
