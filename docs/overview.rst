@@ -34,7 +34,7 @@ If you are familiar with the `Twisted Application Framework <https://docs.twiste
 Web interface
 =============
 
-Scrapyd has a minimal web interface for monitoring running processes and accessing log files and item fees. By default, is is available at at http://localhost:6800/ Other options to manage Scrapyd include:
+Scrapyd has a minimal web interface for monitoring running processes and accessing log files and item fees. By default, it is available at at http://localhost:6800/ Other options to manage Scrapyd include:
 
 -  `ScrapydWeb <https://github.com/my8100/scrapydweb>`__
 -  `spider-admin-pro <https://github.com/mouday/spider-admin-pro>`__
