@@ -212,7 +212,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <title>Scrapyd</title>
                 <style>
-                    body {{ font-family: sans-serif; }}
+                    body {{ font-family: system-ui, sans-serif; }}
                 </style>
             </head>
             <body>
@@ -373,7 +373,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                     th, td {{ border-style: solid; border-width: 1px; }}
                     tbody > tr:first-child {{ background-color: #eee; }}
                     th, td {{ padding: .5rem; }}
-                    td:nth-child(2), td:nth-child(3) {{ word-break: break-word; }}
+                    td:nth-child(2), td:nth-child(3) {{ word-break: break-all; }}
                 </style>
             </head>
             <body>
