@@ -3,8 +3,8 @@ Release notes
 
 .. changelog
 
-Unreleased
-----------
+1.5.0 (2024-09-05)
+------------------
 
 Added
 ~~~~~
