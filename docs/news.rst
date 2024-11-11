@@ -3,6 +3,14 @@ Release notes
 
 .. changelog
 
+Unreleased
+----------
+
+Removed
+~~~~~~~
+
+- Drop support for end-of-life Python version 3.8.
+
 1.5.0 (2024-09-05)
 ------------------
 
@@ -43,7 +51,6 @@ Changed
 ~~~~~~~
 
 - Every :ref:`poll_interval`, up to :ref:`max_proc` processes are started by the default :ref:`poller`, instead of only one process. (The number of running jobs will not exceed :ref:`max_proc`.)
-- Drop support for end-of-life Python version 3.7.
 
 Web UI
 ^^^^^^
@@ -151,6 +158,8 @@ Removed
   - ``SCRAPYD_LOG_FILE``
   - ``SCRAPYD_SLOT``
   - ``SCRAPYD_SPIDER``
+
+- Drop support for end-of-life Python version 3.7.
 
 1.4.3 (2023-09-25)
 ------------------
