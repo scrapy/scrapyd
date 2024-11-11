@@ -1,11 +1,10 @@
-import pkgutil
 import sys
 
 from scrapyd.config import Config
 from scrapyd.exceptions import ConfigError
 from scrapyd.utils import initialize_component
 
-__version__ = pkgutil.get_data(__package__, "VERSION").decode().strip()
+__version__ = "1.5.0"
 version_info = tuple(__version__.split(".")[:3])
 
 

@@ -1,5 +1,4 @@
 include LICENSE
-include scrapyd/VERSION
 include scrapyd/default_scrapyd.conf
 recursive-include docs *.py
 recursive-include docs *.rst

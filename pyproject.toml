@@ -1,3 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scrapyd"
+version = "1.5.0"
+authors = [{name = "Scrapy developers", email = "info@scrapy.org"}]
+description = "A service for running Scrapy spiders, with an HTTP API"
+readme = "README.rst"
+license = "BSD"
+urls = {Homepage = "https://github.com/scrapy/scrapyd"}
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: No Input/Output (Daemon)",
+    "Topic :: Internet :: WWW/HTTP",
+]
+dependencies = [
+  "packaging",
+  "pywin32;platform_system=='Windows'",
+  "scrapy>=2.0.0",
+  "setuptools",
+  "twisted>=17.9",
+  "w3lib",
+  "zope.interface",
+]
+
+[project.optional-dependencies]
+test = [
+  "coveralls",
+  "py-html-checker",
+  "pytest",
+  "pytest-cov",
+  "pytest-twisted",
+  "requests",
+  "twisted>=19.7",  # twisted.logger.capturedLogs
+]
+docs = [
+    "furo",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinxcontrib-zopeext",
+]
+
+[project.scripts]
+scrapyd = "scrapyd.__main__:main"
+
+[tool.setuptools]
+packages = ["scrapyd"]
+zip-safe = false  # The scrapyd.__main__ module requires the txapp.py file to be decompressed. #49
+
 [tool.ruff]
 line-length = 119
 target-version = "py38"
