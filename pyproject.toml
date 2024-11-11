@@ -8,7 +8,7 @@ version = "1.5.0"
 authors = [{name = "Scrapy developers", email = "info@scrapy.org"}]
 description = "A service for running Scrapy spiders, with an HTTP API"
 readme = "README.rst"
-license = "BSD"
+license = {text = "BSD"}
 urls = {Homepage = "https://github.com/scrapy/scrapyd"}
 classifiers = [
     "License :: OSI Approved :: BSD License",
