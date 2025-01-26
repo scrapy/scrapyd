@@ -8,6 +8,7 @@ version = "1.5.0"
 authors = [{name = "Scrapy developers", email = "info@scrapy.org"}]
 description = "A service for running Scrapy spiders, with an HTTP API"
 readme = "README.rst"
+requires-python = ">=3.9"
 license = {text = "BSD"}
 urls = {Homepage = "https://github.com/scrapy/scrapyd"}
 classifiers = [
@@ -60,7 +61,6 @@ zip-safe = false  # The scrapyd.__main__ module requires the txapp.py file to be
 
 [tool.ruff]
 line-length = 119
-target-version = "py38"
 
 [tool.ruff.lint]
 select = ["ALL"]
