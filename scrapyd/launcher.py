@@ -111,7 +111,7 @@ class ScrapyProcessProtocol(protocol.ProcessProtocol):
             and self.env == other.env
         )
 
-    # For error messsages in tests.
+    # For error messages in tests.
     def __repr__(self):
         return (
             f"ScrapyProcessProtocol(project={self.project} spider={self.spider} job={self.job} pid={self.pid} "
