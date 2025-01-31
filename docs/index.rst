@@ -51,6 +51,7 @@ See :doc:`api` for more details.
    overview
    config
    api
+   cli
    deploy
    contributing/index
    news
