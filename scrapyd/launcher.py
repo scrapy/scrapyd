@@ -51,7 +51,7 @@ class Launcher(Service):
     def _get_message(self, slot):
         poller = self.app.getComponent(IPoller)
         poller.next().addCallback(self._spawn_process, slot)
-        log.debug("Process slot {slot} waiting for job", slot=slot)
+        log.debug("Process slot {slot} ready", slot=slot)
 
     def _spawn_process(self, message, slot):
         project = message["_project"]
@@ -67,12 +67,14 @@ class Launcher(Service):
 
         reactor.spawnProcess(process, sys.executable, args=args, env=env)
         self.processes[slot] = process
+        log.debug("Process slot {slot} occupied", slot=slot)
 
     def _process_finished(self, _, slot):
         process = self.processes.pop(slot)
         process.end_time = datetime.datetime.now()
         self.finished.add(process)
-        log.debug("Process slot {slot} completed", slot=slot)
+        log.debug("Process slot {slot} vacated", slot=slot)
+
         self._get_message(slot)
 
     def _get_max_proc(self, config):

@@ -12,6 +12,10 @@ from scrapyd.launcher import Launcher, get_crawl_args
 from tests import get_message, has_settings
 
 
+def remove_debug_messages(captured):
+    return [message for message in captured if message["log_level"] != LogLevel.debug]
+
+
 @pytest.fixture()
 def launcher(app):
     return Launcher(Config(), app)
@@ -42,6 +46,7 @@ def test_get_crawl_args(message, expected):
 def test_start_service(launcher):
     with capturedLogs() as captured:
         launcher.startService()
+    captured = remove_debug_messages(captured)
 
     assert len(captured) == 1
     assert captured[0]["log_level"] == LogLevel.info
@@ -57,6 +62,7 @@ def test_start_service_max_proc(app):
 
     with capturedLogs() as captured:
         launcher.startService()
+    captured = remove_debug_messages(captured)
 
     assert len(captured) == 1
     assert captured[0]["log_level"] == LogLevel.info
@@ -142,6 +148,7 @@ def test_process_ended_done(environ, process):
     pid = process.pid
     with capturedLogs() as captured:
         process.processEnded(failure.Failure(error.ProcessDone(0)))
+    captured = remove_debug_messages(captured)
 
     assert len(captured) == 1
     assert captured[0]["log_level"] == LogLevel.info
@@ -164,6 +171,7 @@ def test_process_ended_terminated(environ, process):
     pid = process.pid
     with capturedLogs() as captured:
         process.processEnded(failure.Failure(error.ProcessTerminated(1)))
+    captured = remove_debug_messages(captured)
 
     assert len(captured) == 1
     assert captured[0]["log_level"] == LogLevel.error
