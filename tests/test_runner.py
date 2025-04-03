@@ -26,7 +26,8 @@ class MockEggStorage:
             with open(os.path.join(BASEDIR, "fixtures", "quotesbot.egg"), "rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "noentrypoint":
-            with open(os.path.join(BASEDIR, "fixtures", "quotesbot_noentrypoint.egg"), "rb") as f:
+            # Identical to quotesbot.egg, except EGG-INFO/entry_points.txt doesn't set `settings` under [scrapy].
+            with open(os.path.join(BASEDIR, "fixtures", "entrypoint_missing.egg"), "rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "badegg":
             return version, io.BytesIO(b"badegg")

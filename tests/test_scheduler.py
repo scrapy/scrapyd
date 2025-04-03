@@ -27,13 +27,13 @@ def test_interface(scheduler):
 def test_list_projects_update_projects(scheduler):
     assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2"]
 
-    os.makedirs(os.path.join(scheduler.config.get("eggs_dir"), "mybot3"))
+    os.makedirs(os.path.join(scheduler.config.get("eggs_dir"), "settings_raise"))
 
     assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2"]
 
     scheduler.update_projects()
 
-    assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2", "mybot3"]
+    assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2", "settings_raise"]
 
 
 def test_schedule(scheduler):

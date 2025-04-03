@@ -28,13 +28,13 @@ def test_interface(poller):
 def test_list_projects_update_projects(poller):
     assert sorted(poller.queues) == ["mybot1", "mybot2"]
 
-    os.makedirs(os.path.join(poller.config.get("eggs_dir"), "mybot3"))
+    os.makedirs(os.path.join(poller.config.get("eggs_dir"), "settings_raise"))
 
     assert sorted(poller.queues) == ["mybot1", "mybot2"]
 
     poller.update_projects()
 
-    assert sorted(poller.queues) == ["mybot1", "mybot2", "mybot3"]
+    assert sorted(poller.queues) == ["mybot1", "mybot2", "settings_raise"]
 
 
 def test_poll_next(poller):

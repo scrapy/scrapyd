@@ -93,22 +93,24 @@ def test_spider_list(app):
 
 
 def test_spider_list_log_stdout(app):
-    add_test_version(app, "logstdout", "logstdout", "logstdout")
+    # Identical to mybot.egg, except mybot/settings.py sets `LOG_STDOUT = True`.
+    add_test_version(app, "logstdout", "logstdout", "settings_log_stdout")
     spiders = spider_list.get("logstdout", None, runner="scrapyd.runner")
 
     assert sorted(spiders) == ["spider1", "spider2"]  # [] if LOG_STDOUT were enabled
 
 
 def test_spider_list_unicode(app):
-    add_test_version(app, "myprojectunicode", "r1", "mybotunicode")
+    # mybot/spiders/spider1.py and mybot/spiders/spider2.py use "ñ" in the `name` attribute.
+    add_test_version(app, "myprojectunicode", "r1", "spiders_utf8")
     spiders = spider_list.get("myprojectunicode", None, runner="scrapyd.runner")
 
     assert sorted(spiders) == ["araña1", "araña2"]
 
 
 def test_spider_list_error(app):
-    # mybot3.settings contains "raise Exception('This should break the `scrapy list` command')".
-    add_test_version(app, "myproject3", "r1", "mybot3")
+    # mybot3/settings.py is "raise Exception('This should break the `scrapy list` command')".
+    add_test_version(app, "myproject3", "r1", "settings_raise")
     with pytest.raises(RunnerError) as exc:
         spider_list.get("myproject3", None, runner="scrapyd.runner")
 
