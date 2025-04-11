@@ -137,7 +137,7 @@ class SqliteFinishedJobs(SqliteMixin):
 
     def clear(self, finished_to_keep=None):
         where = ""
-        if finished_to_keep:
+        if finished_to_keep is not None:
             limit = len(self) - finished_to_keep
             if limit <= 0:
                 return  # nothing to delete
