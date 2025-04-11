@@ -137,10 +137,16 @@ class SqliteFinishedJobs(SqliteMixin):
 
     def clear(self, finished_to_keep=None):
         where = ""
+
+        if finished_to_keep == 0:
+            return
+
         if finished_to_keep is not None:
             limit = len(self) - finished_to_keep
+            
             if limit <= 0:
                 return  # nothing to delete
+            
             where = f"WHERE id <= (SELECT max(id) FROM (SELECT id FROM {self.table} ORDER BY end_time LIMIT {limit}))"
 
         self.conn.execute(f"DELETE FROM {self.table} {where}")
