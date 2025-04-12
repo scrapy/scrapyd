@@ -130,6 +130,12 @@ def test_sqlitefinishedjobs_clear_all(sqlitefinishedjobs):
     assert len(sqlitefinishedjobs) == 0
 
 
+def test_sqlitefinishedjobs_clear_keep_0(sqlitefinishedjobs):
+    sqlitefinishedjobs.clear(finished_to_keep=0)
+
+    assert len(sqlitefinishedjobs) == 0
+
+
 def test_sqlitefinishedjobs_clear_keep_2(sqlitefinishedjobs):
     sqlitefinishedjobs.clear(finished_to_keep=2)
 

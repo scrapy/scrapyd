@@ -6,6 +6,11 @@ Release notes
 Unreleased
 ----------
 
+Fixed
+~~~~~
+
+- 1.5.0 documented ``finished_to_keep = 0`` as keeping all jobs, instead of keeping no jobs.
+
 Removed
 ~~~~~~~
 
