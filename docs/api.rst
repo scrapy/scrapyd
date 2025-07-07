@@ -137,6 +137,8 @@ Parameters
   ``project``
     the project name
 
+This will report back the job's status (as ``currstate`` key), which should be one of ``'pending'``, ``'running'`` or ``'finished'``. 
+
 Example:
 
 .. code-block:: shell-session
