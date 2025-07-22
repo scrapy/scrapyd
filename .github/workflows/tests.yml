@@ -17,14 +17,13 @@ jobs:
       - run: pip install -e .[test]
       # Python 3.12 deprecates pkg_resources.
       - run: |
-          pytest -W error \
+          coverage run --source=scrapyd -m pytest -W error \
             -W ignore::ResourceWarning \
             -W ignore::DeprecationWarning:scrapyd.runner \
             -W ignore::DeprecationWarning:pkg_resources \
             -W ignore::UserWarning:scrapyd.runner \
-            -W ignore::UserWarning:setuptools.pkg_resources \
             -W ignore::UserWarning:pkg_resources \
-            tests --cov scrapyd
+            tests scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
         run: |
@@ -34,6 +33,4 @@ jobs:
           sleep 1
           pytest -W error -W ignore::ResourceWarning -W ignore::DeprecationWarning:pytest_twisted integration_tests
           cat scrapyd.log
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: coveralls --service=github
+      - uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6

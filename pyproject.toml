@@ -37,10 +37,9 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-  "coveralls",
+  "coverage",
   "py-html-checker",
   "pytest",
-  "pytest-cov",
   "pytest-twisted",
   "requests",
   "twisted>=19.7",  # twisted.logger.capturedLogs
