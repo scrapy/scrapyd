@@ -15,15 +15,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: pip install -e .[test]
-      # Python 3.12 deprecates pkg_resources (also used by py-html-checker).
-      # https://github.com/pytest-dev/pytest-twisted/issues/183
-      # https://github.com/sveetch/py-html-checker/issues/26
+      # Python 3.12 deprecates pkg_resources.
       - run: |
           pytest -W error \
             -W ignore::ResourceWarning \
             -W ignore::DeprecationWarning:scrapyd.runner \
-            -W ignore::DeprecationWarning:pytest_twisted \
-            -W ignore::DeprecationWarning:html_checker \
             -W ignore::DeprecationWarning:pkg_resources \
             tests --cov scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
