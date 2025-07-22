@@ -21,6 +21,7 @@ jobs:
             -W ignore::ResourceWarning \
             -W ignore::DeprecationWarning:scrapyd.runner \
             -W ignore::DeprecationWarning:pkg_resources \
+            -W ignore::UserWarning:pkg_resources \
             tests --cov scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
