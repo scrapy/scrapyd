@@ -19,7 +19,13 @@ jobs:
       # https://github.com/pytest-dev/pytest-twisted/issues/183
       # https://github.com/sveetch/py-html-checker/issues/26
       - run: |
-          pytest -W error -W ignore::ResourceWarning -W ignore::DeprecationWarning:scrapyd.runner -W ignore::DeprecationWarning:pytest_twisted -W ignore::DeprecationWarning:html_checker -W ignore::DeprecationWarning:pkg_resources tests --cov scrapyd
+          pytest -W error \
+            -W ignore::ResourceWarning \
+            -W ignore::DeprecationWarning:scrapyd.runner \
+            -W ignore::DeprecationWarning:pytest_twisted \
+            -W ignore::DeprecationWarning:html_checker \
+            -W ignore::DeprecationWarning:pkg_resources \
+            tests --cov scrapyd
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
         run: |
