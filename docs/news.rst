@@ -40,7 +40,7 @@ Added
 Fixed
 ~~~~~
 
-- Restore the ``--nodaemon`` (``-n``) option (which Scrapyd enables, regardless), to avoid "option --nodaemon not recognized".
+- Restore the ``--nodaemon`` (``-n``) option (which Scrapyd enables, regardless), to avoid ``option --nodaemon not recognized``.
 
 1.5.0b1 (2024-07-25)
 --------------------
