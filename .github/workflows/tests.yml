@@ -21,6 +21,7 @@ jobs:
             -W ignore::ResourceWarning \
             -W ignore::DeprecationWarning:scrapyd.runner \
             -W ignore::DeprecationWarning:pkg_resources \
+            -W ignore::UserWarning:scrapyd.runner \
             -W ignore::UserWarning:setuptools.pkg_resources \
             -W ignore::UserWarning:pkg_resources \
             tests --cov scrapyd
