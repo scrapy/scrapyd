@@ -28,7 +28,8 @@ dependencies = [
   "packaging",
   "pywin32;platform_system=='Windows'",
   "scrapy>=2.0.0",
-  "setuptools",
+  # https://setuptools.pypa.io/en/latest/history.html#v80-9-0
+  "setuptools<81",
   "twisted>=17.9",
   "w3lib",
   "zope.interface",

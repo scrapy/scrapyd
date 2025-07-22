@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from contextlib import contextmanager
 
-import pkg_resources
+from setuptools import pkg_resources
 
 from scrapyd import Config
 from scrapyd.exceptions import BadEggError

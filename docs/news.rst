@@ -10,6 +10,7 @@ Added
 ~~~~~
 
 - Add a :ref:`jobs_dir` setting, to create a `job directory <https://doc.scrapy.org/en/latest/topics/jobs.html>`__ for each crawl, to persist requests to disk.
+- Python 3.13 support.
 
 Changed
 ~~~~~~~
