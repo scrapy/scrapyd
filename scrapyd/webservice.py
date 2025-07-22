@@ -228,7 +228,11 @@ class Cancel(WsResource):
     # Instead of os.name, use sys.platform, which disambiguates Cygwin, which implements SIGINT not SIGBREAK.
     # https://cygwin.com/cygwin-ug-net/kill.html
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
-    @param("signal", required=False, default="INT" if sys.platform != "win32" else "BREAK")
+    #
+    # Use the integer 21 for SIGBREAK, because Twisted doesn't recognize "BREAK".
+    # https://docs.twistedmatrix.com/en/stable/api/twisted.internet.process._BaseProcess.html#signalProcess
+    # https://github.com/twisted/twisted/blob/b3a4d85/src/twisted/internet/process.py#L340
+    @param("signal", required=False, default="INT" if sys.platform != "win32" else 21)
     def render_POST(self, txrequest, project, job, signal):
         if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
@@ -240,6 +244,8 @@ class Cancel(WsResource):
 
         for process in self.root.launcher.processes.values():
             if process.project == project and process.job == job:
+                if signal.isdigit():
+                    signal = int(signal)
                 process.transport.signalProcess(signal)
                 prevstate = "running"
 
