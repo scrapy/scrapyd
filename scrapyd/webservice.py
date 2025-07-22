@@ -242,10 +242,11 @@ class Cancel(WsResource):
         if self.root.poller.queues[project].remove(lambda message: message["_job"] == job):
             prevstate = "pending"
 
+        if signal.isdigit():
+            signal = int(signal)
+
         for process in self.root.launcher.processes.values():
             if process.project == project and process.job == job:
-                if isinstance(signal, str) and signal.isdigit():
-                    signal = int(signal)
                 process.transport.signalProcess(signal)
                 prevstate = "running"
 
