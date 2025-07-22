@@ -232,7 +232,7 @@ class Cancel(WsResource):
     # Use the integer 21 for SIGBREAK, because Twisted doesn't recognize "BREAK".
     # https://docs.twistedmatrix.com/en/stable/api/twisted.internet.process._BaseProcess.html#signalProcess
     # https://github.com/twisted/twisted/blob/b3a4d85/src/twisted/internet/process.py#L340
-    @param("signal", required=False, default="INT" if sys.platform != "win32" else 21)
+    @param("signal", required=False, default="INT" if sys.platform != "win32" else "21")
     def render_POST(self, txrequest, project, job, signal):
         if project not in self.root.poller.queues:
             raise error.Error(code=http.OK, message=b"project '%b' not found" % project.encode())
