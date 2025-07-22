@@ -17,6 +17,7 @@ class Environment:
         self.dbs_dir = config.get("dbs_dir", "dbs")
         self.logs_dir = config.get("logs_dir", "logs")
         self.items_dir = config.get("items_dir", "")
+        self.jobs_dir = config.get("jobs_dir", "")
         self.jobs_to_keep = config.getint("jobs_to_keep", 5)
         self.settings = dict(config.items("settings", default=[]))
         self.initenv = initenv
@@ -27,6 +28,10 @@ class Environment:
             settings["LOG_FILE"] = self._prepare_file(message, self.logs_dir, "log")
         if self.items_dir:
             settings["FEEDS"] = json.dumps({self._get_feeds(message, "jl"): {"format": "jsonlines"}})
+        if self.jobs_dir:
+            settings["JOBDIR"] = get_file_path(
+                self.jobs_dir, message["_project"], message["_spider"], message["_job"]
+            ).path
         return settings
 
     def get_environment(self, message, slot):
@@ -56,7 +61,7 @@ class Environment:
         return parsed._replace(path=path).geturl()
 
     def _prepare_file(self, message, directory, extension):
-        file_path = get_file_path(directory, message["_project"], message["_spider"], message["_job"], extension)
+        file_path = get_file_path(directory, message["_project"], message["_spider"], f'{message["_job"]}.{extension}')
 
         parent = file_path.dirname()  # returns a str
         if not os.path.exists(parent):

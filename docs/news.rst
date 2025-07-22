@@ -3,13 +3,18 @@ Release notes
 
 .. changelog
 
-Unreleased
-----------
+1.6.0 (2025-07-22)
+------------------
+
+Added
+~~~~~
+
+- Add a :ref:`jobs_dir` setting, to create a `job directory <https://doc.scrapy.org/en/latest/topics/jobs.html>`__ for each crawl, to persist requests to disk.
 
 Fixed
 ~~~~~
 
-- 1.5.0 documented ``finished_to_keep = 0`` as keeping all jobs, instead of keeping no jobs.
+- 1.5.0 incorrectly documented ``finished_to_keep = 0`` as keeping all jobs, instead of keeping no jobs.
 
 Removed
 ~~~~~~~

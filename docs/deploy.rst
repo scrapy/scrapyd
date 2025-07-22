@@ -76,5 +76,6 @@ And your ``scrapyd.conf`` file might be:
    bind_address      = 0.0.0.0
    logs_dir          = /var/lib/scrapyd/logs
    items_dir         = /var/lib/scrapyd/items
+   jobs_dir          = /var/lib/scrapyd/jobs
    dbs_dir           = /var/lib/scrapyd/dbs
    eggs_dir          = /src/eggs

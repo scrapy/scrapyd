@@ -4,7 +4,7 @@ from scrapyd.config import Config
 from scrapyd.exceptions import ConfigError
 from scrapyd.utils import initialize_component
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 version_info = tuple(__version__.split(".")[:3])
 
 

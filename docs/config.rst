@@ -296,6 +296,26 @@ Also used by
 
 .. attention:: Each ``*_dir`` setting must point to a different directory.
 
+.. _jobs_dir:
+
+jobs_dir
+~~~~~~~~
+
+.. versionadded:: 1.6.0
+
+The directory in which to `persist Scrapy requests <https://doc.scrapy.org/en/latest/topics/jobs.html>`__.
+
+By default, `Scrapy keeps the request queue in memory <https://doc.scrapy.org/en/latest/topics/leaks.html#too-many-requests>`__. Use this setting to reduce memory usage.
+
+Requests are persisted to ``{jobs_dir}/{project}/{spider}/{job}/``.
+
+If this option is non-empty, the `JOBDIR <https://doc.scrapy.org/en/latest/topics/settings.html#jobdir>`__ Scrapy setting is set.
+
+Default
+  ``""``
+
+.. attention:: Each ``*_dir`` setting must point to a different directory.
+
 .. _jobs_to_keep:
 
 jobs_to_keep

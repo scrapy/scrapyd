@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scrapyd"
-version = "1.5.0"
+version = "1.6.0"
 authors = [{name = "Scrapy developers", email = "info@scrapy.org"}]
 description = "A service for running Scrapy spiders, with an HTTP API"
 readme = "README.rst"
