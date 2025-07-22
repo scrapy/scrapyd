@@ -635,7 +635,7 @@ def test_schedule_nonexistent(txrequest, root, args, param, run_only_if_has_sett
 
 @pytest.mark.parametrize("args", [{}, {b"signal": [b"TERM"]}])
 def test_cancel(txrequest, root, scrapy_process, args):
-    signal = "TERM" if args else ("INT" if sys.platform != "win32" else "BREAK")
+    signal = "TERM" if args else ("INT" if sys.platform != "win32" else "21")
 
     root_add_version(root, "p1", "r1", "mybot")
     root_add_version(root, "p2", "r2", "mybot2")

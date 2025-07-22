@@ -229,7 +229,7 @@ class Cancel(WsResource):
     # https://cygwin.com/cygwin-ug-net/kill.html
     # https://github.com/scrapy/scrapy/blob/06f9c28/tests/test_crawler.py#L886
     #
-    # Use the integer 21 for SIGBREAK, because Twisted doesn't recognize "BREAK".
+    # Use the number 21 for SIGBREAK, because Twisted doesn't recognize "BREAK".
     # https://docs.twistedmatrix.com/en/stable/api/twisted.internet.process._BaseProcess.html#signalProcess
     # https://github.com/twisted/twisted/blob/b3a4d85/src/twisted/internet/process.py#L340
     @param("signal", required=False, default="INT" if sys.platform != "win32" else "21")
@@ -244,7 +244,7 @@ class Cancel(WsResource):
 
         for process in self.root.launcher.processes.values():
             if process.project == project and process.job == job:
-                if signal.isdigit():
+                if isinstance(signal, str) and signal.isdigit():
                     signal = int(signal)
                 process.transport.signalProcess(signal)
                 prevstate = "running"
