@@ -16,7 +16,7 @@ jobs:
           cache: pip
       - run: pip install -e .[test]
       # Python 3.12 deprecates pkg_resources.
-      - run: coverage run --source=scrapyd -m pytest -W error -W ignore::ResourceWarning -W ignore::DeprecationWarning:scrapyd.runner -W ignore::DeprecationWarning:pkg_resources -W ignore::UserWarning:scrapyd.runner -W ignore::UserWarning:pkg_resources tests scrapyd
+      - run: coverage run --source=scrapyd -m pytest -W error -W ignore::ResourceWarning -W ignore::DeprecationWarning:scrapyd.runner -W ignore::DeprecationWarning:pkg_resources -W ignore::UserWarning:scrapyd.runner -W ignore::UserWarning:pkg_resources tests
       # Occasional "ConnectionRefusedError: [Errno 111] Connection refused".
       - name: Run integration tests
         run: |
