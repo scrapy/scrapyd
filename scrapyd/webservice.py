@@ -219,6 +219,14 @@ class Schedule(WsResource):
             _job=jobid,
             **args,
         )
+
+        log.debug(
+            "Job scheduled: project={project!r} spider={spider!r} job={job!r}",
+            project=project,
+            spider=spider,
+            job=jobid,
+        )
+
         return {"jobid": jobid}
 
 
@@ -249,6 +257,13 @@ class Cancel(WsResource):
             if process.project == project and process.job == job:
                 process.transport.signalProcess(signal)
                 prevstate = "running"
+
+        log.debug(
+            "Job canceled: project={project!r} job={job!r} prevstate={prevstate!r}",
+            project=project,
+            job=job,
+            prevstate=prevstate,
+        )
 
         return {"prevstate": prevstate}
 

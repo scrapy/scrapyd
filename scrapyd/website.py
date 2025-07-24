@@ -220,7 +220,7 @@ class Home(PrefixHeaderMixin, resource.Resource):
 
                 <ul>
                     <li><a href="{base_path}/jobs">Jobs</a></li>
-                    {f'<li><a href="{base_path}/items/">Items</a></li>' if self.root.local_items else ''}
+                    {f'<li><a href="{base_path}/items/">Items</a></li>' if self.root.local_items else ""}
                     <li><a href="{base_path}/logs/">Logs</a></li>
                     <li><a href="https://scrapyd.readthedocs.io/en/latest/">Documentation</a></li>
                 </ul>

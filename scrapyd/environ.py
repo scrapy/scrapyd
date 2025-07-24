@@ -61,7 +61,7 @@ class Environment:
         return parsed._replace(path=path).geturl()
 
     def _prepare_file(self, message, directory, extension):
-        file_path = get_file_path(directory, message["_project"], message["_spider"], f'{message["_job"]}.{extension}')
+        file_path = get_file_path(directory, message["_project"], message["_spider"], f"{message['_job']}.{extension}")
 
         parent = file_path.dirname()  # returns a str
         if not os.path.exists(parent):
