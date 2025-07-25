@@ -33,7 +33,7 @@ def assert_hrefs(urls, text, header):
 # Derived from test_emptyChildUnicodeParent.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
 def test_logs_dir(txrequest, root):
-    os.makedirs(os.path.join("logs", "quotesbot"))
+    os.makedirs(os.path.join("logs", "mybot"))
 
     file = root.children[b"logs"]
     request = DummyRequest([b""])
@@ -43,13 +43,13 @@ def test_logs_dir(txrequest, root):
 
     assert list(request.responseHeaders.getAllRawHeaders()) == [(b"Content-Type", [b"text/html; charset=utf-8"])]
     assert b"<th>Last modified</th>" in content
-    assert b'<td><a href="quotesbot/">quotesbot/</a></td>' in content
+    assert b'<td><a href="mybot/">mybot/</a></td>' in content
 
 
 # Derived from test_indexNames.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
 def test_logs_file(txrequest, root):
-    os.makedirs(os.path.join("logs", "quotesbot"))
+    os.makedirs(os.path.join("logs", "mybot"))
     with open(os.path.join("logs", "foo.txt"), "wb") as f:
         f.write(b"baz")
 
@@ -79,7 +79,7 @@ def test_jobs(txrequest, config, cancel, header, exists, chdir):
         config.cp.remove_option("services", "cancel.json")
 
     root = Root(config, application(config))
-    root_add_version(root, "quotesbot", "0.1", "quotesbot")
+    root_add_version(root, "mybot", "0.1", "mybot")
     root.update_projects()
 
     urls = [
@@ -112,7 +112,7 @@ def test_jobs(txrequest, config, cancel, header, exists, chdir):
 
     root.launcher.finished.add(get_finished_job("p1", "s1", "j1-finished"))
     root.launcher.processes[0] = ScrapyProcessProtocol("p2", "s2", "j2-running", env={}, args=[])
-    root.poller.queues["quotesbot"].add("quotesbot", _job="j3-pending")
+    root.poller.queues["mybot"].add("mybot", _job="j3-pending")
 
     if header:
         txrequest.requestHeaders = http_headers.Headers({b"X-Forwarded-Prefix": [b"/path/to"]})
@@ -148,7 +148,7 @@ def test_jobs(txrequest, config, cancel, header, exists, chdir):
 @pytest.mark.parametrize("header", [True, False])
 def test_home(txrequest, root, with_egg, header):
     if with_egg:
-        root_add_version(root, "quotesbot", "0.1", "quotesbot")
+        root_add_version(root, "mybot", "0.1", "mybot")
         root.update_projects()
 
     if header:
@@ -171,7 +171,7 @@ def test_home(txrequest, root, with_egg, header):
 
     projects = []
     if with_egg:
-        projects.append("quotesbot")
+        projects.append("mybot")
     if has_settings():
         projects.append("localproject")
 

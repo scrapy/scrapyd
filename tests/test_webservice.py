@@ -123,21 +123,21 @@ def test_spider_list_error(app):
     ("method", "basename", "param", "args"),
     [
         ("POST", "schedule", "project", {}),
-        ("POST", "schedule", "project", {b"spider": [b"scrapy-css"]}),
-        ("POST", "schedule", "spider", {b"project": [b"quotesbot"]}),
+        ("POST", "schedule", "project", {b"spider": [b"spider1"]}),
+        ("POST", "schedule", "spider", {b"project": [b"mybot"]}),
         ("POST", "cancel", "project", {}),
         ("POST", "cancel", "project", {b"job": [b"aaa"]}),
-        ("POST", "cancel", "job", {b"project": [b"quotesbot"]}),
+        ("POST", "cancel", "job", {b"project": [b"mybot"]}),
         ("POST", "addversion", "project", {}),
         ("POST", "addversion", "project", {b"version": [b"0.1"]}),
-        ("POST", "addversion", "version", {b"project": [b"quotesbot"]}),
+        ("POST", "addversion", "version", {b"project": [b"mybot"]}),
         ("GET", "listversions", "project", {}),
         ("GET", "listspiders", "project", {}),
         ("GET", "status", "job", {}),
         ("POST", "delproject", "project", {}),
         ("POST", "delversion", "project", {}),
         ("POST", "delversion", "project", {b"version": [b"0.1"]}),
-        ("POST", "delversion", "version", {b"project": [b"quotesbot"]}),
+        ("POST", "delversion", "version", {b"project": [b"mybot"]}),
     ],
 )
 def test_required(txrequest, root_with_egg, method, basename, param, args):
@@ -226,7 +226,7 @@ def test_daemonstatus(txrequest, root_with_egg, scrapy_process):
     expected["running"] += 1
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
-    root_with_egg.poller.queues["quotesbot"].add("quotesbot")
+    root_with_egg.poller.queues["mybot"].add("mybot")
     expected["pending"] += 1
     assert_content(txrequest, root_with_egg, "GET", "daemonstatus", {}, expected)
 
@@ -272,7 +272,7 @@ def test_list_spiders_nonexistent(txrequest, root, args, param, run_only_if_has_
 
 def test_list_versions(txrequest, root_with_egg):
     expected = {"versions": ["0_1"]}
-    assert_content(txrequest, root_with_egg, "GET", "listversions", {b"project": [b"quotesbot"]}, expected)
+    assert_content(txrequest, root_with_egg, "GET", "listversions", {b"project": [b"mybot"]}, expected)
 
 
 def test_list_versions_nonexistent(txrequest, root):
@@ -281,7 +281,7 @@ def test_list_versions_nonexistent(txrequest, root):
 
 
 def test_list_projects(txrequest, root_with_egg):
-    expected = {"projects": ["quotesbot", *get_local_projects(root_with_egg)]}
+    expected = {"projects": ["mybot", *get_local_projects(root_with_egg)]}
     assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
@@ -434,14 +434,14 @@ def test_delete_version(txrequest, root):
 
 
 def test_delete_version_uncached(txrequest, root_with_egg):
-    args = {b"project": [b"quotesbot"], b"version": [b"0.1"]}
+    args = {b"project": [b"mybot"], b"version": [b"0.1"]}
     assert_content(txrequest, root_with_egg, "POST", "delversion", args, {"status": "ok"})
 
 
 @pytest.mark.parametrize(
     ("args", "message"),
     [
-        ({b"project": [b"quotesbot"], b"version": [b"nonexistent"]}, b"version 'nonexistent' not found"),
+        ({b"project": [b"mybot"], b"version": [b"nonexistent"]}, b"version 'nonexistent' not found"),
         ({b"project": [b"nonexistent"], b"version": [b"0.1"]}, b"version '0.1' not found"),
     ],
 )
@@ -453,29 +453,29 @@ def test_delete_project(txrequest, root_with_egg):
     projects = get_local_projects(root_with_egg)
 
     # Spiders (before).
-    expected = {"spiders": ["toscrape-css", "toscrape-xpath"]}
-    assert_content(txrequest, root_with_egg, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
+    expected = {"spiders": ["spider1", "spider2"]}
+    assert_content(txrequest, root_with_egg, "GET", "listspiders", {b"project": [b"mybot"]}, expected)
 
     # Projects (before).
-    expected = {"projects": ["quotesbot", *projects]}
+    expected = {"projects": ["mybot", *projects]}
     assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
     # Delete the project.
-    args = {b"project": [b"quotesbot"]}
+    args = {b"project": [b"mybot"]}
     assert_content(txrequest, root_with_egg, "POST", "delproject", args, {"status": "ok"})
-    assert root_with_egg.eggstorage.get("quotesbot") == (None, None)  # project is gone
+    assert root_with_egg.eggstorage.get("mybot") == (None, None)  # project is gone
 
     # Spiders (after).
-    args = {b"project": [b"quotesbot"]}
-    assert_error(txrequest, root_with_egg, "GET", "listspiders", args, b"project 'quotesbot' not found")
+    args = {b"project": [b"mybot"]}
+    assert_error(txrequest, root_with_egg, "GET", "listspiders", args, b"project 'mybot' not found")
 
-    # Projects (after) would contain "quotesbot" without root.update_projects().
+    # Projects (after) would contain "mybot" without root.update_projects().
     expected = {"projects": [*projects]}
     assert_content(txrequest, root_with_egg, "GET", "listprojects", {}, expected)
 
 
 def test_delete_project_uncached(txrequest, root_with_egg):
-    args = {b"project": [b"quotesbot"]}
+    args = {b"project": [b"mybot"]}
     assert_content(txrequest, root_with_egg, "POST", "delproject", args, {"status": "ok"})
 
 
@@ -485,40 +485,40 @@ def test_delete_project_nonexistent(txrequest, root):
 
 
 def test_add_version(txrequest, root):
-    assert root.eggstorage.get("quotesbot") == (None, None)
+    assert root.eggstorage.get("mybot") == (None, None)
 
     # Add a version.
-    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
-    expected = {"project": "quotesbot", "version": "0.1", "spiders": 2}
+    args = {b"project": [b"mybot"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot")]}
+    expected = {"project": "mybot", "version": "0.1", "spiders": 2}
     assert_content(txrequest, root, "POST", "addversion", args, expected)
-    assert root.eggstorage.list("quotesbot") == ["0_1"]
+    assert root.eggstorage.list("mybot") == ["0_1"]
 
     # Spiders (before).
-    expected = {"spiders": ["toscrape-css", "toscrape-xpath"]}
-    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
+    expected = {"spiders": ["spider1", "spider2"]}
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"mybot"]}, expected)
 
     # Add the same version with a different egg.
-    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot2")]}
-    expected = {"project": "quotesbot", "version": "0.1", "spiders": 3}  # 2 without cache eviction
+    args = {b"project": [b"mybot"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot2")]}
+    expected = {"project": "mybot", "version": "0.1", "spiders": 3}  # 2 without cache eviction
     assert_content(txrequest, root, "POST", "addversion", args, expected)
-    assert root.eggstorage.list("quotesbot") == ["0_1"]  # overwrite version
+    assert root.eggstorage.list("mybot") == ["0_1"]  # overwrite version
 
     # Spiders (after).
     expected = {"spiders": ["spider1", "spider2", "spider3"]}
-    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"quotesbot"]}, expected)
+    assert_content(txrequest, root, "GET", "listspiders", {b"project": [b"mybot"]}, expected)
 
 
 def test_add_version_settings(txrequest, root):
     if not has_settings():
         pytest.skip("[settings] section is not set")
 
-    args = {b"project": [b"localproject"], b"version": [b"0.1"], b"egg": [get_egg_data("quotesbot")]}
+    args = {b"project": [b"localproject"], b"version": [b"0.1"], b"egg": [get_egg_data("mybot")]}
     expected = {"project": "localproject", "spiders": 2, "version": "0.1"}
     assert_content(txrequest, root, "POST", "addversion", args, expected)
 
 
 def test_add_version_invalid(txrequest, root):
-    args = {b"project": [b"quotesbot"], b"version": [b"0.1"], b"egg": [b"invalid"]}
+    args = {b"project": [b"mybot"], b"version": [b"0.1"], b"egg": [b"invalid"]}
     message = b"egg is not a ZIP file (if using curl, use egg=@path not egg=path)"
     assert_error(txrequest, root, "POST", "addversion", args, message)
 
@@ -566,7 +566,7 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
 
 
 def test_schedule_unique(txrequest, root_with_egg):
-    args = {b"project": [b"quotesbot"], b"spider": [b"toscrape-css"]}
+    args = {b"project": [b"mybot"], b"spider": [b"spider1"]}
     txrequest.method = "POST"
 
     txrequest.args = args.copy()
@@ -584,8 +584,8 @@ def test_schedule_unique(txrequest, root_with_egg):
 
 def test_schedule_parameters(txrequest, root_with_egg):
     txrequest.args = {
-        b"project": [b"quotesbot"],
-        b"spider": [b"toscrape-css"],
+        b"project": [b"mybot"],
+        b"spider": [b"spider1"],
         b"_version": [b"0.1"],
         b"jobid": [b"aaa"],
         b"priority": [b"5"],
@@ -599,11 +599,11 @@ def test_schedule_parameters(txrequest, root_with_egg):
     assert data.pop("node_name")
     assert data == {"status": "ok", "jobid": "aaa"}
 
-    jobs = root_with_egg.poller.queues["quotesbot"].list()
+    jobs = root_with_egg.poller.queues["mybot"].list()
 
     assert len(jobs) == 1
     assert jobs[0] == {
-        "name": "toscrape-css",
+        "name": "spider1",
         "_version": "0.1",
         "_job": "aaa",
         "settings": {
@@ -701,7 +701,7 @@ def test_project_directory_traversal(txrequest, root, method, basename, attach_e
     txrequest.args = {b"project": [b"../p"], b"version": [b"0.1"]}
 
     if attach_egg:
-        txrequest.args[b"egg"] = [get_egg_data("quotesbot")]
+        txrequest.args[b"egg"] = [get_egg_data("mybot")]
 
     with pytest.raises(DirectoryTraversalError) as exc:
         getattr(root.children[b"%b.json" % basename.encode()], f"render_{method}")(txrequest)
@@ -709,4 +709,4 @@ def test_project_directory_traversal(txrequest, root, method, basename, attach_e
     assert str(exc.value) == "../p"
 
     eggstorage = root.app.getComponent(IEggStorage)
-    assert eggstorage.get("quotesbot") == (None, None)
+    assert eggstorage.get("mybot") == (None, None)

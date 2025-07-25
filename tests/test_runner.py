@@ -23,10 +23,10 @@ class MockEggStorage:
 
     def get(self, project, version=None):
         if project == "bytesio":
-            with open(os.path.join(BASEDIR, "fixtures", "quotesbot.egg"), "rb") as f:
+            with open(os.path.join(BASEDIR, "fixtures", "mybot.egg"), "rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "noentrypoint":
-            # Identical to quotesbot.egg, except EGG-INFO/entry_points.txt doesn't set `settings` under [scrapy].
+            # Identical to mybot.egg, except EGG-INFO/entry_points.txt is missing.
             with open(os.path.join(BASEDIR, "fixtures", "entrypoint_missing.egg"), "rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "badegg":
@@ -72,7 +72,7 @@ def test_bytesio(monkeypatch, capsys, chdir):
     captured = capsys.readouterr()
 
     assert exc.value.code == 0
-    assert captured.out == "toscrape-css\ntoscrape-xpath\n"
+    assert captured.out == "spider1\nspider2\n"
     assert captured.err == ""
 
 
@@ -94,7 +94,7 @@ def test_badegg(monkeypatch, capsys, chdir):
 
 
 # This confirms that entry_points are required, as documented.
-@pytest.mark.filterwarnings("ignore:Module quotesbot was already imported from:UserWarning")  # fixture reuses module
+@pytest.mark.filterwarnings("ignore:Module mybot was already imported from:UserWarning")  # fixture reuses module
 def test_noentrypoint(monkeypatch, capsys, chdir):
     (chdir / "scrapyd.conf").write_text("[scrapyd]\neggstorage = tests.test_runner.MockEggStorage")
     monkeypatch.setenv("SCRAPY_PROJECT", "noentrypoint")

@@ -91,8 +91,8 @@ def test_options(mock_scrapyd, method, basename):
 def test_other_reactors(mock_scrapyd):
     response = requests.post(
         mock_scrapyd.urljoin("addversion.json"),
-        data={b"project": b"quotesbot", b"version": b"0.01"},
-        # Identical to quotesbot.egg, except quotesbot/settings.py sets
+        data={b"project": b"mybot", b"version": b"0.01"},
+        # Identical to mybot.egg, except mybot/settings.py sets
         # `TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"`.
         files={b"egg": io.BytesIO(get_egg_data("settings_asyncioreactor"))},
     )

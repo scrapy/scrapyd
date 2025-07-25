@@ -7,7 +7,7 @@ import requests
 from integration_tests import req
 
 BASEDIR = os.path.realpath(".").replace("\\", "\\\\")
-with (Path(__file__).absolute().parent.parent / "tests" / "fixtures" / "quotesbot.egg").open("rb") as f:
+with (Path(__file__).absolute().parent.parent / "tests" / "fixtures" / "mybot.egg").open("rb") as f:
     EGG = f.read()
 
 

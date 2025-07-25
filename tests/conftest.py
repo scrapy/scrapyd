@@ -40,7 +40,7 @@ def pytest_configure(config):
             entrypoint_missing = project == "entrypoint_missing"
 
             # Avoid "UserWarning: Module mybot was already imported" in tests.
-            package = "quotesbot" if entrypoint_missing else "mybot"
+            package = "mybot"
 
             packages = [package]
             if os.path.exists(os.path.join(projects_dir, project, "spiders")):
@@ -125,6 +125,6 @@ def root(config, app):
 
 @pytest.fixture
 def root_with_egg(root):
-    root_add_version(root, "quotesbot", "0.1", "quotesbot")
+    root_add_version(root, "mybot", "0.1", "mybot")
     root.update_projects()
     return root
