@@ -8,6 +8,7 @@ from twisted.internet import defer, error, protocol, reactor
 from twisted.logger import Logger
 
 from scrapyd import __version__
+from scrapyd.exceptions import LauncherError
 from scrapyd.interfaces import IEnvironment, IJobStorage, IPoller
 
 log = Logger()
@@ -65,7 +66,11 @@ class Launcher(Service):
         process = ScrapyProcessProtocol(project, message["_spider"], message["_job"], env, args)
         process.deferred.addBoth(self._process_finished, slot)
 
-        reactor.spawnProcess(process, sys.executable, args=args, env=env)
+        try:
+            reactor.spawnProcess(process, sys.executable, args=args, env=env)
+        except OSError as e:
+            raise LauncherError(f"{e}: args={args!r}") from e
+
         self.processes[slot] = process
         log.debug("Process slot {slot} occupied", slot=slot)
 

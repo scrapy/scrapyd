@@ -81,6 +81,7 @@ ignore = [
   "N815",  # Variable in class scope should not be mixedCase (Twisted uses class attributes like requestAvatarId)
   "PLR0913",  # Too many arguments to function call
   "S603",  # `subprocess` call: check for execution of untrusted input (informative)
+  "TRY003",  # Avoid specifying long messages outside the exception class
 
   # sqlite3 doesn't have functions like psycopg2.sql.Identifier and psycopg2.sql.SQL.format.
   "S608",  # Possible SQL injection vector through string-based query construction

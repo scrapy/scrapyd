@@ -11,6 +11,11 @@ Added
 
 - Add DEBUG-level messages to the :ref:`schedule.json` and :ref:`cancel.json` webservices.
 
+Changed
+~~~~~~~
+
+- Clarify error message when the launcher fails to spawn processes.
+
 1.6.0 (2025-07-22)
 ------------------
 

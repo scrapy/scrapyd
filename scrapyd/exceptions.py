@@ -31,5 +31,9 @@ class EggNotFoundError(ScrapydError):
     """Raised if an egg isn't found in an IEggStorage implementation"""
 
 
+class LauncherError(ScrapydError):
+    """Raised if the launcher fails to spawn a process"""
+
+
 class RunnerError(ScrapydError):
     """Raised if the runner returns an error code"""
