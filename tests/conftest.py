@@ -21,7 +21,7 @@ def _clear_spider_list_cache():
     spider_list.cache.clear()
 
 
-@pytest.fixture()
+@pytest.fixture
 def txrequest():
     http_channel = http.HTTPChannel()
     http_channel.makeConnection(DummyChannel.TCP())
@@ -29,7 +29,7 @@ def txrequest():
 
 
 # Use this fixture when testing the Scrapyd web UI or API or writing configuration files.
-@pytest.fixture()
+@pytest.fixture
 def chdir(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     return tmp_path
@@ -52,22 +52,22 @@ def config(request, chdir):
     return config
 
 
-@pytest.fixture()
+@pytest.fixture
 def app(config):
     return application(config)
 
 
-@pytest.fixture()
+@pytest.fixture
 def environ(app):
     return app.getComponent(IEnvironment)
 
 
-@pytest.fixture()
+@pytest.fixture
 def root(config, app):
     return Root(config, app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def root_with_egg(root):
     root_add_version(root, "quotesbot", "0.1", "quotesbot")
     root.update_projects()

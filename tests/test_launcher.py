@@ -16,12 +16,12 @@ def remove_debug_messages(captured):
     return [message for message in captured if message["log_level"] != LogLevel.debug]
 
 
-@pytest.fixture()
+@pytest.fixture
 def launcher(app):
     return Launcher(Config(), app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def process(launcher):
     launcher._spawn_process({"_project": "p1", "_spider": "s1", "_job": "j1"}, 0)  # noqa: SLF001
     return launcher.processes[0]

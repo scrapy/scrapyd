@@ -10,7 +10,7 @@ from scrapyd.poller import QueuePoller
 from scrapyd.utils import get_spider_queues
 
 
-@pytest.fixture()
+@pytest.fixture
 def poller(tmpdir):
     eggs_dir = os.path.join(tmpdir, "eggs")
     dbs_dir = os.path.join(tmpdir, "dbs")

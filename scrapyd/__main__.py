@@ -25,7 +25,7 @@ class ServerOptions(twistd.ServerOptions):
 
 
 def main():
-    if len(sys.argv) > 1 and "-v" in sys.argv[1:] or "--version" in sys.argv[1:]:
+    if (len(sys.argv) > 1 and "-v" in sys.argv[1:]) or "--version" in sys.argv[1:]:
         print(f"Scrapyd {scrapyd.__version__}")
     else:
         sys.argv[1:1] = ["-n", "-y", join(dirname(scrapyd.__file__), "txapp.py")]

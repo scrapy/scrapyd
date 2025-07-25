@@ -114,7 +114,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
                         "text": escaped_path,
                         "href": url,
                         "type": f"[{mimetype}]",
-                        "encoding": (encoding and f"[{encoding}]" or ""),
+                        "encoding": (encoding and f"[{encoding}]") or "",
                         "size": static.formatFileSize(size),
                         "modified": modified,  # NEW
                     }

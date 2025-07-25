@@ -90,7 +90,7 @@ class Launcher(Service):
 
 
 # https://docs.twisted.org/en/stable/api/twisted.internet.protocol.ProcessProtocol.html
-class ScrapyProcessProtocol(protocol.ProcessProtocol):
+class ScrapyProcessProtocol(protocol.ProcessProtocol):  # noqa: PLW1641 missing __hash__ method
     def __init__(self, project, spider, job, env, args):
         self.project = project
         self.spider = spider

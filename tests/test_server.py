@@ -9,7 +9,7 @@ from tests import get_egg_data
 from tests.mockserver import MockScrapydServer
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_scrapyd(chdir):
     with MockScrapydServer() as server:
         yield server

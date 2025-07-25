@@ -28,7 +28,7 @@ job1 = get_finished_job(
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def scrapy_process():
     process = ScrapyProcessProtocol(project="p1", spider="s1", job="j1", env={}, args=cliargs)
     process.start_time = datetime.datetime(2001, 2, 3, 4, 5, 6, 9)
@@ -98,7 +98,8 @@ def test_spider_list_log_stdout(app):
     add_test_version(app, "logstdout", "logstdout", "settings_log_stdout")
     spiders = spider_list.get("logstdout", None, runner="scrapyd.runner")
 
-    assert sorted(spiders) == ["spider1", "spider2"]  # [] if LOG_STDOUT were enabled
+    # Test that LOG_STDOUT is disabled. The result would be [] if LOG_STDOUT were enabled.
+    assert sorted(spiders) == ["spider1", "spider2"]
 
 
 def test_spider_list_unicode(app):

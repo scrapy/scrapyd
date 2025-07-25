@@ -34,7 +34,7 @@ class MockEggStorage:
         pass
 
 
-@pytest.fixture()
+@pytest.fixture
 def eggstorage(tmpdir):
     return FilesystemEggStorage(Config(values={"eggs_dir": tmpdir}))
 
