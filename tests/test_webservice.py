@@ -579,7 +579,7 @@ def test_schedule_raise(txrequest, root):
     assert data.pop("node_name")
     assert data == {"status": "error"}
     assert message.startswith("RunnerError: ")
-    assert message.endswith("\nException: This should break the `scrapy list` command\n")
+    assert message.endswith(f"{os.linesep}Exception: This should break the `scrapy list` command{os.linesep}")
 
 
 @pytest.mark.parametrize("spider", [b"error", b"spider2"])
@@ -597,7 +597,7 @@ def test_schedule_error_on_load(txrequest, root, spider):
     assert data.pop("node_name")
     assert data == {"status": "error"}
     assert message.startswith("RunnerError: ")
-    assert message.endswith("\nModuleNotFoundError: No module named 'importerror'\n")
+    assert message.endswith(f"{os.linesep}ModuleNotFoundError: No module named 'importerror'{os.linesep}")
 
 
 def test_schedule_unique(txrequest, root_with_egg):
