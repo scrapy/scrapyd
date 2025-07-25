@@ -108,4 +108,4 @@ builtins-ignorelist = ["copyright"]
   "ARG001", "ARG002", "ARG005",  # mocks
   "PT009", "PT027",  # Scrapyd mixes unittest with pytest
 ]
-"tests/eggs/*/spiders/*" = ["N999"]  # invalid module name
+"tests/projects/*/spiders/*" = ["N999"]  # invalid module name

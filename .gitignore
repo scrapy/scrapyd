@@ -1,22 +1,14 @@
 # Build
-/*.egg-info
-/dist
-*.pyc
-
-# Development
-venv
-.vscode
-.idea
-/myproject
+*.egg-info
 
 # Docs
 /docs/_build
 
 # Tests
-/.coverage*
+/.coverage
 /htmlcov
-/_trial_temp
-/tests.test_*
+/tests/fixtures/*.egg
+/tests/projects/dist
 
 # CLI
 /scrapyd.conf
