@@ -1,11 +1,11 @@
-import os.path
 import re
 import socket
 import sys
+from pathlib import Path
 from subprocess import PIPE, Popen
 from urllib.parse import urljoin
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
+BASEDIR = Path(__file__).parent.resolve()
 
 
 def get_ephemeral_port():
@@ -24,7 +24,7 @@ class MockScrapydServer:
 
     def __enter__(self):
         self.http_port = get_ephemeral_port()
-        command = [sys.executable, os.path.join(BASEDIR, "mockapp.py"), self.http_port]
+        command = [sys.executable, str(BASEDIR / "mockapp.py"), self.http_port]
         if self.username and self.password:
             command.extend([f"--username={self.username}", f"--password={self.password}"])
 

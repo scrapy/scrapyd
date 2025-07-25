@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 from html_checker.validator import ValidatorInterface
@@ -10,6 +10,8 @@ from scrapyd.app import application
 from scrapyd.launcher import ScrapyProcessProtocol
 from scrapyd.website import Root
 from tests import get_finished_job, has_settings, root_add_version, touch
+
+LOGS_DIR = Path("logs")
 
 
 def assert_headers(txrequest):
@@ -33,7 +35,7 @@ def assert_hrefs(urls, text, header):
 # Derived from test_emptyChildUnicodeParent.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
 def test_logs_dir(txrequest, root):
-    os.makedirs(os.path.join("logs", "mybot"))
+    (LOGS_DIR / "mybot").mkdir(parents=True)
 
     file = root.children[b"logs"]
     request = DummyRequest([b""])
@@ -49,9 +51,8 @@ def test_logs_dir(txrequest, root):
 # Derived from test_indexNames.
 # https://github.com/twisted/twisted/blob/trunk/src/twisted/web/test/test_static.py
 def test_logs_file(txrequest, root):
-    os.makedirs(os.path.join("logs", "mybot"))
-    with open(os.path.join("logs", "foo.txt"), "wb") as f:
-        f.write(b"baz")
+    (LOGS_DIR / "mybot").mkdir(parents=True)
+    (LOGS_DIR / "foo.txt").write_bytes(b"baz")
 
     file = root.children[b"logs"]
     request = DummyRequest([b"foo.txt"])

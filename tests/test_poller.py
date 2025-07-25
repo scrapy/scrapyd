@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 from twisted.internet.defer import Deferred
@@ -12,11 +12,11 @@ from scrapyd.utils import get_spider_queues
 
 @pytest.fixture
 def poller(tmpdir):
-    eggs_dir = os.path.join(tmpdir, "eggs")
-    dbs_dir = os.path.join(tmpdir, "dbs")
-    config = Config(values={"eggs_dir": eggs_dir, "dbs_dir": dbs_dir})
-    os.makedirs(os.path.join(eggs_dir, "mybot1"))
-    os.makedirs(os.path.join(eggs_dir, "mybot2"))
+    eggs_dir = Path(tmpdir) / "eggs"
+    dbs_dir = Path(tmpdir) / "dbs"
+    config = Config(values={"eggs_dir": str(eggs_dir), "dbs_dir": str(dbs_dir)})
+    (eggs_dir / "mybot1").mkdir(parents=True)
+    (eggs_dir / "mybot2").mkdir(parents=True)
     return QueuePoller(config)
 
 
@@ -28,7 +28,7 @@ def test_interface(poller):
 def test_list_projects_update_projects(poller):
     assert sorted(poller.queues) == ["mybot1", "mybot2"]
 
-    os.makedirs(os.path.join(poller.config.get("eggs_dir"), "settings_raise"))
+    (Path(poller.config.get("eggs_dir")) / "settings_raise").mkdir(parents=True)
 
     assert sorted(poller.queues) == ["mybot1", "mybot2"]
 

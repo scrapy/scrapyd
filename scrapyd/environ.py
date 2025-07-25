@@ -1,6 +1,7 @@
 import json
 import os
 from contextlib import suppress
+from pathlib import Path
 from posixpath import join as urljoin
 from urllib.parse import urlsplit
 
@@ -63,16 +64,16 @@ class Environment:
     def _prepare_file(self, message, directory, extension):
         file_path = get_file_path(directory, message["_project"], message["_spider"], f"{message['_job']}.{extension}")
 
-        parent = file_path.dirname()  # returns a str
-        if not os.path.exists(parent):
-            os.makedirs(parent)
+        parent = Path(file_path.dirname())
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
 
         to_delete = sorted(
-            (os.path.join(parent, name) for name in os.listdir(parent)),
-            key=os.path.getmtime,
+            parent.iterdir(),
+            key=lambda path: path.stat().st_mtime,
         )[: -self.jobs_to_keep]
         for path in to_delete:
             with suppress(OSError):
-                os.remove(path)
+                path.unlink()
 
         return file_path.path

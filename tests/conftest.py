@@ -1,7 +1,8 @@
 import logging
-import os.path
+import os
 import shutil
 import warnings
+from pathlib import Path
 
 import pytest
 from setuptools import setup
@@ -17,12 +18,12 @@ from scrapyd.webservice import spider_list
 from scrapyd.website import Root
 from tests import root_add_version
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
+BASEDIR = Path(__file__).parent.resolve()
 
 
 def pytest_configure(config):
-    cwd = os.getcwd()
-    projects_dir = os.path.join(BASEDIR, "projects")
+    cwd = Path.cwd()
+    projects_dir = BASEDIR / "projects"
 
     # Hide bdist_egg's INFO messages. setup() calls setuptools.logging.configure(), which calls logging.basicConfig(),
     # which "does nothing if the root logger already has handlers configured."
@@ -33,7 +34,8 @@ def pytest_configure(config):
 
     os.chdir(projects_dir)
     try:
-        for project in os.listdir(projects_dir):
+        for project_path in projects_dir.iterdir():
+            project = project_path.name
             if project in {"dist", "project.egg-info"}:
                 continue
 
@@ -43,7 +45,7 @@ def pytest_configure(config):
             package = "mybot"
 
             packages = [package]
-            if os.path.exists(os.path.join(projects_dir, project, "spiders")):
+            if (projects_dir / project / "spiders").exists():
                 packages.append(f"{package}.spiders")
 
             with warnings.catch_warnings():
@@ -59,12 +61,10 @@ def pytest_configure(config):
                     zip_safe=True,
                 )
 
-            dist_dir = os.path.join(projects_dir, "dist")
-            os.rename(
-                # Names are like "project-0.0.0-py3.12.egg".
-                os.path.join(dist_dir, next(name for name in os.listdir(dist_dir) if name.endswith(".egg"))),
-                os.path.join(BASEDIR, "fixtures", f"{project}.egg"),
-            )
+            dist_dir = projects_dir / "dist"
+            # Names are like "project-0.0.0-py3.12.egg".
+            egg_file = next(path for path in dist_dir.iterdir() if path.suffix == ".egg")
+            egg_file.rename(BASEDIR / "fixtures" / f"{project}.egg")
 
             # `--build-scripts` avoids "'build/scripts-3.##' does not exist -- can't clean it".
             setup(script_args=["clean", "--all", "--build-scripts=build"], packages=packages)
@@ -100,7 +100,7 @@ def chdir(monkeypatch, tmp_path):
 )
 def config(request, chdir):
     if request.param:
-        shutil.copytree(os.path.join(BASEDIR, "fixtures", "filesystem"), chdir, dirs_exist_ok=True)
+        shutil.copytree(BASEDIR / "fixtures" / "filesystem", chdir, dirs_exist_ok=True)
     config = Config()
     if request.param:
         for key, value in request.param:

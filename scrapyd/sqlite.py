@@ -1,7 +1,7 @@
 import datetime
 import json
-import os
 import sqlite3
+from pathlib import Path
 
 
 # The database argument is "jobs" (in SqliteJobStorage), or a project (in SqliteSpiderQueue) from get_spider_queues(),
@@ -12,9 +12,10 @@ def initialize(cls, config, database, table):
     if dbs_dir == ":memory:":
         connection_string = dbs_dir
     else:
-        if not os.path.exists(dbs_dir):
-            os.makedirs(dbs_dir)
-        connection_string = os.path.join(dbs_dir, f"{database}.db")
+        dbs_path = Path(dbs_dir)
+        if not dbs_path.exists():
+            dbs_path.mkdir(parents=True, exist_ok=True)
+        connection_string = str(dbs_path / f"{database}.db")
 
     return cls(connection_string, table)
 

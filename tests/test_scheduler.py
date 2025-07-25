@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import pytest
 from zope.interface.verify import verifyObject
@@ -11,11 +11,11 @@ from scrapyd.utils import get_spider_queues
 
 @pytest.fixture
 def scheduler(tmpdir):
-    eggs_dir = os.path.join(tmpdir, "eggs")
-    dbs_dir = os.path.join(tmpdir, "dbs")
-    config = Config(values={"eggs_dir": eggs_dir, "dbs_dir": dbs_dir})
-    os.makedirs(os.path.join(eggs_dir, "mybot1"))
-    os.makedirs(os.path.join(eggs_dir, "mybot2"))
+    eggs_dir = Path(tmpdir) / "eggs"
+    dbs_dir = Path(tmpdir) / "dbs"
+    config = Config(values={"eggs_dir": str(eggs_dir), "dbs_dir": str(dbs_dir)})
+    (eggs_dir / "mybot1").mkdir(parents=True)
+    (eggs_dir / "mybot2").mkdir(parents=True)
     return SpiderScheduler(config)
 
 
@@ -27,7 +27,7 @@ def test_interface(scheduler):
 def test_list_projects_update_projects(scheduler):
     assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2"]
 
-    os.makedirs(os.path.join(scheduler.config.get("eggs_dir"), "settings_raise"))
+    (Path(scheduler.config.get("eggs_dir")) / "settings_raise").mkdir(parents=True)
 
     assert sorted(scheduler.list_projects()) == ["mybot1", "mybot2"]
 

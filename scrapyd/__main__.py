@@ -1,5 +1,5 @@
 import sys
-from os.path import dirname, join
+from pathlib import Path
 
 from twisted.scripts import twistd
 
@@ -28,7 +28,7 @@ def main():
     if (len(sys.argv) > 1 and "-v" in sys.argv[1:]) or "--version" in sys.argv[1:]:
         print(f"Scrapyd {scrapyd.__version__}")
     else:
-        sys.argv[1:1] = ["-n", "-y", join(dirname(scrapyd.__file__), "txapp.py")]
+        sys.argv[1:1] = ["-n", "-y", str(Path(scrapyd.__file__).parent / "txapp.py")]
         twistd.app.run(twistd.runApp, ServerOptions)
 
 

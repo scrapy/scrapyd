@@ -1,7 +1,7 @@
-import os.path
 import socket
 from datetime import datetime, timedelta
 from html import escape
+from pathlib import Path
 from textwrap import dedent, indent
 from urllib.parse import quote, urlsplit
 
@@ -123,7 +123,7 @@ h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin wh
 
 
 def _get_file_url(base, directory, job, extension):
-    if os.path.exists(os.path.join(directory, job.project, job.spider, f"{job.job}.{extension}")):
+    if (Path(directory) / job.project / job.spider / f"{job.job}.{extension}").exists():
         return f"/{base}/{job.project}/{job.spider}/{job.job}.{extension}"
     return None
 

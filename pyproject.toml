@@ -74,7 +74,6 @@ ignore = [
 
   # Project-specific
   "D",
-  "PTH",  # Scrapyd hasn't adopted pathlib
   "ARG002",  # Unused method argument (txrequest argument isn't always used)
   "N802",  # Function name should be lowercase (Twisted uses method names like render_GET)
   "N803",  # Argument name should be lowercase (Twisted uses argument names like avatarId)

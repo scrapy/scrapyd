@@ -1,6 +1,5 @@
-import glob
-import os.path
 from configparser import ConfigParser, NoOptionError, NoSectionError
+from pathlib import Path
 from pkgutil import get_data
 
 from scrapy.utils.conf import closest_scrapy_cfg
@@ -20,9 +19,9 @@ class Config:
                 [
                     "/etc/scrapyd/scrapyd.conf",
                     "c:\\scrapyd\\scrapyd.conf",
-                    *sorted(glob.glob("/etc/scrapyd/conf.d/*")),
+                    *sorted(Path("/etc/scrapyd/conf.d").glob("*")),
                     "scrapyd.conf",
-                    os.path.expanduser("~/.scrapyd.conf"),
+                    Path.home() / ".scrapyd.conf",
                     closest_scrapy_cfg(),
                     *extra_sources,
                 ]

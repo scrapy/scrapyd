@@ -1,6 +1,7 @@
 import io
-import os.path
+import os
 import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -10,7 +11,7 @@ from scrapyd.exceptions import BadEggError
 from scrapyd.interfaces import IEggStorage
 from scrapyd.runner import main
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
+BASEDIR = Path(__file__).parent.resolve()
 
 
 @implementer(IEggStorage)
@@ -23,11 +24,11 @@ class MockEggStorage:
 
     def get(self, project, version=None):
         if project == "bytesio":
-            with open(os.path.join(BASEDIR, "fixtures", "mybot.egg"), "rb") as f:
+            with (BASEDIR / "fixtures" / "mybot.egg").open("rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "noentrypoint":
             # Identical to mybot.egg, except EGG-INFO/entry_points.txt is missing.
-            with open(os.path.join(BASEDIR, "fixtures", "entrypoint_missing.egg"), "rb") as f:
+            with (BASEDIR / "fixtures" / "entrypoint_missing.egg").open("rb") as f:
                 return version, io.BytesIO(f.read())
         if project == "badegg":
             return version, io.BytesIO(b"badegg")

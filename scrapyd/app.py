@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from twisted.application.internet import TCPServer, TimerService, UNIXServer
 from twisted.application.service import Application
@@ -49,7 +50,7 @@ def application(config):
             http_port=http_port,
         )
     if unix_socket_path:
-        unix_socket_path = os.path.abspath(unix_socket_path)
+        unix_socket_path = str(Path(unix_socket_path).resolve())
         webservice = UNIXServer(unix_socket_path, resource, mode=0o660)
         log.info(
             "Scrapyd web console available at http+unix://{unix_socket_path}",

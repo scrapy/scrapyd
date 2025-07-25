@@ -1,6 +1,6 @@
 import io
-import os.path
 from contextlib import closing
+from pathlib import Path
 
 import pytest
 from zope.interface import implementer
@@ -154,17 +154,15 @@ def test_list(eggstorage, versions, expected):
 
 
 def test_list_glob(eggstorage):
-    directory = os.path.join(eggstorage.basedir, "mybot")
-    os.makedirs(directory)
-    with open(os.path.join(directory, "other"), "wb") as f:
-        f.write(b"")
+    directory = Path(eggstorage.basedir) / "mybot"
+    directory.mkdir(parents=True)
+    (directory / "other").write_bytes(b"")
 
     assert eggstorage.list("mybot") == []  # "other" without "*.egg" glob
 
 
 def test_list_projects(eggstorage):
-    with open(os.path.join(eggstorage.basedir, "other"), "wb") as f:
-        f.write(b"")
+    (Path(eggstorage.basedir) / "other").write_bytes(b"")
 
     assert eggstorage.list_projects() == []  # "other" without isdir() filter
 
@@ -203,7 +201,7 @@ def test_delete_vesrion(eggstorage):
     eggstorage.delete("mybot", "01")
 
     assert eggstorage.list("mybot") == []
-    assert not os.path.exists(os.path.join(eggstorage.basedir, "mybot"))
+    assert not (Path(eggstorage.basedir) / "mybot").exists()
 
 
 def test_delete_nonexistent_project(eggstorage):

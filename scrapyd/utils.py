@@ -1,4 +1,4 @@
-import os.path
+from pathlib import Path
 
 from scrapy.utils.misc import load_object
 from twisted.python import filepath
@@ -13,7 +13,7 @@ def initialize_component(config, setting, default, *args):
 
 
 def local_items(items_dir, parsed):
-    return items_dir and parsed.scheme.lower() in ("", "file", os.path.splitdrive(items_dir)[0].rstrip(":").lower())
+    return items_dir and parsed.scheme.lower() in ("", "file", str(Path(items_dir).drive).rstrip(":").lower())
 
 
 def get_file_path(directory, project, spider, job):
@@ -21,7 +21,7 @@ def get_file_path(directory, project, spider, job):
     try:
         return filepath.FilePath(directory).child(project).child(spider).child(job)
     except filepath.InsecurePath as e:
-        raise DirectoryTraversalError(os.path.join(project, spider, job)) from e
+        raise DirectoryTraversalError(Path(project) / spider / job) from e
 
 
 def get_spider_queues(config):

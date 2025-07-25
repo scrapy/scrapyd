@@ -1,7 +1,7 @@
 import datetime
 import io
-import os.path
 import pkgutil
+from pathlib import Path
 
 from twisted.logger import eventAsText
 
@@ -18,7 +18,7 @@ def get_egg_data(basename):
 
 
 def has_settings():
-    return os.path.exists("scrapy.cfg")
+    return Path("scrapy.cfg").exists()
 
 
 def root_add_version(root, project, version, basename):

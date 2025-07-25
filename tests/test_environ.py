@@ -57,8 +57,8 @@ def test_get_settings(environ):
         ),
     ],
 )
-@patch("os.listdir", lambda _: [])
-@patch("os.makedirs", lambda _: _)
+@patch("pathlib.Path.iterdir", lambda _: [])
+@patch("pathlib.Path.mkdir", lambda *args, **kwargs: None)
 def test_get_settings_url(items_dir, pattern):
     config = Config(values={"logs_dir": "", "items_dir": items_dir})
     environ = Environment(config, initenv={})

@@ -1,7 +1,7 @@
-import os
 import re
 import shutil
-from glob import escape, glob
+from glob import escape
+from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
 from twisted.python import filepath
@@ -26,11 +26,10 @@ class FilesystemEggStorage:
     def put(self, eggfile, project, version):
         path = self._egg_path(project, version)
 
-        directory = os.path.dirname(path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(path, "wb") as f:
+        with path.open("wb") as f:
             shutil.copyfileobj(eggfile, f)
 
     def get(self, project, version=None):
@@ -40,18 +39,17 @@ class FilesystemEggStorage:
             except IndexError:
                 return None, None
         try:
-            return version, open(self._egg_path(project, version), "rb")
+            return version, self._egg_path(project, version).open("rb")
         except FileNotFoundError:
             return None, None
 
     def list(self, project):
-        return sorted_versions(
-            [os.path.splitext(os.path.basename(path))[0] for path in glob(self._get_path(escape(project), "*.egg"))]
-        )
+        return sorted_versions([path.stem for path in self._get_path(escape(project)).glob("*.egg")])
 
     def list_projects(self):
-        if os.path.exists(self.basedir):
-            return [name for name in os.listdir(self.basedir) if os.path.isdir(os.path.join(self.basedir, name))]
+        basedir_path = Path(self.basedir)
+        if basedir_path.exists():
+            return [path.name for path in basedir_path.iterdir() if path.is_dir()]
         return []
 
     def delete(self, project, version=None):
@@ -62,7 +60,7 @@ class FilesystemEggStorage:
                 raise ProjectNotFoundError from e
         else:
             try:
-                os.remove(self._egg_path(project, version))
+                self._egg_path(project, version).unlink()
                 if not self.list(project):  # remove project if no versions left
                     self.delete(project)
             except FileNotFoundError as e:
@@ -78,4 +76,4 @@ class FilesystemEggStorage:
         except filepath.InsecurePath as e:
             raise DirectoryTraversalError(project) from e
 
-        return os.path.join(file.path, *trusted)
+        return Path(file.path) / Path(*trusted)

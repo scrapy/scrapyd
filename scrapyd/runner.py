@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 from contextlib import contextmanager
+from pathlib import Path
 
 import pkg_resources
 
@@ -57,7 +58,7 @@ def project_environment(project):
         yield
     finally:
         if tmp:
-            os.remove(tmp.name)
+            Path(tmp.name).unlink()
 
 
 def main():
