@@ -566,14 +566,12 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
 
 
 def test_schedule_raise(txrequest, root):
-    # mybot/spiders/spider1.py sets `name = 'error'.
     root_add_version(root, "myproject", "r1", "settings_raise")
     root.update_projects()
 
-    args = {b"project": [b"myproject"], b"spider": [b"spider1"]}
+    txrequest.args = {b"project": [b"myproject"], b"spider": [b"spider1"]}
     txrequest.method = "POST"
 
-    txrequest.args = args.copy()
     content = root.children[b"schedule.json"].render(txrequest)
     data = json.loads(content)
     message = data.pop("message")
@@ -582,6 +580,24 @@ def test_schedule_raise(txrequest, root):
     assert data == {"status": "error"}
     assert message.startswith("RunnerError: ")
     assert message.endswith("\nException: This should break the `scrapy list` command\n")
+
+
+@pytest.mark.parametrize("spider", [b"error", b"spider2"])
+def test_schedule_error_on_load(txrequest, root, spider):
+    root_add_version(root, "myproject", "r1", "spiders_error_on_load")
+    root.update_projects()
+
+    txrequest.args = {b"project": [b"myproject"], b"spider": [spider]}
+    txrequest.method = "POST"
+
+    content = root.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
+    message = data.pop("message")
+
+    assert data.pop("node_name")
+    assert data == {"status": "error"}
+    assert message.startswith("RunnerError: ")
+    assert message.endswith("\nModuleNotFoundError: No module named 'importerror'\n")
 
 
 def test_schedule_unique(txrequest, root_with_egg):
