@@ -111,7 +111,7 @@ def test_spider_list_unicode(app):
 
 
 def test_spider_list_error(app):
-    # mybot3/settings.py is "raise Exception('This should break the `scrapy list` command')".
+    # mybot/settings.py is "raise Exception('This should break the `scrapy list` command')".
     add_test_version(app, "myproject3", "r1", "settings_raise")
     with pytest.raises(RunnerError) as exc:
         spider_list.get("myproject3", None, runner="scrapyd.runner")
@@ -563,6 +563,25 @@ def test_schedule(txrequest, root, args, run_only_if_has_settings):
 
     assert len(jobs) == 1
     assert jobs[0] == expected
+
+
+def test_schedule_raise(txrequest, root):
+    # mybot/spiders/spider1.py sets `name = 'error'.
+    root_add_version(root, "myproject", "r1", "settings_raise")
+    root.update_projects()
+
+    args = {b"project": [b"myproject"], b"spider": [b"spider1"]}
+    txrequest.method = "POST"
+
+    txrequest.args = args.copy()
+    content = root.children[b"schedule.json"].render(txrequest)
+    data = json.loads(content)
+    message = data.pop("message")
+
+    assert data.pop("node_name")
+    assert data == {"status": "error"}
+    assert message.startswith("RunnerError: ")
+    assert message.endswith("\nException: This should break the `scrapy list` command\n")
 
 
 def test_schedule_unique(txrequest, root_with_egg):
