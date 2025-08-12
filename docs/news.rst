@@ -16,6 +16,11 @@ Changed
 
 - Clarify error message when the launcher fails to spawn processes.
 
+Removed
+~~~~~~~
+
+- Drop support for end-of-life Python version 3.9.
+
 1.6.0 (2025-07-22)
 ------------------
 
