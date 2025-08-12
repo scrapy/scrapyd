@@ -59,7 +59,7 @@ zip-safe = false  # The scrapyd.__main__ module requires the txapp.py file to be
 
 [tool.ruff]
 line-length = 119
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["ALL"]
