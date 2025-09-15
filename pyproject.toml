@@ -23,8 +23,13 @@ classifiers = [
     "Environment :: No Input/Output (Daemon)",
     "Topic :: Internet :: WWW/HTTP",
 ]
+requires-python = ">=3.11"
 dependencies = [
+  "aiohttp>=3.9.0",
+  "coverage>=7.10.6",
+  "html5lib>=1.1",
   "packaging",
+  "psutil>=7.0.0",
   "pywin32;platform_system=='Windows'",
   "scrapy>=2.0.0",
   # https://setuptools.pypa.io/en/latest/history.html#v80-9-0
@@ -37,11 +42,17 @@ dependencies = [
 [project.optional-dependencies]
 test = [
   "coverage",
-  "py-html-checker",
-  "pytest",
+  "html5lib>=1.1",  # HTML parsing and validation
+  "pytest>=8.0.0",
   "pytest-twisted",
   "requests",
   "twisted>=19.7",  # twisted.logger.capturedLogs
+  "psutil>=5.9.0",  # for performance benchmarks
+]
+performance = [
+  "redis>=4.5.0",  # for Redis cache backend
+  "prometheus-client>=0.16.0",  # for metrics
+  "psutil>=5.9.0",  # for system monitoring
 ]
 docs = [
     "furo",
@@ -106,4 +117,11 @@ builtins-ignorelist = ["copyright"]
   "PLR2004",  # magic value
   "ARG001", "ARG002", "ARG005",  # mocks
   "PT009", "PT027",  # Scrapyd mixes unittest with pytest
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=1.2.0",
+    "pytest-twisted>=1.14.3",
 ]
