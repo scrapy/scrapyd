@@ -39,7 +39,7 @@ eggs_dir = {temp_dir / "eggs"}
 logs_dir = {temp_dir / "logs"}
 dbs_dir = {temp_dir / "dbs"}
 http_port = 6800
-debug = on
+debug = off
 """
     config_file.write_text(config_content)
 
@@ -86,7 +86,7 @@ dbs_dir = {tmp_path / "dbs"}
 http_port = 6803
 username = hello12345
 password = 67890world
-debug = on
+debug = off
 """
     config_file.write_text(config_content)
 
