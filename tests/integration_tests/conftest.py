@@ -93,7 +93,12 @@ debug = on
     env = os.environ.copy()
     env["SCRAPYD_CONFIG"] = str(config_file)
 
-    process = subprocess.Popen([sys.executable, "-m", "scrapyd"], env=env)
+    # Run in the temporary directory to avoid PID file conflicts
+    process = subprocess.Popen(
+        [sys.executable, "-m", "scrapyd"],
+        env=env,
+        cwd=str(tmp_path)
+    )
 
     # Wait for the server to start
     for i in range(30):

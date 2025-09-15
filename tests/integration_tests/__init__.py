@@ -6,16 +6,18 @@ import requests
 def req(method, path, auth=None, status=200, server_info=None, **kwargs):
     """Make HTTP request to scrapyd server."""
     if server_info is None:
-        # Default to original behavior for backward compatibility
+        # Default behavior - simple request to existing server
         url = urljoin("http://127.0.0.1:6800", path)
-        auth = None
+        response = getattr(requests, method)(url, auth=auth, **kwargs)
+        assert response.status_code == status, f"{status} != {response.status_code}"
+        return response
     else:
+        # Using server_info - make request to specific server
         url = urljoin(f"http://127.0.0.1:{server_info['port']}", path)
         auth = server_info["auth"]
-
-    response = getattr(requests, method)(url, auth=auth, **kwargs)
-    assert response.status_code == status, f"{status} != {response.status_code}"
-    return response
+        response = getattr(requests, method)(url, auth=auth, **kwargs)
+        assert response.status_code == status, f"{status} != {response.status_code}"
+        return response
 
 
 def req_with_auth_check(method, path, server_info, status=200, **kwargs):

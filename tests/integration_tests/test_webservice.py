@@ -36,10 +36,7 @@ def assert_response(method, path, expected, **kwargs):
     ],
 )
 def test_options(method, basename):
-    response = requests.options(
-        f"http://127.0.0.1:6800/{basename}.json",
-        auth=("hello12345", "67890world"),
-    )
+    response = requests.options(f"http://127.0.0.1:6800/{basename}.json")
 
     assert response.status_code == 204, f"204 != {response.status_code}"
     assert response.headers["Allow"] == f"OPTIONS, HEAD, {method}"
@@ -61,7 +58,6 @@ def test_options(method, basename):
 def test_project_directory_traversal(method, basename, params):
     response = getattr(requests, method)(
         f"http://127.0.0.1:6800/{basename}.json",
-        auth=("hello12345", "67890world"),
         **{"params" if method == "get" else "data": {"project": "../p", **params}},
     )
 
