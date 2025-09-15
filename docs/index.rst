@@ -2,7 +2,8 @@
 Scrapyd |release|
 =================
 
-.. include:: ../README.rst
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
 
 Quickstart
 ==========
@@ -53,5 +54,8 @@ See :doc:`api` for more details.
    api
    cli
    deploy
+   architecture/index
+   deployment/index
+   tutorials/index
    contributing/index
    news

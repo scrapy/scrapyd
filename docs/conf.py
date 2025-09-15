@@ -37,6 +37,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.viewcode",
     "sphinxcontrib.zopeext.autointerface",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -46,6 +47,12 @@ templates_path = ["_templates"]
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ["_build"]
+
+# Source file suffixes
+source_suffix = {
+    '.rst': None,
+    '.md': 'myst_parser',
+}
 
 
 # -- Options for HTML output -------------------------------------------------
