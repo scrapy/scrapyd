@@ -1,19 +1,254 @@
-# Build
-*.egg-info
+# -------------------------
+# Python cache and compiled
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# -------------------------
+# Distribution / Packaging
+# -------------------------
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# -------------------------
+# Virtual environments
+# -------------------------
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+.python_env/
+.conda/
+*.conda
+conda_env/
+
+# uv
+.uv/
+.uv_cache/
+__pypackages__/
+
+# Poetry
+.poetry/
+
+# Pipenv
+Pipfile.lock
+
+# Hatch
+.hatch/
+
+# -------------------------
+# Unit test / Coverage
+# -------------------------
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+*.lcov
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+hypothesis/
+.pyre/
+.pytype/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# -------------------------
+# Jupyter Notebook
+# -------------------------
+.ipynb_checkpoints
+jupyter_notebook_config.json
+*.nbconvert.ipynb
+
+# -------------------------
+# Logs & Runtime files
+# -------------------------
+*.log
+*.out
+*.err
+*.pid
+*.seed
+*.coveragerc
+*.pstats
+*.prof
+*.tmp
+*.temp
+
+# -------------------------
+# IDEs / Editors
+# -------------------------
+.vscode/
+.vscode-test/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*.bak
+*.iml
+*.ipr
+*.iws
+.project
+.pydevproject
+.metadata
+.gradle/
+
+# -------------------------
+# OS specific
+# -------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+# -------------------------
+# Docker
+# -------------------------
+*.dockerfile
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+docker/
+.docker/
+
+# -------------------------
+# C extensions / Cython
+# -------------------------
+*.so
+*.pyd
+*.pyo
+*.dll
+*.dylib
+
+# -------------------------
+# Docs / Sphinx
+# -------------------------
+docs/_build/
+doc/_build/
+builddocs/
+target/
+*.doctree
+*.pickle
+
+# -------------------------
+# Environments / dotenv
+# -------------------------
+.env
+.env.*
+*.env
+*.ini
+*.toml
+*.yaml
+*.yml
+!pyproject.toml
+
+# -------------------------
+# Database / Data files
+# -------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sql
+*.bak
+*.backup
+*.h5
+*.hdf5
+*.parquet
+*.feather
+*.orc
+*.avro
+
+# -------------------------
+# Node.js (if frontend present)
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# -------------------------
+# Other
+# -------------------------
+*.crt
+*.pem
+*.key
+*.cert
+*.csr
+*.p12
+*.jks
+*.keystore
+
+# -------------------------
+# Profiling / Debugging
+# -------------------------
+.prof
+*.profraw
+*.gcda
+*.gcno
+*.gcov
+*.gprof
+
 
 # Docs
-/docs/_build
+docs/_build
 
 # Tests
-/.coverage
-/htmlcov
-/tests/fixtures/*.egg
-/tests/projects/dist
+tests/projects/dist
 
 # CLI
-/scrapyd.conf
-/twistd.pid
-/dbs
-/eggs
-/items
-/logs
+scrapyd.conf
+twistd.pid
+dbs
+items
+logs

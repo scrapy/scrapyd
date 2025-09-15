@@ -1,4 +1,5 @@
 from configparser import ConfigParser, NoOptionError, NoSectionError
+import os
 from pathlib import Path
 from pkgutil import get_data
 
@@ -15,17 +16,18 @@ class Config:
         if values is None:
             self.cp = ConfigParser()
             self.cp.read_string(get_data(__package__, "default_scrapyd.conf").decode())
-            self.cp.read(
-                [
-                    "/etc/scrapyd/scrapyd.conf",
-                    "c:\\scrapyd\\scrapyd.conf",
-                    *sorted(Path("/etc/scrapyd/conf.d").glob("*")),
-                    "scrapyd.conf",
-                    Path.home() / ".scrapyd.conf",
-                    closest_scrapy_cfg(),
-                    *extra_sources,
-                ]
-            )
+            sources = [
+                "/etc/scrapyd/scrapyd.conf",
+                "c:\\scrapyd\\scrapyd.conf",
+                *sorted(Path("/etc/scrapyd/conf.d").glob("*")),
+                "scrapyd.conf",
+                Path.home() / ".scrapyd.conf",
+                closest_scrapy_cfg(),
+                *extra_sources,
+            ]
+            if "SCRAPYD_CONFIG" in os.environ:
+                sources.insert(0, os.environ["SCRAPYD_CONFIG"])
+            self.cp.read(sources)
         else:
             self.cp = ConfigParser(values)
             self.cp.add_section(self.SECTION)
