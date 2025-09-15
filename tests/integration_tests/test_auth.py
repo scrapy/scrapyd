@@ -1,5 +1,5 @@
 import pytest
-from integration_tests import req_with_auth_check
+from tests.integration_tests import req_with_auth_check
 
 
 def test_auth_daemonstatus(auth_server):

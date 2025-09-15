@@ -1,6 +1,6 @@
 import pytest
 
-from integration_tests import req
+from tests.integration_tests import req
 
 
 def test_root():
