@@ -1,4 +1,5 @@
 import pytest
+pytestmark = [pytest.mark.integration, pytest.mark.auth]
 from tests.integration_tests import req_with_auth_check
 
 

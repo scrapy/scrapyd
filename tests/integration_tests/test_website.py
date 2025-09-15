@@ -1,4 +1,5 @@
 import pytest
+pytestmark = pytest.mark.integration
 
 from tests.integration_tests import req
 

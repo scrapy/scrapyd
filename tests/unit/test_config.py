@@ -3,6 +3,8 @@ from configparser import NoOptionError, NoSectionError
 import pytest
 
 from scrapyd import get_application
+
+pytestmark = pytest.mark.unit
 from scrapyd.app import application
 from scrapyd.config import Config
 from scrapyd.exceptions import InvalidUsernameError

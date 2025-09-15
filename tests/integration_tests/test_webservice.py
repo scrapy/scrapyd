@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+pytestmark = pytest.mark.integration
 import requests
 
 from tests.integration_tests import req

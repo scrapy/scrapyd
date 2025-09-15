@@ -1,4 +1,7 @@
 import pytest
+pytestmark = pytest.mark.unit
+
+import pytest
 from twisted.internet.defer import inlineCallbacks, maybeDeferred
 from zope.interface.verify import verifyObject
 

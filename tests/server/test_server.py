@@ -3,6 +3,7 @@ import os
 import re
 
 import pytest
+pytestmark = pytest.mark.server
 import requests
 
 from tests import get_egg_data

@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.unit
+
 import io
 import os
 import sys

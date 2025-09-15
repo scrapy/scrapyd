@@ -8,6 +8,7 @@ import sys
 from unittest.mock import MagicMock, PropertyMock, call
 
 import pytest
+pytestmark = pytest.mark.api
 from twisted.logger import LogLevel, capturedLogs
 from twisted.web import error
 

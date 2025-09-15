@@ -1,4 +1,7 @@
 import pytest
+pytestmark = pytest.mark.unit
+
+import pytest
 from twisted.cred.checkers import ICredentialsChecker
 from twisted.cred.portal import IRealm
 from zope.interface.verify import verifyClass

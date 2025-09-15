@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.unit
+
 import io
 from contextlib import closing
 from pathlib import Path

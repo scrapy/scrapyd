@@ -1,3 +1,6 @@
+import pytest
+pytestmark = pytest.mark.unit
+
 import datetime
 
 from zope.interface.verify import verifyObject
