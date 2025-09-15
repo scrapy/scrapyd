@@ -1,253 +1,215 @@
-# GitHub Actions Workflows
+# Scrapyd
 
-This directory contains comprehensive GitHub Actions workflows to support the Scrapyd project with automated testing, building, security scanning, and deployment.
+[![PyPI Version](https://img.shields.io/pypi/v/scrapyd.svg)](https://pypi.org/project/scrapyd/)
+[![Build Status](https://github.com/scrapy/scrapyd/workflows/Tests/badge.svg)](https://github.com/scrapy/scrapyd/actions)
+[![Coverage Status](https://coveralls.io/repos/github/scrapy/scrapyd/badge.svg?branch=master)](https://coveralls.io/github/scrapy/scrapyd?branch=master)
+[![Python Version](https://img.shields.io/pypi/pyversions/scrapyd.svg)](https://pypi.org/project/scrapyd/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/scrapyd.svg)](https://pypi.python.org/pypi/scrapyd/)
 
-## Workflow Overview
+Scrapyd is a service for deploying and running [Scrapy](https://scrapy.org) spiders.
 
-### 🔄 [CI/CD Pipeline](workflows/ci.yml)
-**Trigger:** Push to any branch, Pull Requests to master/develop
+It enables you to upload Scrapy projects and control their spiders using a JSON API, making it perfect for production web scraping deployments.
 
-Comprehensive continuous integration and deployment pipeline with:
+## Features
 
-- **Code Quality & Linting**: Ruff formatting and linting checks
-- **Multi-Version Testing**: Python 3.10, 3.11, 3.12 compatibility
-- **Integration Tests**: Full integration test suite with server fixtures
-- **Coverage Reporting**: Code coverage with Codecov integration
-- **Security Scanning**: Safety, Bandit security analysis
-- **Package Building**: Test package building and validation
-- **Docker Testing**: Docker image build and basic functionality tests
-- **Performance Tests**: Automated benchmarks (master branch only)
+🚀 **Easy Deployment**
+Deploy Scrapy projects as Python eggs via HTTP API
 
-### 🐳 [Docker Build & Push](workflows/docker.yml)
-**Trigger:** Push to master, tags, Pull Requests
+📊 **Web Dashboard**
+Monitor running jobs, view logs, and manage projects via web interface
 
-Multi-architecture Docker image management:
+🔧 **RESTful API**
+Complete JSON API for programmatic spider management
 
-- **Multi-Platform Builds**: Linux AMD64 and ARM64 support
-- **Automated Tagging**: Semantic versioning, branch-based, and SHA tags
-- **Registry Publishing**: GitHub Container Registry (ghcr.io)
-- **Security Scanning**: Trivy vulnerability scanning
-- **Documentation Sync**: Automated Docker Hub README updates
+⚡ **Concurrent Processing**
+Run multiple spiders simultaneously with configurable concurrency
 
-### 🚀 [Release Automation](workflows/release.yml)
-**Trigger:** Git tags (v*)
+📈 **Job Management**
+Schedule, monitor, and cancel spider jobs with persistent queue
 
-Automated release process:
+🔒 **Authentication**
+Built-in HTTP basic authentication support
 
-- **Version Validation**: Semantic version parsing and validation
-- **Release Creation**: Automated GitHub releases with changelog
-- **PyPI Publishing**: Automatic publishing to PyPI (stable) and TestPyPI (pre-release)
-- **Docker Deployment**: Triggered Docker image builds for releases
-- **Documentation Updates**: Automated docs deployment to GitHub Pages
+📂 **Project Versioning**
+Deploy and manage multiple versions of your scraping projects
 
-### 🔒 [Security & Dependencies](workflows/security.yml)
-**Trigger:** Daily schedule, manual dispatch, push to master
+📊 **Logging & Monitoring**
+Comprehensive logging and status monitoring capabilities
 
-Comprehensive security monitoring:
+## Quick Start
 
-- **Vulnerability Scanning**: Safety, Bandit, Semgrep, CodeQL analysis
-- **Dependency Auditing**: pip-audit for known vulnerabilities
-- **License Compliance**: Automated license checking
-- **Automated Updates**: Daily dependency updates with PR creation
-- **Security Reporting**: Consolidated security status reports
+### Installation
 
-### ☁️ [Cloud Run Deployment](workflows/deploy-cloudrun.yml)
-**Trigger:** Manual dispatch, push to master (with file changes)
-
-Production-ready Cloud Run deployments:
-
-- **Environment Management**: Staging and Production environments
-- **Pre-deployment Testing**: Comprehensive test suite execution
-- **Blue-Green Deployment**: Zero-downtime deployments with rollback
-- **Health Verification**: Post-deployment smoke tests
-- **Rollback Capabilities**: Automatic rollback on deployment failures
-
-## Setup Requirements
-
-### Repository Secrets
-
-Configure these secrets in your GitHub repository settings:
-
-#### Required for Docker & Release
-- `DOCKERHUB_USERNAME`: Docker Hub username (optional, for README sync)
-- `DOCKERHUB_TOKEN`: Docker Hub access token (optional)
-
-#### Required for Cloud Run Deployment
-- `GCP_PROJECT_ID`: Google Cloud Project ID
-- `GCP_SERVICE_ACCOUNT_KEY`: Service account JSON key with Cloud Run permissions
-
-#### Optional for Enhanced Features
-- `CODECOV_TOKEN`: Codecov upload token for coverage reports
-
-### Repository Variables
-
-Configure these variables for Cloud Run deployment:
-
-- `GCP_REGION`: Google Cloud region (e.g., `us-central1`)
-- `CLOUDRUN_SERVICE_NAME`: Cloud Run service name
-
-### Branch Protection
-
-Recommended branch protection rules for `master`:
-
-```yaml
-Protection Rules:
-- Require status checks to pass before merging
-- Require branches to be up to date before merging
-- Required status checks:
-  - Code Quality & Linting
-  - Unit Tests (3.10, 3.11, 3.12)
-  - Integration Tests
-  - Package Build Test
-  - Docker Build Test
-```
-
-## Workflow Details
-
-### CI/CD Pipeline Jobs
-
-1. **quality-checks**: Code formatting, linting, and type checking
-2. **unit-tests**: Multi-version Python testing matrix
-3. **integration-tests**: Full integration test suite
-4. **coverage**: Test coverage reporting and upload
-5. **security-scan**: Security vulnerability analysis
-6. **package-build**: Python package building and validation
-7. **docker-build**: Docker image build testing
-8. **performance-tests**: Benchmark execution (master only)
-9. **status-check**: Overall pipeline status validation
-
-### Docker Workflow Features
-
-- **Multi-platform builds**: AMD64 and ARM64 architectures
-- **Smart tagging strategy**:
-  - `latest` for master branch
-  - `vX.Y.Z` for release tags
-  - `branch-SHA` for feature branches
-  - `pr-NUMBER` for pull requests
-- **Security integration**: Trivy scanning with SARIF upload
-- **Build caching**: GitHub Actions cache for faster builds
-
-### Release Workflow Process
-
-1. **Tag Validation**: Semantic version validation
-2. **Comprehensive Testing**: Full test suite execution
-3. **Package Building**: Python package creation and validation
-4. **Release Creation**: GitHub release with automated notes
-5. **Distribution**: PyPI publishing (stable) or TestPyPI (pre-release)
-6. **Documentation**: GitHub Pages deployment
-
-### Security Workflow Capabilities
-
-- **Daily Scanning**: Automated daily security checks
-- **Multiple Tools**: Safety, Bandit, Semgrep, CodeQL, pip-audit
-- **SARIF Integration**: Security results uploaded to GitHub Security tab
-- **Dependency Updates**: Automated PRs for dependency updates
-- **License Monitoring**: License compliance verification
-
-### Cloud Run Deployment Features
-
-- **Environment Isolation**: Separate staging and production workflows
-- **Pre-deployment Validation**: Tests must pass before deployment
-- **Health Checks**: Comprehensive post-deployment verification
-- **Rollback Support**: Automatic rollback on deployment failures
-- **Manual Override**: Force deployment option for emergency releases
-
-## Usage Examples
-
-### Manual Deployment
-
-Deploy to staging:
 ```bash
-# Via GitHub UI: Actions → Deploy to Cloud Run → Run workflow
-# Select: staging environment
+pip install scrapyd
 ```
 
-Deploy to production:
+### Basic Usage
+
+1. **Start Scrapyd**:
+
+   ```bash
+   scrapyd
+   ```
+
+   The web interface will be available at http://localhost:6800
+
+2. **Deploy a Project**:
+
+   ```bash
+   # Using scrapyd-client
+   pip install scrapyd-client
+   scrapyd-deploy
+   ```
+
+3. **Schedule a Spider**:
+
+   ```bash
+   curl http://localhost:6800/schedule.json \
+        -d project=myproject \
+        -d spider=myspider
+   ```
+
+4. **Monitor Jobs**:
+
+   Visit http://localhost:6800 or use the API:
+
+   ```bash
+   curl http://localhost:6800/daemonstatus.json
+   ```
+
+## API Endpoints
+
+Core endpoints for spider management:
+
+- `/daemonstatus.json` - Get daemon status and job counts
+- `/listprojects.json` - List all deployed projects
+- `/listspiders.json` - List spiders in a project
+- `/listjobs.json` - List pending/running/finished jobs
+- `/schedule.json` - Schedule a spider to run
+- `/cancel.json` - Cancel a running job
+- `/addversion.json` - Deploy a new project version
+- `/delversion.json` - Delete a project version
+- `/delproject.json` - Delete an entire project
+
+## Example API Usage
+
+```python
+import requests
+
+# Check status
+response = requests.get('http://localhost:6800/daemonstatus.json')
+print(response.json())
+
+# Schedule a spider
+response = requests.post('http://localhost:6800/schedule.json', data={
+    'project': 'myproject',
+    'spider': 'myspider',
+    'setting': 'DOWNLOAD_DELAY=2'
+})
+job_id = response.json()['jobid']
+
+# Monitor the job
+response = requests.get('http://localhost:6800/listjobs.json?project=myproject')
+jobs = response.json()
+```
+
+## Configuration
+
+Create `scrapyd.conf` to customize settings:
+
+```ini
+[scrapyd]
+bind_address = 0.0.0.0
+http_port = 6800
+max_proc_per_cpu = 4
+username = admin
+password = secret
+```
+
+## Docker Support
+
 ```bash
-# Via GitHub UI: Actions → Deploy to Cloud Run → Run workflow
-# Select: production environment
+# Run with Docker
+docker run -p 6800:6800 scrapy/scrapyd
+
+# Or build from source
+docker build -t scrapyd .
+docker run -p 6800:6800 scrapyd
 ```
 
-### Release Process
+## Scrapy Ecosystem Integration
 
-Create a new release:
+Scrapyd is part of the larger Scrapy ecosystem. Here's how the main components work together:
+
+🕷️ **Scrapy** - The Core Framework
+The foundational web scraping framework for Python that provides the tools to build spiders, handle requests/responses, and extract data from websites.
+
+🚀 **Scrapyd** - Deployment & Management Server
+A service that allows you to deploy Scrapy projects and run spiders remotely via HTTP API. Perfect for production deployments where you need to manage multiple projects and schedule spider execution.
+
+📦 **scrapyd-client** - Deployment Tools
+Command-line tools that simplify deploying Scrapy projects to Scrapyd servers:
+
+- `scrapyd-deploy` - Builds and uploads project eggs to Scrapyd
+- `scrapyd-client` - Programmatic Python client for Scrapyd API
+- Handles versioning, dependencies, and configuration management
+
+⚡ **Scrapyrt** - Real-time HTTP API
+A lightweight HTTP interface for Scrapy that enables real-time scraping requests. Unlike Scrapyd (designed for long-running spiders), Scrapyrt is optimized for quick, on-demand scraping tasks.
+
+### Typical Workflow
+
+1. **Development**: Create spiders using **Scrapy** framework
+2. **Deployment**: Use **scrapyd-client** to deploy projects to **Scrapyd**
+3. **Execution**: Schedule and monitor spiders via **Scrapyd** API
+4. **Real-time Tasks**: Use **Scrapyrt** for immediate scraping needs
+
 ```bash
-git tag v1.2.3
-git push origin v1.2.3
-# Automated release workflow triggers
+# 1. Create Scrapy project
+scrapy startproject myproject
+
+# 2. Deploy to Scrapyd
+scrapyd-deploy
+
+# 3. Schedule spider via Scrapyd
+curl http://localhost:6800/schedule.json -d project=myproject -d spider=myspider
+
+# 4. Real-time scraping via Scrapyrt (alternative approach)
+curl "localhost:9080/crawl.json?spider_name=myspider&url=http://example.com"
 ```
 
-### Security Scan
+### When to Use Which Tool
 
-Run manual security scan:
-```bash
-# Via GitHub UI: Actions → Security & Dependency Updates → Run workflow
-```
+| Use Case           | Scrapy                | Scrapyd              | Scrapyrt           |
+|--------------------|-----------------------|----------------------|--------------------|
+| Development        | ✅ Core framework     | ❌ Not needed        | ❌ Not needed      |
+| Local Testing      | ✅ `scrapy crawl`     | ❌ Overkill          | ✅ Quick HTTP tests |
+| Production Batches | ✅ Spider logic       | ✅ Job scheduling    | ❌ Not suitable    |
+| Long-running Jobs  | ✅ Spider logic       | ✅ Process management| ❌ Not recommended |
+| Real-time API      | ✅ Spider logic       | ❌ Too heavy         | ✅ Perfect fit     |
+| Multiple Projects  | ✅ Individual dev     | ✅ Centralized mgmt  | ❌ Single project  |
+| Job Monitoring     | ❌ Limited            | ✅ Full dashboard    | ❌ Limited         |
 
-## Monitoring & Maintenance
+## Documentation
 
-### Workflow Status
+📚 **Full Documentation**: https://scrapyd.readthedocs.io/
 
-Monitor workflow health:
-- Check Actions tab for recent runs
-- Review security scan results in Security tab
-- Monitor deployment status in Environments tab
+- [Getting Started Guide](https://scrapyd.readthedocs.io/en/latest/tutorials/getting-started.html)
+- [API Reference](https://scrapyd.readthedocs.io/en/latest/api.html)
+- [Configuration Options](https://scrapyd.readthedocs.io/en/latest/config.html)
+- [Deployment Guide](https://scrapyd.readthedocs.io/en/latest/deploy.html)
 
-### Dependency Updates
+## Community
 
-- Automated PRs created daily for dependency updates
-- Review and merge dependency update PRs regularly
-- Security vulnerabilities trigger immediate notifications
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/scrapy/scrapyd/issues)
+- **Discussions**: Join conversations on [GitHub Discussions](https://github.com/scrapy/scrapyd/discussions)
+- **Stack Overflow**: Ask questions with the `scrapy` tag
 
-### Performance Monitoring
+## Contributing
 
-- Performance tests run on master branch commits
-- Benchmark results stored as artifacts
-- Compare performance across releases
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## Troubleshooting
+## License
 
-### Common Issues
-
-1. **Failed Tests**: Review test logs in Actions tab
-2. **Docker Build Failures**: Check Dockerfile and dependencies
-3. **Deployment Failures**: Verify GCP credentials and permissions
-4. **Security Scan Failures**: Review security scan artifacts
-
-### Debug Mode
-
-Enable debug logging by adding these secrets:
-- `ACTIONS_STEP_DEBUG`: `true`
-- `ACTIONS_RUNNER_DEBUG`: `true`
-
-### Manual Intervention
-
-For critical issues:
-1. Use `workflow_dispatch` triggers for manual runs
-2. Use `force_deploy` option for emergency deployments
-3. Monitor rollback procedures in Cloud Run console
-
-## Best Practices
-
-### Development Workflow
-
-1. Create feature branches from `develop`
-2. Ensure all CI checks pass before creating PR
-3. Review security scan results
-4. Test Docker builds locally before pushing
-
-### Release Management
-
-1. Use semantic versioning for tags
-2. Test releases in staging environment first
-3. Monitor deployment health after production releases
-4. Keep release notes updated
-
-### Security
-
-1. Regularly review security scan results
-2. Update dependencies promptly
-3. Monitor for new vulnerabilities
-4. Keep secrets and tokens secure
-
-This comprehensive GitHub Actions setup provides enterprise-grade CI/CD capabilities for the Scrapyd project with automated testing, security scanning, and deployment workflows.
+BSD 3-Clause License. See [LICENSE](LICENSE) for details.
