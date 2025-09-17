@@ -19,8 +19,9 @@ from pathlib import Path
 from scrapyd.config import Config
 from scrapyd.exceptions import LauncherError
 from scrapyd.interfaces import IEnvironment, IJobStorage
+from scrapyd.rich_logging import get_rich_logger
 
-logger = logging.getLogger(__name__)
+logger = get_rich_logger(__name__)
 
 
 @dataclass

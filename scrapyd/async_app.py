@@ -25,9 +25,10 @@ from scrapyd.async_scheduler import AsyncScheduler
 from scrapyd.cache.redis_cache import RedisCache
 from scrapyd.cache.memory_cache import MemoryCache
 from scrapyd.metrics.prometheus import PrometheusMetrics
+from scrapyd.rich_logging import get_rich_logger
 from scrapyd.storage.factory import create_storage_backend
 
-logger = logging.getLogger(__name__)
+logger = get_rich_logger(__name__)
 
 
 class AsyncScrapydApp:

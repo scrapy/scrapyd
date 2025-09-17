@@ -16,6 +16,11 @@ from dataclasses import dataclass
 from contextlib import asynccontextmanager
 import aiohttp
 import requests
+from rich.console import Console
+from rich.table import Table
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+from rich.panel import Panel
+from rich.text import Text
 try:
     import psutil
     PSUTIL_AVAILABLE = True
@@ -50,11 +55,14 @@ class PerformanceBenchmark:
             raise ImportError("psutil package is required for performance benchmarks. Install with: pip install psutil")
         self.base_url = base_url
         self.results = []
+        self.console = Console()
 
     async def run_all_benchmarks(self):
         """Run all performance benchmarks"""
-        print("Starting Scrapyd Performance Benchmarks...")
-        print("=" * 50)
+        self.console.print(Panel.fit(
+            "[bold cyan]Starting Scrapyd Performance Benchmarks[/bold cyan]",
+            border_style="bright_blue"
+        ))
 
         # API endpoint benchmarks
         await self.benchmark_daemon_status()
@@ -72,7 +80,7 @@ class PerformanceBenchmark:
 
     async def benchmark_daemon_status(self):
         """Benchmark /daemonstatus.json endpoint"""
-        print("Benchmarking daemon status endpoint...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold]daemon status[/bold] endpoint...")
 
         async def make_request(session):
             start_time = time.time()
@@ -93,7 +101,7 @@ class PerformanceBenchmark:
 
     async def benchmark_list_projects(self):
         """Benchmark /listprojects.json endpoint"""
-        print("Benchmarking list projects endpoint...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold]list projects[/bold] endpoint...")
 
         async def make_request(session):
             start_time = time.time()
@@ -114,7 +122,7 @@ class PerformanceBenchmark:
 
     async def benchmark_list_spiders(self):
         """Benchmark /listspiders.json endpoint"""
-        print("Benchmarking list spiders endpoint...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold]list spiders[/bold] endpoint...")
 
         async def make_request(session):
             start_time = time.time()
@@ -136,7 +144,7 @@ class PerformanceBenchmark:
 
     async def benchmark_concurrent_requests(self):
         """Benchmark high concurrency scenarios"""
-        print("Benchmarking high concurrency...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold red]high concurrency[/bold red]...")
 
         async def make_request(session):
             start_time = time.time()
@@ -164,7 +172,7 @@ class PerformanceBenchmark:
 
     async def benchmark_mixed_workload(self):
         """Benchmark realistic mixed workload"""
-        print("Benchmarking mixed workload...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold purple]mixed workload[/bold purple]...")
 
         async def make_mixed_requests(session):
             """Simulate realistic user behavior"""
@@ -240,7 +248,7 @@ class PerformanceBenchmark:
 
     async def benchmark_memory_usage(self):
         """Benchmark memory usage under load"""
-        print("Benchmarking memory usage...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold blue]memory usage[/bold blue]...")
 
         process = psutil.Process()
         memory_samples = []
@@ -286,7 +294,7 @@ class PerformanceBenchmark:
 
     async def benchmark_cpu_usage(self):
         """Benchmark CPU usage under load"""
-        print("Benchmarking CPU usage...")
+        self.console.print("[yellow]Benchmarking[/yellow] [bold magenta]CPU usage[/bold magenta]...")
 
         process = psutil.Process()
         cpu_samples = []
@@ -393,20 +401,32 @@ class PerformanceBenchmark:
 
     def generate_report(self):
         """Generate performance report"""
-        print("\n" + "=" * 80)
-        print("SCRAPYD PERFORMANCE BENCHMARK REPORT")
-        print("=" * 80)
+        self.console.print("\n")
+        self.console.print(Panel.fit(
+            "[bold cyan]SCRAPYD PERFORMANCE BENCHMARK REPORT[/bold cyan]",
+            border_style="bright_blue"
+        ))
 
-        print(f"{'Benchmark':<20} {'RPS':<10} {'Avg RT':<10} {'P95 RT':<10} {'Errors':<8} {'Memory':<10}")
-        print("-" * 80)
+        # Create results table
+        table = Table(title="Benchmark Results")
+        table.add_column("Benchmark", justify="left", style="cyan", no_wrap=True)
+        table.add_column("RPS", justify="right", style="green")
+        table.add_column("Avg RT (ms)", justify="right", style="yellow")
+        table.add_column("P95 RT (ms)", justify="right", style="yellow")
+        table.add_column("Errors", justify="right", style="red")
+        table.add_column("Memory (MB)", justify="right", style="blue")
 
         for result in self.results:
-            print(f"{result.name:<20} "
-                  f"{result.requests_per_second:<10.1f} "
-                  f"{result.avg_response_time*1000:<10.1f} "
-                  f"{result.p95_response_time*1000:<10.1f} "
-                  f"{result.error_rate:<8.1f}% "
-                  f"{result.memory_usage:<10.1f}")
+            table.add_row(
+                result.name,
+                f"{result.requests_per_second:.1f}",
+                f"{result.avg_response_time*1000:.1f}",
+                f"{result.p95_response_time*1000:.1f}",
+                f"{result.error_rate:.1f}%",
+                f"{result.memory_usage:.1f}"
+            )
+
+        self.console.print(table)
 
         # Summary statistics
         total_requests = sum(r.total_requests for r in self.results)
@@ -414,25 +434,25 @@ class PerformanceBenchmark:
         avg_rps = statistics.mean([r.requests_per_second for r in self.results])
         avg_response_time = statistics.mean([r.avg_response_time for r in self.results])
 
-        print("\n" + "=" * 80)
-        print("SUMMARY")
-        print("=" * 80)
-        print(f"Total Requests: {total_requests}")
-        print(f"Total Time: {total_time:.2f}s")
-        print(f"Average RPS: {avg_rps:.1f}")
-        print(f"Average Response Time: {avg_response_time*1000:.1f}ms")
+        # Summary panel
+        summary_text = f"""[bold]Total Requests:[/bold] {total_requests}
+[bold]Total Time:[/bold] {total_time:.2f}s
+[bold]Average RPS:[/bold] {avg_rps:.1f}
+[bold]Average Response Time:[/bold] {avg_response_time*1000:.1f}ms"""
 
         # Performance rating
         if avg_rps > 1000:
-            rating = "Excellent"
+            rating = "[bold green]Excellent[/bold green]"
         elif avg_rps > 500:
-            rating = "Good"
+            rating = "[bold yellow]Good[/bold yellow]"
         elif avg_rps > 200:
-            rating = "Fair"
+            rating = "[bold orange3]Fair[/bold orange3]"
         else:
-            rating = "Needs Improvement"
+            rating = "[bold red]Needs Improvement[/bold red]"
 
-        print(f"Performance Rating: {rating}")
+        summary_text += f"\n[bold]Performance Rating:[/bold] {rating}"
+
+        self.console.print(Panel(summary_text, title="Summary", border_style="green"))
 
         # Save detailed results
         self.save_results()
@@ -471,7 +491,7 @@ class PerformanceBenchmark:
         with open(filename, 'w') as f:
             json.dump(results_data, f, indent=2)
 
-        print(f"\nDetailed results saved to: {filename}")
+        self.console.print(f"\n[green]✅ Detailed results saved to:[/green] [bold]{filename}[/bold]")
 
 
 class ComparisonBenchmark:
@@ -481,11 +501,14 @@ class ComparisonBenchmark:
                  async_url: str = "http://localhost:6801"):
         self.sync_url = sync_url
         self.async_url = async_url
+        self.console = Console()
 
     async def run_comparison(self):
         """Run comparison between sync and async implementations"""
-        print("Running Sync vs Async Comparison...")
-        print("=" * 50)
+        self.console.print(Panel.fit(
+            "[bold cyan]Running Sync vs Async Comparison[/bold cyan]",
+            border_style="bright_blue"
+        ))
 
         # Test both implementations
         sync_results = await self._test_implementation("Sync", self.sync_url)
@@ -496,7 +519,7 @@ class ComparisonBenchmark:
 
     async def _test_implementation(self, name: str, base_url: str) -> Dict[str, float]:
         """Test a specific implementation"""
-        print(f"Testing {name} implementation at {base_url}...")
+        self.console.print(f"[yellow]Testing[/yellow] [bold]{name}[/bold] implementation at [blue]{base_url}[/blue]...")
 
         # Test daemon status endpoint
         start_time = time.time()
@@ -525,36 +548,60 @@ class ComparisonBenchmark:
 
     def _generate_comparison_report(self, sync_results: Dict, async_results: Dict):
         """Generate comparison report"""
-        print("\n" + "=" * 60)
-        print("SYNC vs ASYNC COMPARISON")
-        print("=" * 60)
+        self.console.print("\n")
+        self.console.print(Panel.fit(
+            "[bold cyan]SYNC vs ASYNC COMPARISON[/bold cyan]",
+            border_style="bright_blue"
+        ))
 
-        print(f"{'Metric':<25} {'Sync':<15} {'Async':<15} {'Improvement':<15}")
-        print("-" * 60)
+        # Create comparison table
+        table = Table(title="Performance Comparison")
+        table.add_column("Metric", justify="left", style="cyan", no_wrap=True)
+        table.add_column("Sync", justify="right", style="red")
+        table.add_column("Async", justify="right", style="green")
+        table.add_column("Improvement", justify="right", style="bright_green")
 
         # RPS comparison
         sync_rps = sync_results['requests_per_second']
         async_rps = async_results['requests_per_second']
         rps_improvement = (async_rps - sync_rps) / sync_rps * 100
 
-        print(f"{'Requests/sec':<25} {sync_rps:<15.1f} {async_rps:<15.1f} {rps_improvement:<15.1f}%")
+        table.add_row(
+            "Requests/sec",
+            f"{sync_rps:.1f}",
+            f"{async_rps:.1f}",
+            f"{rps_improvement:+.1f}%"
+        )
 
         # Response time comparison
         sync_rt = sync_results['avg_response_time'] * 1000
         async_rt = async_results['avg_response_time'] * 1000
         rt_improvement = (sync_rt - async_rt) / sync_rt * 100
 
-        print(f"{'Avg Response Time (ms)':<25} {sync_rt:<15.1f} {async_rt:<15.1f} {rt_improvement:<15.1f}%")
+        table.add_row(
+            "Avg Response Time (ms)",
+            f"{sync_rt:.1f}",
+            f"{async_rt:.1f}",
+            f"{rt_improvement:+.1f}%"
+        )
 
         # Total time comparison
         sync_time = sync_results['total_time']
         async_time = async_results['total_time']
         time_improvement = (sync_time - async_time) / sync_time * 100
 
-        print(f"{'Total Time (s)':<25} {sync_time:<15.2f} {async_time:<15.2f} {time_improvement:<15.1f}%")
+        table.add_row(
+            "Total Time (s)",
+            f"{sync_time:.2f}",
+            f"{async_time:.2f}",
+            f"{time_improvement:+.1f}%"
+        )
+
+        self.console.print(table)
 
         # Overall assessment
-        print(f"\nOverall Performance Improvement: {rps_improvement:.1f}%")
+        improvement_text = f"[bold]Overall Performance Improvement:[/bold] [bright_green]{rps_improvement:+.1f}%[/bright_green]"
+        self.console.print(Panel(improvement_text, border_style="green"))
 
         if rps_improvement > 50:
             assessment = "Significant improvement with async implementation"
@@ -565,7 +612,7 @@ class ComparisonBenchmark:
         else:
             assessment = "No significant improvement with async implementation"
 
-        print(f"Assessment: {assessment}")
+        self.console.print(f"\\n[bold cyan]Assessment:[/bold cyan] {assessment}")
 
 
 async def main():

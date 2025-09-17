@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scrapyd"
-version = "1.6.0"
+version = "1.6.1"
 authors = [{name = "Scrapy developers", email = "info@scrapy.org"}]
 description = "A service for running Scrapy spiders, with an HTTP API"
 readme = "README.rst"
@@ -27,13 +27,18 @@ requires-python = ">=3.11"
 dependencies = [
   "aiohttp>=3.9.0",
   "coverage>=7.10.6",
+  "furo>=2025.7.19",
   "html5lib>=1.1",
+  "myst-parser>=4.0.1",
   "packaging",
   "psutil>=7.0.0",
+  "python-dotenv>=1.1.1",
   "pywin32;platform_system=='Windows'",
+  "rich>=13.0.0",
   "scrapy>=2.0.0",
   # https://setuptools.pypa.io/en/latest/history.html#v80-9-0
   "setuptools>=67.7.0,<81",
+  "sphinxcontrib-zopeext>=0.4.3",
   "twisted>=17.9",
   "w3lib",
   "zope.interface",
