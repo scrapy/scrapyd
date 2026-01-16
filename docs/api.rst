@@ -137,7 +137,7 @@ Parameters
   ``project``
     the project name
 
-The job's status is indicated by the ``currstate`` key whose value is one of ``'pending'``, ``'running'`` or ``'finished'``.
+The job's status is indicated by the ``currstate`` key whose value is one of ``'pending'``, ``'running'`` or ``'finished'`` – or ``None`` if the job is not found.
 
 Example:
 
