@@ -531,3 +531,21 @@ As described in `Scrapy's documentation <https://docs.scrapy.org/en/latest/topic
 
    [settings]
    default = projectname.settings
+
+.. _config-datadir:
+
+datadir section (scrapy.cfg)
+============================
+
+Some Scrapy components, like the `HTTP cache middleware <https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#std-setting-HTTPCACHE_DIR>`__, write to the project data directory, which by default is the ``.scrapy`` directory next to the closest ``scrapy.cfg`` file. However, Scrapy processes run in Scrapyd's working directory, which, along with its parents, typically has no ``scrapy.cfg`` file. So, these components are disabled or fail with "Unable to find scrapy.cfg file to infer project data dir".
+
+To fix this, set the data directory in a ``[datadir]`` section of a `Scrapy configuration file <https://docs.scrapy.org/en/latest/topics/commands.html#configuration-settings>`__, like ``/etc/scrapy.cfg`` or ``~/.scrapy.cfg`` in the home directory of the user running Scrapyd:
+
+.. code-block:: ini
+
+   [datadir]
+   default = /var/lib/scrapyd/data
+
+The directory must be writable by the Scrapyd process.
+
+.. note:: By default, all projects use the same subdirectories (like ``httpcache``) of the data directory set in ``[datadir]``. To keep projects' data separate, set project-specific paths in their settings, like ``HTTPCACHE_DIR = "myproject/httpcache"``.
