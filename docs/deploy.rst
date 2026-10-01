@@ -1,6 +1,57 @@
 Deployment
 ==========
 
+.. _systemd:
+
+Running as a Linux service
+--------------------------
+
+On Linux distributions that use systemd, you can run Scrapyd as a service, so that it starts at boot and restarts if it stops.
+
+Create a dedicated user, and a directory for Scrapyd to write to. For example:
+
+.. code-block:: shell
+
+   sudo useradd --system --create-home --home-dir /var/lib/scrapyd --shell /usr/sbin/nologin scrapyd
+
+Create :file:`/etc/systemd/system/scrapyd.service`, replacing the path to the ``scrapyd`` command (run ``which scrapyd`` to find it). If you installed Scrapyd in a virtualenv, use the full path to its :file:`bin/scrapyd`, and make sure the ``scrapyd`` user can read it:
+
+.. code-block:: ini
+
+   [Unit]
+   Description=Scrapyd
+   After=network.target
+
+   [Service]
+   User=scrapyd
+   WorkingDirectory=/var/lib/scrapyd
+   ExecStart=/usr/local/bin/scrapyd --pidfile=
+   Restart=on-failure
+
+   [Install]
+   WantedBy=multi-user.target
+
+``WorkingDirectory`` is where Scrapyd writes the relative paths in its default configuration, like :ref:`eggs_dir` and :ref:`dbs_dir`. It is also one of the places :doc:`Scrapyd reads its configuration file from<config>`.
+
+``--pidfile=`` disables the PID file, because systemd tracks the process itself.
+
+``Restart=on-failure`` restarts Scrapyd if it exits with an error or is killed by a signal, but not if you stop it with ``systemctl stop``.
+
+To start Scrapyd now and at every boot:
+
+.. code-block:: shell
+
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now scrapyd
+
+Because Scrapyd writes its log to standard output, systemd sends it to the journal:
+
+.. code-block:: shell
+
+   journalctl -u scrapyd
+
+To write the log to a file instead, add the :doc:`--logfile option<cli>` to ``ExecStart``, and make sure the ``scrapyd`` user can write to the file's directory.
+
 .. _docker:
 
 Creating a Docker image
