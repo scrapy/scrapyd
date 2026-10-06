@@ -36,7 +36,7 @@ Create :file:`/etc/systemd/system/scrapyd.service`, replacing the path to the ``
    [Install]
    WantedBy=multi-user.target
 
-``WorkingDirectory`` is where Scrapyd writes the relative paths in its default configuration, like :ref:`eggs_dir` and :ref:`dbs_dir`. It is also one of the places :doc:`Scrapyd reads its configuration file from<config>`.
+``WorkingDirectory`` is where Scrapyd writes the relative paths in its default configuration, like :ref:`eggs_dir` and :ref:`dbs_dir`. It is also one of the places :doc:`Scrapyd reads its configuration file from<config>`. If your projects use the HTTP cache middleware, or other components that write to the project data directory, :ref:`configure the data directory<config-datadir>`.
 
 ``--pidfile=`` disables the PID file, because systemd tracks the process itself.
 
