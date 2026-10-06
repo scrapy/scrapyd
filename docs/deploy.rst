@@ -40,9 +40,9 @@ Create :file:`/etc/systemd/system/scrapyd.service`, replacing the path to the ``
 
 ``--pidfile=`` disables the PID file, because systemd tracks the process itself.
 
-``Restart=on-failure`` restarts Scrapyd if it exits with an error or is killed by a signal, but not if you stop it with ``systemctl stop``. Scrapyd sometimes fails to start after an unclean shutdown, so ``RestartSec`` waits 30 seconds between attempts, and ``StartLimitIntervalSec`` and ``StartLimitBurst`` stop systemd after 5 failed starts within 300 seconds.
+``Restart=on-failure`` restarts Scrapyd if it exits with an error or is killed by a signal, but not if you stop it with ``systemctl stop``. Scrapyd sometimes fails to start after an unclean shutdown. ``RestartSec=30`` waits 30 seconds between restarts, and ``StartLimitIntervalSec=300`` with ``StartLimitBurst=5`` stops systemd from retrying after 5 failed starts within 300 seconds.
 
-``Group`` and ``UMask=2002`` make the files that Scrapyd writes group-writable. If you add other users to the ``scrapyd`` group, they can manage those files.
+``Group=scrapyd`` and ``UMask=2002`` make the files Scrapyd writes group-writable, so other users in the ``scrapyd`` group can manage them.
 
 To start Scrapyd now and at every boot:
 
@@ -57,7 +57,7 @@ Because Scrapyd writes its log to standard output, systemd sends it to the journ
 
    journalctl -u scrapyd
 
-To pass environment variables to Scrapyd and your spiders, add ``Environment`` lines to the ``[Service]`` section. For example, to configure a proxy, which `Scrapy respects <https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware>`__:
+To pass environment variables to Scrapyd and your spiders, add ``Environment`` lines to the ``[Service]`` section. For example, to set a proxy, which `Scrapy respects <https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware>`__:
 
 .. code-block:: ini
 
