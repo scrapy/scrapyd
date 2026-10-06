@@ -21,12 +21,17 @@ Create :file:`/etc/systemd/system/scrapyd.service`, replacing the path to the ``
    [Unit]
    Description=Scrapyd
    After=network.target
+   StartLimitIntervalSec=300
+   StartLimitBurst=5
 
    [Service]
    User=scrapyd
+   Group=scrapyd
+   UMask=2002
    WorkingDirectory=/var/lib/scrapyd
    ExecStart=/usr/local/bin/scrapyd --pidfile=
    Restart=on-failure
+   RestartSec=30
 
    [Install]
    WantedBy=multi-user.target
@@ -35,7 +40,9 @@ Create :file:`/etc/systemd/system/scrapyd.service`, replacing the path to the ``
 
 ``--pidfile=`` disables the PID file, because systemd tracks the process itself.
 
-``Restart=on-failure`` restarts Scrapyd if it exits with an error or is killed by a signal, but not if you stop it with ``systemctl stop``.
+``Restart=on-failure`` restarts Scrapyd if it exits with an error or is killed by a signal, but not if you stop it with ``systemctl stop``. Scrapyd sometimes fails to start after an unclean shutdown, so ``RestartSec`` waits 30 seconds between attempts, and ``StartLimitIntervalSec`` and ``StartLimitBurst`` stop systemd after 5 failed starts within 300 seconds.
+
+``Group`` and ``UMask=2002`` make the files that Scrapyd writes group-writable. If you add other users to the ``scrapyd`` group, they can manage those files.
 
 To start Scrapyd now and at every boot:
 
@@ -49,6 +56,13 @@ Because Scrapyd writes its log to standard output, systemd sends it to the journ
 .. code-block:: shell
 
    journalctl -u scrapyd
+
+To pass environment variables to Scrapyd and your spiders, add ``Environment`` lines to the ``[Service]`` section. For example, to configure a proxy, which `Scrapy respects <https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware>`__:
+
+.. code-block:: ini
+
+   Environment="https_proxy=http://proxy.example.com:3128"
+   Environment="no_proxy=localhost,127.0.0.1"
 
 To write the log to a file instead, add the :doc:`--logfile option<cli>` to ``ExecStart``, and make sure the ``scrapyd`` user can write to the file's directory.
 
