@@ -142,7 +142,18 @@ def test_jobs(txrequest, config, cancel, header, exists, chdir):
     else:
         assert b"<th>Cancel</th>" not in content
         assert b'/cancel.json">' not in content
+        assert b"<script>" not in content
+        assert b'id="cancel-status"' not in content
     assert b' value="j1-finished">' not in content
+
+
+def test_jobs_cancel_ui(txrequest, root):
+    txrequest.method = "GET"
+    content = root.children[b"jobs"].render(txrequest)
+
+    assert b"<script>" in content
+    assert b'form[action$="/cancel.json"]' in content
+    assert b'id="cancel-status"' in content
 
 
 @pytest.mark.parametrize("with_egg", [True, False])

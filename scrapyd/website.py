@@ -359,6 +359,39 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
     def render_GET(self, txrequest):
         self.base_path = self.get_base_path(txrequest)
 
+        # If the cancel.json webservice is mounted (the same condition that adds the Cancel column), intercept the
+        # submission of the Cancel forms to call cancel.json via JavaScript, so that the browser stays on the /jobs
+        # page and the JSON response is displayed in place, instead of navigating to the raw JSON response.
+        cancel_status = ""
+        cancel_script = ""
+        if b"cancel.json" in self.root.children:
+            cancel_status = """
+                <p id="cancel-status" role="status" aria-live="polite"></p>"""
+            cancel_script = """
+                <script>
+                    document.querySelectorAll('form[action$="/cancel.json"]').forEach((form) => {
+                        form.addEventListener("submit", (event) => {
+                            if (event.defaultPrevented) {
+                                return;  // The confirm() dialog was dismissed.
+                            }
+                            event.preventDefault();
+                            const button = form.querySelector("input[type='submit']");
+                            button.disabled = true;
+                            fetch(form.action, { method: "POST", body: new FormData(form) })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    document.getElementById("cancel-status").textContent = JSON.stringify(data);
+                                })
+                                .catch((error) => {
+                                    document.getElementById("cancel-status").textContent = String(error);
+                                })
+                                .finally(() => {
+                                    button.disabled = false;
+                                });
+                        });
+                    });
+                </script>"""
+
         content = dedent(
             f"""\
             <!DOCTYPE html>
@@ -378,7 +411,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
             </head>
             <body>
                 <h1>Jobs</h1>
-                <p><a href="./">Go up</a></p>
+                <p><a href="./">Go up</a></p>{cancel_status}
                 <table id="jobs">
                     <thead>
 {indent(self.prepare_headers(), "                        ")}
@@ -401,7 +434,7 @@ class Jobs(PrefixHeaderMixin, resource.Resource):
                         </tr>
 {indent(self.prepare_finished(), "                        ")}
                     </tbody>
-                </table>
+                </table>{cancel_script}
             </body>
             </html>
             """
